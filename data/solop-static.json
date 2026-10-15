@@ -1,0 +1,63 @@
+{
+  "events": [
+    {
+      "id": "aqsciocz",
+      "createdBy": null,
+      "createdAt": 1792078426141,
+      "title": "Hội thao chào mừng 20/10",
+      "type": "hd",
+      "date": "2026-10-19",
+      "weeks": 1,
+      "start": "16:00",
+      "end": "",
+      "place": "",
+      "note": ""
+    }
+  ],
+  "anns": [],
+  "folders": [
+    {
+      "id": "ibdhn9ts",
+      "createdBy": null,
+      "createdAt": 1792078512798,
+      "name": "Quyết định"
+    }
+  ],
+  "docs": [
+    {
+      "id": "szrtpooq",
+      "createdBy": null,
+      "createdAt": 1792080664824,
+      "name": "So luong nguoi dung - Elearning.png",
+      "folder": "",
+      "kind": "file",
+      "assetId": "https://raw.githubusercontent.com/tranhodat/tcct2026/main/uploads/tai-lieu/chua-phan-loai/so-luong-nguoi-dung-elearning--mv9qk19o-dd98ed18.png",
+      "githubPath": "uploads/tai-lieu/chua-phan-loai/so-luong-nguoi-dung-elearning--mv9qk19o-dd98ed18.png",
+      "size": 28238,
+      "mime": "image/png"
+    },
+    {
+      "id": "rpco8vye",
+      "createdBy": null,
+      "createdAt": 1792080833235,
+      "name": "So luong nguoi dung - Elearning.png",
+      "folder": "ibdhn9ts",
+      "kind": "file",
+      "assetId": "https://raw.githubusercontent.com/tranhodat/tcct2026/main/uploads/tai-lieu/quyet-dinh/so-luong-nguoi-dung-elearning--mv9qnn47-de196e7c.png",
+      "githubPath": "uploads/tai-lieu/quyet-dinh/so-luong-nguoi-dung-elearning--mv9qnn47-de196e7c.png",
+      "size": 28238,
+      "mime": "image/png"
+    }
+  ],
+  "courses": [],
+  "albums": [],
+  "settings": {
+    "class": {}
+  },
+  "cls": {},
+  "folder": "ibdhn9ts",
+  "courseId": null,
+  "lectureId": null,
+  "albumId": null,
+  "updatedAt": 1792080833235
+}
