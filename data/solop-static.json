@@ -83,7 +83,13 @@
           "id": "r4rrtoh6",
           "title": "Bài 2: Chính quyền địa phương ở Việt Nam",
           "note": "",
-          "materials": [],
+          "materials": [
+            {
+              "kind": "link",
+              "name": "tài liệu",
+              "link": "https://dcs.gov"
+            }
+          ],
           "refs": [],
           "images": []
         }
@@ -97,7 +103,7 @@
   "cls": {},
   "folder": "ibdhn9ts",
   "courseId": "9prw41rr",
-  "lectureId": "8fzqv62o",
+  "lectureId": "r4rrtoh6",
   "albumId": null,
-  "updatedAt": 1792100669908
+  "updatedAt": 1792100703065
 }
