@@ -62,7 +62,17 @@
       "mime": "image/png"
     }
   ],
-  "courses": [],
+  "courses": [
+    {
+      "id": "9prw41rr",
+      "createdBy": null,
+      "createdAt": 1792100555267,
+      "name": "Nhà nước và pháp luật",
+      "code": "",
+      "teacher": "",
+      "lectures": []
+    }
+  ],
   "albums": [],
   "settings": {
     "class": {}
@@ -72,5 +82,5 @@
   "courseId": null,
   "lectureId": null,
   "albumId": null,
-  "updatedAt": 1792100482820
+  "updatedAt": 1792100555267
 }
