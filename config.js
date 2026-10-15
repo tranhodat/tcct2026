@@ -4,5 +4,5 @@
 window.CLASS_CONFIG = {
   githubRepo: 'tranhodat/tcct2026', // Ví dụ: ten-tai-khoan/ten-repository
   githubBranch: 'main',
-  githubToken: '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'
+  githubToken: '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'
 };
