@@ -70,7 +70,16 @@
       "name": "Nhà nước và pháp luật",
       "code": "",
       "teacher": "",
-      "lectures": []
+      "lectures": [
+        {
+          "id": "8fzqv62o",
+          "title": "Bài 1: Xây dựng nhà nuớc PQXHCN",
+          "note": "",
+          "materials": [],
+          "refs": [],
+          "images": []
+        }
+      ]
     }
   ],
   "albums": [],
@@ -79,8 +88,8 @@
   },
   "cls": {},
   "folder": "ibdhn9ts",
-  "courseId": null,
+  "courseId": "9prw41rr",
   "lectureId": null,
   "albumId": null,
-  "updatedAt": 1792100555267
+  "updatedAt": 1792100620681
 }
