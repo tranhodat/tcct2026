@@ -12,6 +12,19 @@
       "end": "",
       "place": "",
       "note": ""
+    },
+    {
+      "id": "nhif85ev",
+      "createdBy": null,
+      "createdAt": 1792100482820,
+      "title": "Học Nghị quyết",
+      "type": "hoc",
+      "date": "2026-10-16",
+      "weeks": 1,
+      "start": "07:45",
+      "end": "",
+      "place": "Hội trường",
+      "note": ""
     }
   ],
   "anns": [],
@@ -59,5 +72,5 @@
   "courseId": null,
   "lectureId": null,
   "albumId": null,
-  "updatedAt": 1792080833235
+  "updatedAt": 1792100482820
 }
