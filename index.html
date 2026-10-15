@@ -328,11 +328,12 @@ td.c,th.c{text-align:center}
 <div id="lb" hidden></div>
 <div id="toast" role="status" hidden></div>
 
+<script src="./config.js"></script>
 <script>
 (function(){
 'use strict';
 const CONFIG={githubRepo:'',githubToken:'',githubBranch:'main',appName:'K02A02 Notebook',...(window.CLASS_CONFIG||{})};
-const EDIT_PASSWORD_HASH='ae2143a1fec8f3a3510d08873ba9f3b1adef85b167d9f75f6b401af50eb7deaa';
+const EDIT_PASSWORD_HASH='8208241ad1de3c23218220573ab9bc818578cdc1c8008f4e987039f813fbbb03';
 async function verifyPassword(value){
 const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(value),'PBKDF2',false,['deriveBits']);
 const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode('K02A02-Notebook-edit-v1'),iterations:210000,hash:'SHA-256'},key,256);
@@ -357,7 +358,7 @@ const linkify=t=>esc(t).replace(/https?:\/\/[^\s<]+/g,u=>'<a href="'+u+'" target
 const store={get:k=>{try{return localStorage.getItem('solop.'+k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem('solop.'+k,v)}catch(e){}}};
 
 // Only repository and branch are remembered; the token stays in memory.
-const G={repo:CONFIG.githubRepo||store.get('githubRepo')||'',branch:store.get('githubBranch')||CONFIG.githubBranch||'main',token:CONFIG.githubToken||''};
+const G={repo:CONFIG.githubRepo||'',branch:CONFIG.githubBranch||'main',token:CONFIG.githubToken||''};
 const MAX_UPLOAD_BYTES=100*1024*1024;
 const slug=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[đĐ]/g,'d').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,70)||'chua-phan-loai';
 function uploadPath(name,context={},converted=false){
@@ -369,7 +370,7 @@ function uploadPath(name,context={},converted=false){
   return dir+'/'+base+'--'+Date.now().toString(36)+'-'+crypto.randomUUID().slice(0,8)+(ext?'.'+ext:'');
 }
 function githubSettings(){
-  if(!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(G.repo)||!G.token)throw new Error('Mở “Kết nối GitHub” và nhập repository cùng token trước khi tải tệp.');
+  if(!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(G.repo)||!G.token)throw new Error('GitHub: config.js (githubRepo, githubToken).');
   return {...G};
 }
 const contentUrl=(g,path)=>'https://api.github.com/repos/'+g.repo+'/contents/'+path.split('/').map(encodeURIComponent).join('/');
@@ -754,9 +755,8 @@ function render(){
   const unread=S.anns.filter(a=>a.createdAt>S.annSeen).length;
   $('#tabs').innerHTML=TABS.map(t=>'<button class="tab" role="tab" data-act="tab" data-tab="'+t[0]+'" aria-selected="'+(S.tab===t[0])+'">'+t[1]+(t[0]==='thongbao'&&unread&&S.tab!=='thongbao'?' <span class="badge" aria-label="'+unread+' thông báo mới">'+unread+'</span>':'')+'</button>').join('');
   let body='';
-  if(S.ready&&S.noDb)body='<div class="notice warn">Dữ liệu lớp được lưu tại trình duyệt. Kết nối GitHub trong Edit mode để lưu tệp vào repository và đồng bộ dữ liệu lớp.</div>';
-  else if(S.err)body='<div class="notice warn">'+esc(S.err)+'</div>';
-  if(S.editMode)body+='<div class="acts" style="margin-bottom:16px"><button class="btn sm" data-act="editClass">Thông tin lớp</button><button class="btn sm" data-act="connectGithub">Kết nối GitHub</button><button class="btn sm danger" data-act="unseed">Xoá dữ liệu mẫu</button></div>';
+  if(S.err)body='<div class="notice warn">'+esc(S.err)+'</div>';
+  if(S.editMode)body+='<div class="acts" style="margin-bottom:16px"><button class="btn sm" data-act="editClass">Thông tin lớp</button><button class="btn sm danger" data-act="unseed">Xoá dữ liệu mẫu</button></div>';
   const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh}[S.tab];
   $('#view').innerHTML=body+(S.ready?v():'<p class="sub">Đang tải dữ liệu lớp…</p>');
   if(S.lb)renderLb();
@@ -792,19 +792,6 @@ async function unseed(){
 
 /* ---------- actions ---------- */
 const act={
-  connectGithub:()=>openForm({title:'Kết nối GitHub',submit:'Kết nối',intro:'Dùng repository công khai để mọi người mở được tệp. Token cần quyền Contents: Read and write; chỉ giữ trong phiên này. Tệp đã tải lên được giữ trên GitHub khi xoá mục khỏi sổ lớp.',fields:[
-    {name:'repo',label:'Repository (chủ-sở-hữu/tên-repo)',required:true,value:G.repo,placeholder:'ten-tai-khoan/k02a02-notebook'},
-    {name:'branch',label:'Nhánh',required:true,value:G.branch||'main'},
-    {name:'token',label:'GitHub token',type:'password',required:true}
-  ],onSubmit:async v=>{
-    if(!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(v.repo))throw new Error('Repository phải có dạng chủ-sở-hữu/tên-repo.');
-    const g={repo:v.repo,branch:v.branch,token:v.token};
-    const repo=await githubRequest(g,'https://api.github.com/repos/'+g.repo);
-    if(repo.private)throw new Error('Hãy dùng repository công khai để tài liệu và ảnh có thể mở trên trang tĩnh.');
-    await githubRequest(g,'https://api.github.com/repos/'+g.repo+'/branches/'+encodeURIComponent(g.branch));
-    Object.assign(G,g);store.set('githubRepo',G.repo);store.set('githubBranch',G.branch);
-    toast('Đã kết nối GitHub. Tệp mới sẽ lưu vào nhánh '+G.branch+'.');
-  }}),
   editMode:()=>{
     if(S.editMode){S.editMode=false;closeModal();render();return}
     openForm({title:'Edit mode',submit:'Mở khóa',fields:[{name:'password',label:'Mật khẩu',type:'password',required:true}],onSubmit:async v=>{

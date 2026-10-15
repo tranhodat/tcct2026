@@ -10,7 +10,7 @@ const ctx={console,TextEncoder,btoa,FileReader:class {readAsDataURL(){this.resul
 vm.createContext(ctx);vm.runInContext(js,ctx);
 (async()=>{
 const t=ctx.test;
-assert(await t.verifyPassword('tcct2026a1'));assert(!await t.verifyPassword('wrong'));assert(!await t.verifyPassword(''));
+assert(await t.verifyPassword('tcct2026'));assert(!await t.verifyPassword('tcct2026a1'));assert(!await t.verifyPassword('wrong'));assert(!await t.verifyPassword(''));
 t.S.loaded={events:true,anns:true,folders:true,docs:true,courses:true,albums:true};
 for(const name of ['viewLich','viewThongBao','viewTaiLieu','viewHocPhan','viewHinhAnh'])assert(t[name]().length>100);
 await t.seed();assert.equal(t.S.events.length,3);assert.equal(t.S.anns.length,2);assert.equal(t.occurrences().length,14);
@@ -28,7 +28,7 @@ await t.delDoc('docs',doc);assert.equal(t.S.docs.length,0);
 await t.unseed();assert.equal(t.S.events.length,0);assert.equal(t.S.anns.length,0);assert.equal(t.S.courses.length,0);assert.equal(t.S.folders.length,1);
 await assert.rejects(t.upload({size:101*1024*1024},false),/Tệp quá lớn/);
 // Upload protocol: no real network or large allocation is needed.
-await assert.rejects(t.upload({name:'file.pdf',type:'application/pdf',size:1},false),/Kết nối GitHub/);
+await assert.rejects(t.upload({name:'file.pdf',type:'application/pdf',size:1},false),/config\.js/);
 Object.assign(t.G,{repo:'owner/notebook',branch:'main',token:'session-secret'});
 const requests=[];
 ctx.fetch=async(url,opts)=>{requests.push({url,...opts});return {ok:true,status:201,json:async()=>({content:{path:JSON.parse(opts.body).message.replace('Upload ','')}})};};
