@@ -26,37 +26,37 @@ await t.saveDoc('settings','class',{name:'K02A02'});assert.equal(t.S.cls.name,'K
 t.S.docs=[];t.loadState();assert.equal(t.S.docs[0].name,'Updated');
 await t.delDoc('docs',doc);assert.equal(t.S.docs.length,0);
 await t.unseed();assert.equal(t.S.events.length,0);assert.equal(t.S.anns.length,0);assert.equal(t.S.courses.length,0);assert.equal(t.S.folders.length,1);
-await assert.rejects(t.upload({size:101*1024*1024},false),/Tệp quá lớn/);
+await assert.rejects(t.upload({size:4*1024*1024},false),/Tệp quá lớn/);
 // Upload protocol: no real network or large allocation is needed.
 await assert.rejects(t.upload({name:'file.pdf',type:'application/pdf',size:1},false),/config\.js/);
 Object.assign(t.G,{repo:'owner/notebook',branch:'main',token:'session-secret'});
 const requests=[];
 ctx.fetch=async(url,opts)=>{requests.push({url,...opts});return {ok:true,status:201,json:async()=>({content:{path:JSON.parse(opts.body).message.replace('Upload ','')}})};};
-const uploaded=await t.upload({name:'Đề cương học phần.pdf',type:'application/pdf',size:100*1024*1024},false,{folderName:'Đề cương'});
+const uploaded=await t.upload({name:'Đề cương học phần.pdf',type:'application/pdf',size:3*1024*1024},false,{folderName:'Đề cương'});
 assert.match(uploaded.path,/^uploads\/tai-lieu\/de-cuong\/de-cuong-hoc-phan--[a-z0-9-]+\.pdf$/);
-assert.equal(uploaded.sizeBytes,100*1024*1024);
+assert.equal(uploaded.sizeBytes,3*1024*1024);
 assert(uploaded.id.startsWith('https://raw.githubusercontent.com/owner/notebook/main/uploads/'));
 assert(!uploaded.id.startsWith('data:'));
 assert.equal(JSON.parse(requests[0].body).branch,'main');
 assert.equal(JSON.parse(requests[0].body).content,'SGVsbG8=');
-assert.equal(requests[0].headers.Authorization,'Bearer session-secret');
+assert.equal(requests[0].headers['X-Edit-Password'],'session-secret');
 assert(!JSON.stringify([...data]).includes('session-secret'));
 assert.match(t.uploadPath('Ảnh.png',{kind:'album',albumName:'Dã ngoại',albumId:'ab1',date:'2026-10-15'}),/^uploads\/album\/2026-10-15-da-ngoai--ab1\/anh--/);
 assert.match(t.uploadPath('Slide.pdf',{kind:'course',courseName:'Cơ sở dữ liệu',courseId:'c1',lectureName:'Bài 1',lectureId:'l1',section:'tai-lieu'}),/^uploads\/hoc-phan\/co-so-du-lieu--c1\/bai-1--l1\/tai-lieu\//);
 assert(t.uploadPath('Hình.png',{},true).endsWith('.jpg'));
 assert.notEqual(t.uploadPath('a.pdf'),t.uploadPath('a.pdf'));
 const count=requests.length;
-await assert.rejects(t.upload({size:100*1024*1024+1},false),/Tệp quá lớn/);assert.equal(requests.length,count);
+await assert.rejects(t.upload({size:3*1024*1024+1},false),/Tệp quá lớn/);assert.equal(requests.length,count);
 ctx.fetch=async()=>({ok:false,status:403,json:async()=>({message:'Forbidden'})});
 await assert.rejects(t.upload({name:'a.pdf',type:'application/pdf',size:1},false),/GitHub \(403\)/);
 // Metadata commits use the selected branch and existing SHA.
 const metadata=[];
 ctx.fetch=async(url,opts)=>{metadata.push({url,...opts});return {ok:true,status:200,json:async()=>opts.method==='PUT'?{}:{sha:'existing-sha'}};};
 await t.persistState();
-assert(metadata[0].url.endsWith('?ref=main'));
+assert(metadata[0].url.endsWith('&ref=main'));
 assert.equal(JSON.parse(metadata[1].body).sha,'existing-sha');
 assert.equal(JSON.parse(metadata[1].body).branch,'main');
 JSON.parse(fs.readFileSync('vercel.json','utf8'));
-console.log('PASS: password, five views, recurring calendar, CRUD, persistence, courses, albums, download links, sample cleanup, upload limit, hosting config, identical HTML entrypoints, GitHub upload paths, 100 MB boundary, GitHub errors, token isolation and metadata SHA.');
+console.log('PASS: password, five views, recurring calendar, CRUD, persistence, courses, albums, download links, sample cleanup, upload limit, hosting config, identical HTML entrypoints, GitHub upload paths, 3 MB boundary, GitHub errors, token isolation and metadata SHA.');
 })().catch(e=>{console.error(e);process.exitCode=1});
 

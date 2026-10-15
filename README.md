@@ -2,34 +2,22 @@
 
 Trang tĩnh: `index.html` và `Sổ lớp.html` có nội dung giống nhau.
 
-## Lưu tệp trên GitHub
+## Vercel GitHub API
 
-1. Fill `githubRepo` (owner/repository) and `githubBranch` in `config.js`.
-2. For local use, fill `githubToken` with a fine-grained token with Contents: Read and write permission. Never commit a real token.
-3. Reload the page and enable Edit mode to upload files. The connection form has been removed.
+Set these Vercel environment variables for Production (and Preview if used):
 
-A public static website exposes config.js and its token to every visitor. The Edit mode password does not protect the token. Public deployment requires a server-side API to keep the token private.
+- GITHUB_TOKEN: a new fine-grained token with Contents: Read and write on the data repository.
+- GITHUB_REPO: tranhodat/tcct2026
+- GITHUB_BRANCH: main
+- EDIT_PASSWORD: tcct2026
 
-Giới hạn mỗi tệp: 100 × 1024 × 1024 byte (100 MiB, giao diện ghi 100 MB). Ảnh JPEG/PNG/WebP lớn được nén như trước. Không còn nhúng tệp mới dạng base64 vào localStorage.
+Redeploy after changing environment variables. The browser calls /api/github; only the server sends the GitHub token. config.js contains public repository settings only; keep them consistent with GITHUB_REPO and GITHUB_BRANCH. Never add a token to config.js.
 
-Cấu trúc tự tạo:
+Enable Edit mode before uploading or changing data. The password is kept in tab memory and sent over HTTPS to authorize API requests. Clear it by disabling Edit mode. Local static servers and GitHub Pages cannot run this API; use Vercel or vercel dev.
 
-```text
-uploads/
-  tai-lieu/<ten-thu-muc>/
-  hoc-phan/<ma-ten-hoc-phan>--<id>/<ten-bai>--<id>/
-    tai-lieu/
-    tham-khao/
-    hinh-anh/
-  album/<ngay>-<ten-album>--<id>/
-data/solop-static.json
-```
+Maximum file size is now 3 MiB because Vercel Functions limit request payloads to 4.5 MB and base64 adds overhead. Large-file uploads require a separate storage or multipart architecture.
 
-Tên tệp: `<ten-goc-khong-dau>--<thoi-diem>-<ma-ngau-nhien>.<duoi>`. Giữ tên gốc có dấu trên giao diện. Ảnh chuyển sang JPEG sẽ có đuôi `.jpg`. ID giúp phân biệt học phần/album trùng tên. Đổi tên mục sau này không di chuyển các tệp đã lưu.
-
-Các thao tác ghi tệp và metadata được xếp hàng để tránh xung đột commit trong cùng tab. Lỗi GitHub được hiển thị và không được coi là upload thành công. Metadata có bản lưu tại trình duyệt; nếu đồng bộ metadata lỗi sau khi upload, tệp có thể đã nằm trong repository, cần kiểm tra trước khi tải lại để tránh bản trùng.
-
-Xoá tài liệu/ảnh khỏi giao diện chỉ bỏ tham chiếu; tệp trong GitHub được giữ lại để tránh mất dữ liệu. Các tệp base64 cũ chưa tự động chuyển lên GitHub, cần tải lại qua luồng mới.
+If push protection blocks an old commit, remove its token from every affected unpushed commit; changing the current file alone does not clear history. Revoke any token exposed publicly or shared in chat.
 
 ## Dùng trên GitHub Pages / Vercel
 
@@ -39,4 +27,4 @@ Trang đọc metadata từ repository đã chọn (hoặc `./data/solop-static.j
 
 ## Kiểm tra
 
-Chạy `node tests/check.cjs`. Kiểm thử gồm chức năng trang, xác thực mật khẩu, đường dẫn upload, ngưỡng dung lượng, lỗi API, metadata SHA và việc không lưu token. API được mô phỏng; không gửi tệp thật 100 MB hoặc commit vào repository thực.
+Chạy `node tests/check.cjs`. Kiểm thử gồm chức năng trang, xác thực mật khẩu, đường dẫn upload, ngưỡng dung lượng, lỗi API, metadata SHA và việc không lưu token. API được mô phỏng; không gửi tệp thật 3 MB hoặc commit vào repository thực.

@@ -332,7 +332,7 @@ td.c,th.c{text-align:center}
 <script>
 (function(){
 'use strict';
-const CONFIG={githubRepo:'',githubToken:'',githubBranch:'main',appName:'K02A02 Notebook',...(window.CLASS_CONFIG||{})};
+const CONFIG={githubRepo:'',githubBranch:'main',appName:'K02A02 Notebook',...(window.CLASS_CONFIG||{})};
 const EDIT_PASSWORD_HASH='8208241ad1de3c23218220573ab9bc818578cdc1c8008f4e987039f813fbbb03';
 async function verifyPassword(value){
 const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(value),'PBKDF2',false,['deriveBits']);
@@ -358,8 +358,8 @@ const linkify=t=>esc(t).replace(/https?:\/\/[^\s<]+/g,u=>'<a href="'+u+'" target
 const store={get:k=>{try{return localStorage.getItem('solop.'+k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem('solop.'+k,v)}catch(e){}}};
 
 // Only repository and branch are remembered; the token stays in memory.
-const G={repo:CONFIG.githubRepo||'',branch:CONFIG.githubBranch||'main',token:CONFIG.githubToken||''};
-const MAX_UPLOAD_BYTES=100*1024*1024;
+const G={repo:CONFIG.githubRepo||'',branch:CONFIG.githubBranch||'main',token:''};
+const MAX_UPLOAD_BYTES=3*1024*1024;
 const slug=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[đĐ]/g,'d').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,70)||'chua-phan-loai';
 function uploadPath(name,context={},converted=false){
   const ext=converted?'jpg':String(name).split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -370,12 +370,12 @@ function uploadPath(name,context={},converted=false){
   return dir+'/'+base+'--'+Date.now().toString(36)+'-'+crypto.randomUUID().slice(0,8)+(ext?'.'+ext:'');
 }
 function githubSettings(){
-  if(!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(G.repo)||!G.token)throw new Error('GitHub: config.js (githubRepo, githubToken).');
+  if(!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(G.repo)||!G.token)throw new Error('GitHub: config.js (githubRepo, Edit mode).');
   return {...G};
 }
-const contentUrl=(g,path)=>'https://api.github.com/repos/'+g.repo+'/contents/'+path.split('/').map(encodeURIComponent).join('/');
+const contentUrl=(g,path)=>'/api/github?path='+encodeURIComponent(path);
 async function githubRequest(g,url,options={}){
-  const response=await fetch(url,{...options,headers:{Authorization:'Bearer '+g.token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',...(options.headers||{})}});
+  const response=await fetch(url,{...options,headers:{'X-Edit-Password':g.token,Accept:'application/vnd.github+json','Content-Type':'application/json',...(options.headers||{})}});
   if(!response.ok){const e=await response.json().catch(()=>({}));throw new Error('GitHub ('+response.status+'): '+(e.message||'Không thực hiện được yêu cầu.'));}
   return response.json();
 }
@@ -412,7 +412,7 @@ function friendly(e){
   if(c==='quota_exceeded')return 'Kho dữ liệu của trang đã đầy. Hãy xoá bớt nội dung cũ.';
   if(c==='resource_exhausted'||c==='rate_limited')return 'Thao tác quá nhanh, hãy thử lại sau vài giây.';
   if(c==='unavailable'||c==='store_unavailable')return 'Hệ thống đang bận, hãy thử lại sau ít phút.';
-  if(c==='too_large')return 'Tệp quá lớn (tối đa 100 MB mỗi tệp).';
+  if(c==='too_large')return 'Tệp quá lớn (tối đa 3 MB mỗi tệp).';
   if(c==='unsupported_type')return 'Định dạng tệp này chưa được hỗ trợ.';
   if(c==='quota_or_state')return 'Dung lượng lưu trữ của trang đã đầy.';
   if(c==='revoked')return 'Quyền truy cập đã thay đổi. Hãy tải lại trang.';
@@ -431,7 +431,7 @@ function persistState(){
     const g=githubSettings();
     return enqueue('github-write',async()=>{
       const url=contentUrl(g,'data/solop-static.json');
-      const current=await fetch(url+'?ref='+encodeURIComponent(g.branch),{headers:{Authorization:'Bearer '+g.token,Accept:'application/vnd.github+json'},cache:'no-store'});
+      const current=await fetch(url+'&ref='+encodeURIComponent(g.branch),{headers:{Authorization:'Bearer '+g.token,Accept:'application/vnd.github+json'},cache:'no-store'});
       if(!current.ok&&current.status!==404)throw new Error('Không đọc được GitHub ('+current.status+'). Dữ liệu vẫn lưu tại trình duyệt.');
       const existing=current.ok?await current.json():null;
       const body={message:'Update notebook data',branch:g.branch,content:btoa(unescape(encodeURIComponent(JSON.stringify(payload,null,2))))};
@@ -793,11 +793,11 @@ async function unseed(){
 /* ---------- actions ---------- */
 const act={
   editMode:()=>{
-    if(S.editMode){S.editMode=false;closeModal();render();return}
+    if(S.editMode){S.editMode=false;G.token='';closeModal();render();return}
     openForm({title:'Edit mode',submit:'Mở khóa',fields:[{name:'password',label:'Mật khẩu',type:'password',required:true}],onSubmit:async v=>{
       if(!globalThis.crypto?.subtle)throw new Error('Vui lòng mở trang bằng HTTPS hoặc localhost.');
       if(!await verifyPassword(v.password))throw new Error('Mật khẩu không đúng.');
-      S.editMode=true;toast('Đã bật Edit mode.');
+      G.token=v.password;S.editMode=true;toast('Đã bật Edit mode.');
     }});
   },
   tab:el=>setTab(el.dataset.tab),
@@ -827,7 +827,7 @@ const act={
   openFolder:el=>{S.folder=el.dataset.id;render()},
   addFolder:()=>openForm({title:'Thư mục mới',submit:'Tạo thư mục',fields:[{name:'name',label:'Tên thư mục',required:true,placeholder:'VD: Đề cương, Slide, Bài tập'}],onSubmit:async v=>{const id=await addDoc('folders',{name:v.name});S.folder=id}}),
   delFolder:el=>{const f=S.folders.find(x=>x.id===el.dataset.id);if(!f)return;confirmBox('Xoá thư mục?','Thư mục “'+f.name+'” sẽ bị xoá. Tài liệu bên trong chuyển sang “Chưa phân loại”.','Xoá',async()=>{for(const d of S.docs.filter(x=>x.folder===f.id))await mutate('docs','docs',d.id,n=>{n.folder=''});await delDoc('folders',f.id);S.folder='all'})},
-  upDoc:()=>openForm({title:'Tải tệp lên',submit:'Tải lên',intro:'Nhận PDF, ảnh, video MP4/WebM, CSV, TXT, Markdown, JSON (tối đa 100 MB mỗi tệp). Với Word, PowerPoint, Excel hãy xuất PDF hoặc dùng “Thêm liên kết”.',fields:[
+  upDoc:()=>openForm({title:'Tải tệp lên',submit:'Tải lên',intro:'Nhận PDF, ảnh, video MP4/WebM, CSV, TXT, Markdown, JSON (tối đa 3 MB mỗi tệp). Với Word, PowerPoint, Excel hãy xuất PDF hoặc dùng “Thêm liên kết”.',fields:[
     {name:'folder',label:'Thư mục',type:'select',options:folderOptions(),value:(S.folder!=='all'?S.folder:'')},
     {name:'files',label:'Chọn tệp',type:'file',multiple:true,accept:ACCEPT_ALL,required:true}],
     onSubmit:async(v,prog)=>{let n=0;for(const f of v.files){prog('Đang tải '+(n+1)+'/'+v.files.length+'…');const r=await upload(f,false,{folderName:(S.folders.find(x=>x.id===v.folder)||{}).name});await addDoc('docs',{name:f.name,folder:v.folder,kind:'file',assetId:r.id,githubPath:r.path,size:r.sizeBytes,mime:r.contentType});n++}}}),
