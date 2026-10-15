@@ -430,8 +430,11 @@ function persistState(){
     const g=githubSettings();
     return enqueue('github-write',async()=>{
       const url=contentUrl(g,'data/solop-static.json');
-      const current=await fetch(url+'&ref='+encodeURIComponent(g.branch),{headers:{Authorization:'Bearer '+g.token,Accept:'application/vnd.github+json'},cache:'no-store'});
-      if(!current.ok&&current.status!==404)throw new Error('Không đọc được GitHub ('+current.status+'). Dữ liệu vẫn lưu tại trình duyệt.');
+      const current=await fetch(url+'&ref='+encodeURIComponent(g.branch),{headers:{'X-Edit-Password':g.token,Accept:'application/json'},cache:'no-store'});
+      if(!current.ok&&current.status!==404){
+        const error=await current.json().catch(()=>({}));
+        throw new Error((error.message||'Không đọc được GitHub ('+current.status+').')+' Dữ liệu vẫn lưu tại trình duyệt.');
+      }
       const existing=current.ok?await current.json():null;
       const body={message:'Update notebook data',branch:g.branch,content:btoa(unescape(encodeURIComponent(JSON.stringify(payload,null,2))))};
       if(existing)body.sha=existing.sha;

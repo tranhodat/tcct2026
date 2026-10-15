@@ -53,9 +53,13 @@ await assert.rejects(t.upload({name:'a.pdf',type:'application/pdf',size:1},false
 const metadata=[];
 ctx.fetch=async(url,opts)=>{metadata.push({url,...opts});return {ok:true,status:200,json:async()=>opts.method==='PUT'?{}:{sha:'existing-sha'}};};
 await t.persistState();
+assert.equal(metadata[0].headers['X-Edit-Password'],'session-secret');
+assert.equal(metadata[0].headers.Authorization,undefined);
 assert(metadata[0].url.endsWith('&ref=main'));
 assert.equal(JSON.parse(metadata[1].body).sha,'existing-sha');
 assert.equal(JSON.parse(metadata[1].body).branch,'main');
+ctx.fetch=async()=>({ok:false,status:401,json:async()=>({message:'Server authentication rejected'})});
+await assert.rejects(t.persistState(),/Server authentication rejected/);
 JSON.parse(fs.readFileSync('vercel.json','utf8'));
 console.log('PASS: password, five views, recurring calendar, CRUD, persistence, courses, albums, download links, sample cleanup, upload limit, hosting config, identical HTML entrypoints, GitHub upload paths, 3 MB boundary, GitHub errors, token isolation and metadata SHA.');
 })().catch(e=>{console.error(e);process.exitCode=1});
