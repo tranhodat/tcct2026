@@ -10,6 +10,10 @@ async function request(overrides = {}) {
   await handler(req, res); return res;
 }
 (async () => {
+  const config = await request({ method: 'GET', headers: {}, query: { action: 'config' } });
+  assert.equal(config.code, 200);
+  assert.deepEqual(config.data, { repo: 'owner/repo', branch: 'main', configured: true });
+  assert(!JSON.stringify(config.data).includes('server-only-secret'));
   assert.equal((await request({ headers: {} })).code, 401); assert.equal(calls.length, 0);
   assert.equal((await request({ query: { path: 'uploads/../config.js' } })).code, 400);
   assert.equal((await request({ query: { path: 'index.html' } })).code, 400);

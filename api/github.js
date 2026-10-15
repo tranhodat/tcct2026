@@ -8,6 +8,9 @@ module.exports = async function handler(req, res) {
   const repo = process.env.GITHUB_REPO || 'tranhodat/tcct2026';
   const branch = process.env.GITHUB_BRANCH || 'main';
   const password = process.env.EDIT_PASSWORD;
+  if (req.method === 'GET' && req.query.action === 'config') {
+    return res.status(200).json({ repo, branch, configured: Boolean(token && password) });
+  }
   if (!token || !password) return fail(503, 'Vercel cần GITHUB_TOKEN và EDIT_PASSWORD.');
   const supplied = Buffer.from(String(req.headers['x-edit-password'] || ''));
   const expected = Buffer.from(password);

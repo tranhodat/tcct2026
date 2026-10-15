@@ -11,7 +11,7 @@ Set these Vercel environment variables for Production (and Preview if used):
 - GITHUB_BRANCH: main
 - EDIT_PASSWORD: tcct2026
 
-Redeploy after changing environment variables. The browser calls /api/github; only the server sends the GitHub token. config.js contains public repository settings only; keep them consistent with GITHUB_REPO and GITHUB_BRANCH. Never add a token to config.js.
+Redeploy after changing environment variables. The browser calls /api/github; only the server sends the GitHub token. The browser reads public repository settings from /api/github?action=config. config.js is no longer required. Tokens remain server-only.
 
 Enable Edit mode before uploading or changing data. The password is kept in tab memory and sent over HTTPS to authorize API requests. Clear it by disabling Edit mode. Local static servers and GitHub Pages cannot run this API; use Vercel or vercel dev.
 

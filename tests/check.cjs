@@ -28,7 +28,7 @@ await t.delDoc('docs',doc);assert.equal(t.S.docs.length,0);
 await t.unseed();assert.equal(t.S.events.length,0);assert.equal(t.S.anns.length,0);assert.equal(t.S.courses.length,0);assert.equal(t.S.folders.length,1);
 await assert.rejects(t.upload({size:4*1024*1024},false),/Tệp quá lớn/);
 // Upload protocol: no real network or large allocation is needed.
-await assert.rejects(t.upload({name:'file.pdf',type:'application/pdf',size:1},false),/config\.js/);
+await assert.rejects(t.upload({name:'file.pdf',type:'application/pdf',size:1},false),/Edit mode/);
 Object.assign(t.G,{repo:'owner/notebook',branch:'main',token:'session-secret'});
 const requests=[];
 ctx.fetch=async(url,opts)=>{requests.push({url,...opts});return {ok:true,status:201,json:async()=>({content:{path:JSON.parse(opts.body).message.replace('Upload ','')}})};};

@@ -328,7 +328,6 @@ td.c,th.c{text-align:center}
 <div id="lb" hidden></div>
 <div id="toast" role="status" hidden></div>
 
-<script src="./config.js"></script>
 <script>
 (function(){
 'use strict';
@@ -370,7 +369,7 @@ function uploadPath(name,context={},converted=false){
   return dir+'/'+base+'--'+Date.now().toString(36)+'-'+crypto.randomUUID().slice(0,8)+(ext?'.'+ext:'');
 }
 function githubSettings(){
-  if(!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(G.repo)||!G.token)throw new Error('GitHub: config.js (githubRepo, Edit mode).');
+  if(!G.token)throw new Error('Vui lòng bật lại Edit mode trước khi tải tệp.');
   return {...G};
 }
 const contentUrl=(g,path)=>'/api/github?path='+encodeURIComponent(path);
@@ -427,7 +426,7 @@ function persistState(){
   const payload={events:S.events,anns:S.anns,folders:S.folders,docs:S.docs,courses:S.courses,albums:S.albums,settings:{class:S.cls},cls:S.cls,folder:S.folder,courseId:S.courseId,lectureId:S.lectureId,albumId:S.albumId,updatedAt:Date.now()};
   try{localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));}catch(e){loadState();sched();throw new Error('Không lưu được dữ liệu: bộ nhớ trình duyệt đã đầy hoặc bị chặn. Hãy dùng liên kết thay cho tệp lớn.')}
   sched();
-  if(G.repo&&G.token){
+  if(G.token){
     const g=githubSettings();
     return enqueue('github-write',async()=>{
       const url=contentUrl(g,'data/solop-static.json');
@@ -508,7 +507,7 @@ async function upload(f,image,context={}){
   const content=String(dataUrl).split(',')[1];
   const result=await enqueue('github-write',()=>githubRequest(g,contentUrl(g,path),{method:'PUT',body:JSON.stringify({message:'Upload '+path,branch:g.branch,content})}));
   if(!result.content?.path)throw new Error('GitHub chưa xác nhận tệp đã lưu.');
-  const url='https://raw.githubusercontent.com/'+g.repo+'/'+encodeURIComponent(g.branch)+'/'+path.split('/').map(encodeURIComponent).join('/');
+  const url=result.content.download_url||'https://raw.githubusercontent.com/'+g.repo+'/'+encodeURIComponent(g.branch)+'/'+path.split('/').map(encodeURIComponent).join('/');
   return {id:url,path,sizeBytes:blob.size||0,contentType:type};
 }
 const mediaSrc=id=>{const s=String(id||'');return /^(data:|blob:|https?:)/i.test(s)?s:'/_blob/'+s.replace(/^\s+|\s+$/g,'');};
@@ -522,6 +521,10 @@ const ownerName=o=>{const p=S.names[o.createdBy];return(p&&p.name)||''};
 function ensureNames(list){return list}
 
 async function init(){
+  try{
+    const response=await fetch('/api/github?action=config',{cache:'no-store'});
+    if(response.ok){const config=await response.json();G.repo=config.repo||'';G.branch=config.branch||'main';}
+  }catch(e){}
   sched();
   loadState();
   try{
