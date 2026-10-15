@@ -1,0 +1,912 @@
+<!doctype html><html lang="vi"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>K02A02 Notebook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600&display=swap">
+<style>
+/* Layout: ô-ly notebook header with red margin rule, sticky tab strip, one working view below.
+   Palette: ink-blue pen, red margin pen, highlighter yellow for today. */
+:root{
+  --bg:#F4F6FB; --surface:#FFFFFF; --ink:#14213D; --muted:#5A6684; --line:#DCE1EE; --grid:#E6EBF6;
+  --accent:#2446C9; --accent-ink:#FFFFFF; --accent-soft:#E6ECFF;
+  --red:#C73A2D; --red-soft:#FCE9E6;
+  --teal:#0C7F62; --teal-soft:#DDF3EC;
+  --hl:#FFE680; --hl-ink:#14213D;
+  --scrim:rgba(10,15,35,.52);
+  --shadow:0 1px 2px rgba(20,33,61,.06),0 10px 28px rgba(20,33,61,.10);
+  --f-display:'Bricolage Grotesque','Be Vietnam Pro',system-ui,sans-serif;
+  --f-body:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1322; --surface:#161D33; --ink:#E7EBF8; --muted:#9AA4C4; --line:#2A3354; --grid:#1D2644;
+    --accent:#8FA5FF; --accent-ink:#0E1322; --accent-soft:#222C57;
+    --red:#FF8B7B; --red-soft:#3A2024;
+    --teal:#5FD6B1; --teal-soft:#143229;
+    --hl:#E8CB4E; --hl-ink:#1A1500;
+    --scrim:rgba(0,0,0,.62);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1322; --surface:#161D33; --ink:#E7EBF8; --muted:#9AA4C4; --line:#2A3354; --grid:#1D2644;
+  --accent:#8FA5FF; --accent-ink:#0E1322; --accent-soft:#222C57;
+  --red:#FF8B7B; --red-soft:#3A2024;
+  --teal:#5FD6B1; --teal-soft:#143229;
+  --hl:#E8CB4E; --hl-ink:#1A1500;
+  --scrim:rgba(0,0,0,.62);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);-webkit-text-size-adjust:100%}
+body.lock{overflow:hidden}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:700;line-height:1.2;margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{width:100%;max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header */
+.hero{background-color:var(--surface);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;border-bottom:1px solid var(--line)}
+.hero .wrap{padding-block:26px 20px}
+.hero-row{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;border-left:3px solid var(--red);padding-left:14px}
+.hero-txt{min-width:0}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.hero h1{font-size:clamp(26px,5vw,40px);margin-top:4px;overflow-wrap:anywhere}
+.hero h1.unset{color:var(--muted)}
+.hero-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.role{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;background:var(--surface);border:1px solid var(--line)}
+.role i{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.role.admin i{background:var(--red)}.role.officer i{background:var(--accent)}.role.member i{background:var(--teal)}
+
+/* tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs-in{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs-in::-webkit-scrollbar{display:none}
+.tab{appearance:none;background:none;border:0;border-bottom:3px solid transparent;padding:13px 14px 10px;cursor:pointer;color:var(--muted);font-weight:600;white-space:nowrap;display:flex;gap:7px;align-items:center}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.badge{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--red);color:#fff;font-size:12px;display:inline-grid;place-items:center;font-variant-numeric:tabular-nums}
+:root[data-theme="dark"] .badge{color:#2A0E0A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .badge{color:#2A0E0A}}
+
+main .wrap{padding-block:22px 72px}
+.notice{padding:12px 14px;border:1px dashed var(--line);border-radius:10px;background:var(--surface);color:var(--muted);margin-bottom:16px}
+.notice.warn{border-color:var(--red);color:var(--ink)}
+
+/* buttons */
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px;min-height:38px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--red);border-color:var(--red)}
+.btn.danger.solid{background:var(--red);color:#fff}
+.btn.sm{padding:4px 10px;min-height:30px;font-size:13px}
+.btn[disabled]{opacity:.6;cursor:progress}
+.link-btn{appearance:none;border:0;background:none;color:var(--accent);cursor:pointer;padding:2px 4px;font-weight:600;font-size:13px}
+.link-btn.red{color:var(--red)}
+.bar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.bar h2{font-size:22px}
+.bar .grow{flex:1;min-width:0}
+.sub{color:var(--muted);font-size:14px}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.tag.red{background:var(--red-soft);color:var(--red)}
+.tag.teal{background:var(--teal-soft);color:var(--teal)}
+.tag.hl{background:var(--hl);color:var(--hl-ink)}
+.tag.plain{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+
+/* empty */
+.empty{border:1px dashed var(--line);border-radius:12px;padding:28px 20px;text-align:center;color:var(--muted);background:var(--surface)}
+.empty h3{color:var(--ink);font-size:18px;margin-bottom:6px}
+.empty .btn{margin-top:14px}
+
+/* calendar */
+.cal-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+@media (max-width:900px){.cal-layout{grid-template-columns:minmax(0,1fr)}}
+.cal-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cal-head h2{font-size:24px;margin-right:auto;font-variant-numeric:tabular-nums}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.dow{background:var(--surface);text-align:center;font-size:12px;font-weight:600;color:var(--muted);padding:8px 0;letter-spacing:.04em}
+.dow:last-child{color:var(--red)}
+.day{appearance:none;border:0;background:var(--surface);text-align:left;cursor:pointer;min-height:96px;padding:6px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.day:hover{background:var(--accent-soft)}
+.day.out{background:var(--bg);color:var(--muted)}
+.day.sel{box-shadow:inset 0 0 0 2px var(--accent)}
+.day .n{width:26px;height:26px;display:grid;place-items:center;border-radius:50%;font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}
+.day.today .n{background:var(--hl);color:var(--hl-ink)}
+.chips{display:flex;flex-direction:column;gap:2px;min-width:0}
+.chip{display:block;font-size:11.5px;line-height:1.35;padding:2px 6px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.more{font-size:11px;color:var(--muted);padding-left:2px}
+.dots{display:none;gap:4px;flex-wrap:wrap}
+.t-hoc{background:var(--accent-soft);color:var(--accent)}
+.t-hd{background:var(--teal-soft);color:var(--teal)}
+.t-han{background:var(--red-soft);color:var(--red)}
+.dot{width:8px;height:8px;display:inline-block;background:currentColor}
+.dot.t-hoc{border-radius:50%;background:var(--accent)}
+.dot.t-hd{border-radius:2px;background:var(--teal)}
+.dot.t-han{transform:rotate(45deg);background:var(--red)}
+@media (max-width:640px){
+  .day{min-height:58px;padding:4px;align-items:center}
+  .chips{display:none}.dots{display:flex;justify-content:center}
+}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.panel+.panel{margin-top:16px}
+.panel h3{font-size:17px;margin-bottom:2px}
+.panel .kicker{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:6px}
+.ev{display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.ev:first-of-type{border-top:0}
+.ev time{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);font-weight:600;line-height:1.4}
+.ev h4{font-size:15px;font-family:var(--f-body);font-weight:600;overflow-wrap:anywhere}
+.ev p{font-size:13.5px;color:var(--muted);overflow-wrap:anywhere}
+.ev .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;align-items:center}
+.ev-acts{display:flex;flex-direction:column;align-items:flex-end}
+.up{display:grid;grid-template-columns:46px minmax(0,1fr);gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.up:first-of-type{border-top:0}
+.dbox{border:1px solid var(--line);border-radius:8px;text-align:center;padding:3px 0;background:var(--bg);line-height:1.2}
+.dbox b{display:block;font-size:18px;font-family:var(--f-display);font-variant-numeric:tabular-nums}
+.dbox small{font-size:11px;color:var(--muted);text-transform:uppercase}
+.up h4{font-family:var(--f-body);font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.up p{font-size:13px;color:var(--muted)}
+
+/* announcements */
+.ann-list{display:flex;flex-direction:column;gap:14px;max-width:780px}
+.ann{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.ann.pinned{border-color:var(--accent)}
+.ann.imp{border-left:4px solid var(--red)}
+.ann h3{font-size:18px;overflow-wrap:anywhere}
+.ann .head{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.ann .body{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:6px}
+.ann .foot{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:10px}
+.ann .foot .sp{flex:1}
+
+/* docs */
+.split{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:760px){.split{grid-template-columns:minmax(0,1fr)}}
+.folders{display:flex;flex-direction:column;gap:2px}
+@media (max-width:760px){.folders{flex-direction:row;overflow-x:auto;padding-bottom:4px}}
+.folder{appearance:none;border:0;background:none;text-align:left;cursor:pointer;padding:9px 12px;border-radius:9px;display:flex;justify-content:space-between;gap:10px;font-weight:500;white-space:nowrap}
+.folder:hover{background:var(--accent-soft)}
+.folder[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+.folder .c{font-variant-numeric:tabular-nums;opacity:.75;font-size:13px}
+.files{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.file{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 14px;border-top:1px solid var(--line)}
+.file:first-child{border-top:0}
+.ext{font-size:11px;font-weight:700;letter-spacing:.04em;text-align:center;padding:6px 0;border-radius:7px;background:var(--accent-soft);color:var(--accent)}
+.ext.LINK{background:var(--teal-soft);color:var(--teal)}
+.ext.PDF{background:var(--red-soft);color:var(--red)}
+.file .nm{font-weight:600;overflow-wrap:anywhere;text-decoration:none;color:var(--ink)}
+.file a.nm:hover{color:var(--accent);text-decoration:underline}
+.file .mt{font-size:13px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lst{list-style:none;margin:0;padding:0}
+.lst .file{padding:9px 0;grid-template-columns:48px minmax(0,1fr) auto}
+
+/* courses */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{appearance:none;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.card h3{font-size:18px;overflow-wrap:anywhere}
+.card .sub{overflow-wrap:anywhere}
+.lec-layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.lec-layout{grid-template-columns:minmax(0,1fr)}}
+.lec-nav{display:flex;flex-direction:column;gap:2px;counter-reset:l}
+.lec-btn{appearance:none;border:0;background:none;text-align:left;cursor:pointer;padding:10px 12px;border-radius:9px;display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;align-items:start}
+.lec-btn:hover{background:var(--accent-soft)}
+.lec-btn[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+.lec-btn .no{font-family:var(--f-display);font-weight:700;font-variant-numeric:tabular-nums;opacity:.75;color:inherit}
+.lec-btn span:last-child{overflow-wrap:anywhere}
+.sect{margin-top:22px}
+.sect:first-of-type{margin-top:12px}
+.sect-h{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.sect-h h4{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-family:var(--f-body);font-weight:600}
+.note{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-left:3px solid var(--hl);padding:10px 14px;border-radius:0 8px 8px 0}
+.muted{color:var(--muted)}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+
+/* albums */
+.album{appearance:none;padding:0;overflow:hidden;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;cursor:pointer;display:flex;flex-direction:column;min-width:0}
+.album:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.cover{aspect-ratio:4/3;background:repeating-linear-gradient(135deg,var(--bg) 0 10px,var(--grid) 10px 20px);display:block;width:100%;object-fit:cover;max-width:100%}
+.album .in{padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.album h3{font-size:17px;overflow-wrap:anywhere}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.ph{appearance:none;border:0;padding:0;background:var(--grid);cursor:zoom-in;aspect-ratio:1/1;overflow:hidden;border-radius:8px;display:block;position:relative}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;max-width:100%}
+img.broken{visibility:hidden}
+.thumb-wrap{position:relative}
+.thumb-wrap .x{position:absolute;top:4px;right:4px}
+.mini{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+
+/* roles table */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:520px}
+th,td{padding:10px 14px;text-align:left;border-top:1px solid var(--line);font-size:14px}
+thead th{border-top:0;font-family:var(--f-display);font-size:15px;background:var(--bg)}
+td.c,th.c{text-align:center}
+.yes{color:var(--teal);font-weight:700}
+.no{color:var(--muted)}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+@media (max-width:760px){.three{grid-template-columns:minmax(0,1fr)}}
+.rc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.rc.me{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.rc h3{font-size:17px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rc p{font-size:13.5px;color:var(--muted);margin-top:4px}
+.steps{margin:8px 0 0;padding-left:20px}
+.steps li{margin:4px 0}
+
+/* modal */
+#modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.scrim{position:absolute;inset:0;background:var(--scrim)}
+.sheet{position:relative;width:100%;max-width:520px;max-height:calc(100% - 8px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sheet>*{grid-column:1/-1}
+.sheet h2{font-size:21px}
+.sheet .intro{color:var(--muted);font-size:14px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.sheet>.field.half{grid-column:auto}
+.field label{font-weight:600;font-size:13.5px}
+.field small{color:var(--muted);font-size:12.5px}
+.req{color:var(--red)}
+.field input:not([type=checkbox]),.field select,.field textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 11px;min-height:40px}
+.field textarea{resize:vertical}
+.field input[type=file]{padding:8px;background:var(--bg)}
+.field.check{flex-direction:row;align-items:center;gap:10px}
+.field.check input{width:18px;height:18px;accent-color:var(--accent)}
+.err{color:var(--red);background:var(--red-soft);padding:9px 12px;border-radius:9px;font-size:14px}
+.sheet-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+@media (max-width:560px){
+  #modal{align-items:flex-end;padding:0}
+  .sheet{max-width:none;border-radius:16px 16px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+}
+@media (max-width:760px){
+  .hero .wrap{padding-block:18px 14px}
+  .hero-row{align-items:flex-start;gap:12px}
+  .hero-tools{width:100%;justify-content:space-between}
+  .role{flex:1;justify-content:center}
+  #authBtn{flex:1;justify-content:center}
+  .cal-head{align-items:flex-start}
+  .cal-head h2{font-size:20px;flex-basis:100%;margin-right:0}
+  .bar,.sect-h,.sheet-actions{align-items:flex-start}
+  .bar h2,.sect-h h4{font-size:18px}
+  .grid{grid-template-columns:1fr}
+  .split,.lec-layout,.cal-layout{grid-template-columns:1fr}
+  .ev{grid-template-columns:64px minmax(0,1fr)}
+  .ev-acts{grid-column:2;align-items:flex-start;padding-top:4px}
+  .ann{padding:14px}
+  .file{grid-template-columns:46px minmax(0,1fr)}
+  .file .mt{gap:4px}
+  .shell-actions{display:none}
+}
+@media (max-width:420px){
+  .wrap{padding-left:12px;padding-right:12px}
+  .tab{padding-inline:10px}
+  .hero-tools{gap:8px}
+  .btn, .btn.sm{padding-inline:10px}
+  .mgrid{grid-template-columns:repeat(7,minmax(28px,1fr))}
+  .day{min-height:64px;padding:2px}
+  .day .n{width:20px;height:20px;font-size:12px}
+  .panel{padding:12px}
+  .three{grid-template-columns:1fr}
+  .sheet{padding:16px;grid-template-columns:1fr}
+}
+
+/* lightbox */
+#lb{position:fixed;inset:0;z-index:60;background:rgba(5,8,20,.94);display:flex;align-items:center;justify-content:center;padding:64px 16px}
+#lb img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+#lb .lbtn{position:absolute;appearance:none;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;border-radius:999px;min-width:44px;height:44px;padding:0 14px;cursor:pointer;font-weight:600}
+#lb .lbtn:hover{background:rgba(255,255,255,.24)}
+#lb .close{top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px))}
+#lb .del{top:calc(12px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px))}
+#lb .prev{left:max(12px,env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%)}
+#lb .next{right:max(12px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%)}
+#lb .cnt{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;color:#fff;font-variant-numeric:tabular-nums;font-size:14px}
+
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:80;max-width:calc(100% - 32px);box-shadow:var(--shadow);font-size:14px}
+@media (prefers-reduced-motion:no-preference){.card,.album,.btn,.day{transition:border-color .15s,box-shadow .15s,background-color .15s}}
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-row">
+      <div class="hero-txt">
+        <div class="eyebrow" id="eyebrow" hidden>Thông tin lớp</div>
+        <h1 id="clsName">K02A02 Notebook</h1>
+      </div>
+      <div class="hero-tools"><div class="role" id="roleChip"><i></i><span>Đang tải…</span></div><button class="btn sm" id="authBtn" data-act="editMode">Edit mode</button></div>
+    </div>
+  </div>
+</header>
+<nav class="tabs" aria-label="Chức năng">
+  <div class="wrap"><div class="tabs-in" id="tabs" role="tablist"></div></div>
+</nav>
+<main><div class="wrap" id="view"></div></main>
+<div id="modal" hidden></div>
+<div id="lb" hidden></div>
+<div id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+'use strict';
+const CONFIG={githubRepo:'',githubToken:'',githubBranch:'main',appName:'K02A02 Notebook',...(window.CLASS_CONFIG||{})};
+const EDIT_PASSWORD_HASH='ae2143a1fec8f3a3510d08873ba9f3b1adef85b167d9f75f6b401af50eb7deaa';
+async function verifyPassword(value){
+const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(value),'PBKDF2',false,['deriveBits']);
+const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode('K02A02-Notebook-edit-v1'),iterations:210000,hash:'SHA-256'},key,256);
+return Array.from(new Uint8Array(bits),b=>b.toString(16).padStart(2,'0')).join('')===(CONFIG.editPasswordHash||EDIT_PASSWORD_HASH);
+}
+const STORAGE_KEY='solop-static-v1';
+const $=(s,r)=>(r||document).querySelector(s);
+const toList=v=>Array.isArray(v)?v:String(v||'').split(',').map(x=>x.trim()).filter(Boolean);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const a=s.split('-').map(Number);return new Date(a[0],a[1]-1,a[2])};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
+const DOW=['Chủ nhật','Thứ hai','Thứ ba','Thứ tư','Thứ năm','Thứ sáu','Thứ bảy'];
+const longDate=s=>{const d=parse(s);return DOW[d.getDay()]+', '+d.getDate()+' tháng '+(d.getMonth()+1)+', '+d.getFullYear()};
+const shortDate=s=>{const d=parse(s);return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()};
+const stamp=ms=>{const d=new Date(ms);return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes())};
+const fmtSize=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
+const uid=()=>Math.random().toString(36).slice(2,10);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const linkify=t=>esc(t).replace(/https?:\/\/[^\s<]+/g,u=>'<a href="'+u+'" target="_blank" rel="noopener noreferrer">'+u+'</a>');
+const store={get:k=>{try{return localStorage.getItem('solop.'+k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem('solop.'+k,v)}catch(e){}}};
+
+// Only repository and branch are remembered; the token stays in memory.
+const G={repo:CONFIG.githubRepo||store.get('githubRepo')||'',branch:store.get('githubBranch')||CONFIG.githubBranch||'main',token:CONFIG.githubToken||''};
+const MAX_UPLOAD_BYTES=100*1024*1024;
+const slug=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[đĐ]/g,'d').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,70)||'chua-phan-loai';
+function uploadPath(name,context={},converted=false){
+  const ext=converted?'jpg':String(name).split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'');
+  const base=slug(String(name).replace(/\.[^.]+$/,''));
+  let dir='uploads/tai-lieu/'+slug(context.folderName||'chua-phan-loai');
+  if(context.kind==='course')dir='uploads/hoc-phan/'+slug(context.courseName)+'--'+slug(context.courseId)+'/'+slug(context.lectureName)+'--'+slug(context.lectureId)+'/'+context.section;
+  if(context.kind==='album')dir='uploads/album/'+slug(context.date||'khong-ngay')+'-'+slug(context.albumName)+'--'+slug(context.albumId);
+  return dir+'/'+base+'--'+Date.now().toString(36)+'-'+crypto.randomUUID().slice(0,8)+(ext?'.'+ext:'');
+}
+function githubSettings(){
+  if(!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(G.repo)||!G.token)throw new Error('Mở “Kết nối GitHub” và nhập repository cùng token trước khi tải tệp.');
+  return {...G};
+}
+const contentUrl=(g,path)=>'https://api.github.com/repos/'+g.repo+'/contents/'+path.split('/').map(encodeURIComponent).join('/');
+async function githubRequest(g,url,options={}){
+  const response=await fetch(url,{...options,headers:{Authorization:'Bearer '+g.token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',...(options.headers||{})}});
+  if(!response.ok){const e=await response.json().catch(()=>({}));throw new Error('GitHub ('+response.status+'): '+(e.message||'Không thực hiện được yêu cầu.'));}
+  return response.json();
+}
+function lectureUploadContext(c,l,section){return {kind:'course',courseName:c.code?c.code+'-'+c.name:c.name,courseId:c.id,lectureName:l.title,lectureId:l.id,section};}
+function albumUploadContext(a){return {kind:'album',albumName:a.title,albumId:a.id,date:a.date};}
+
+const TYPES={hoc:'Buổi học',hd:'Hoạt động',han:'Hạn nộp · Thi'};
+const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh']];
+const ROLE={admin:['Quản trị','admin'],officer:['Cán bộ lớp','officer'],member:['Thành viên','member'],unknown:['Quyền chưa xác định','member'],guest:['Khách','member']};
+const OK_TYPES=['image/png','image/jpeg','image/gif','image/webp','image/svg+xml','video/mp4','video/webm','application/pdf','text/csv','text/markdown','application/json','text/plain'];
+const EXT={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',mp4:'video/mp4',webm:'video/webm',csv:'text/csv',md:'text/markdown',json:'application/json',txt:'text/plain'};
+const ACCEPT_ALL='.pdf,.png,.jpg,.jpeg,.gif,.webp,.svg,.mp4,.webm,.csv,.md,.json,.txt';
+const ACCEPT_IMG='.png,.jpg,.jpeg,.gif,.webp';
+
+const now=new Date();
+const S={db:null,user:null,assets:null,me:{id:null},role:'member',ro:false,ready:false,noDb:false,editMode:false,
+  tab:store.get('tab')||'lich',loaded:{},err:null,names:{},asked:{},
+  events:[],anns:[],folders:[],docs:[],courses:[],albums:[],cls:{},
+  cal:{y:now.getFullYear(),m:now.getMonth(),sel:iso(now)},
+  folder:'all',courseId:null,lectureId:null,albumId:null,lb:null,
+  annSeen:+(store.get('annSeen')||0),newCut:+(store.get('annSeen')||0)};
+if(!TABS.some(t=>t[0]===S.tab))S.tab='lich';
+
+const W=()=>S.editMode;
+const A=()=>S.editMode;
+const mine=o=>S.editMode;
+
+let raf=0;
+function sched(){cancelAnimationFrame(raf);raf=requestAnimationFrame(render)}
+function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>{t.hidden=true},3800)}
+function friendly(e){
+  const c=e&&e.code;
+  if(c==='invalid_argument'){if(S.role==='unknown'){S.ro=true;sched()}return 'Bạn chưa có quyền thực hiện thao tác này. Cần quyền Cán bộ lớp hoặc Quản trị.'}
+  if(c==='quota_exceeded')return 'Kho dữ liệu của trang đã đầy. Hãy xoá bớt nội dung cũ.';
+  if(c==='resource_exhausted'||c==='rate_limited')return 'Thao tác quá nhanh, hãy thử lại sau vài giây.';
+  if(c==='unavailable'||c==='store_unavailable')return 'Hệ thống đang bận, hãy thử lại sau ít phút.';
+  if(c==='too_large')return 'Tệp quá lớn (tối đa 100 MB mỗi tệp).';
+  if(c==='unsupported_type')return 'Định dạng tệp này chưa được hỗ trợ.';
+  if(c==='quota_or_state')return 'Dung lượng lưu trữ của trang đã đầy.';
+  if(c==='revoked')return 'Quyền truy cập đã thay đổi. Hãy tải lại trang.';
+  return (e&&e.message)||'Có lỗi xảy ra, hãy thử lại.';
+}
+
+/* ---------- data ---------- */
+const queues={};
+const stateKey={announcements:'anns'};
+const stateList=col=>S[stateKey[col]||col];
+function persistState(){
+  const payload={events:S.events,anns:S.anns,folders:S.folders,docs:S.docs,courses:S.courses,albums:S.albums,settings:{class:S.cls},cls:S.cls,folder:S.folder,courseId:S.courseId,lectureId:S.lectureId,albumId:S.albumId,updatedAt:Date.now()};
+  try{localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));}catch(e){loadState();sched();throw new Error('Không lưu được dữ liệu: bộ nhớ trình duyệt đã đầy hoặc bị chặn. Hãy dùng liên kết thay cho tệp lớn.')}
+  sched();
+  if(G.repo&&G.token){
+    const g=githubSettings();
+    return enqueue('github-write',async()=>{
+      const url=contentUrl(g,'data/solop-static.json');
+      const current=await fetch(url+'?ref='+encodeURIComponent(g.branch),{headers:{Authorization:'Bearer '+g.token,Accept:'application/vnd.github+json'},cache:'no-store'});
+      if(!current.ok&&current.status!==404)throw new Error('Không đọc được GitHub ('+current.status+'). Dữ liệu vẫn lưu tại trình duyệt.');
+      const existing=current.ok?await current.json():null;
+      const body={message:'Update notebook data',branch:g.branch,content:btoa(unescape(encodeURIComponent(JSON.stringify(payload,null,2))))};
+      if(existing)body.sha=existing.sha;
+      await githubRequest(g,url,{method:'PUT',body:JSON.stringify(body)});
+    });
+  }
+}
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return;
+    const state=JSON.parse(raw);
+    S.events=Array.isArray(state.events)?state.events:[];
+    S.anns=Array.isArray(state.anns)?state.anns:[];
+    S.folders=Array.isArray(state.folders)?state.folders:[];
+    S.docs=Array.isArray(state.docs)?state.docs:[];
+    S.courses=Array.isArray(state.courses)?state.courses:[];
+    S.albums=Array.isArray(state.albums)?state.albums:[];
+    S.cls=state.cls|| (state.settings&&state.settings.class) || {};
+    if(state.settings&&state.settings.class) S.cls=state.settings.class;
+    if(state.folder) S.folder=state.folder;
+    if(state.courseId) S.courseId=state.courseId;
+    if(state.lectureId) S.lectureId=state.lectureId;
+    if(state.albumId) S.albumId=state.albumId;
+    S.loaded={events:true,anns:true,folders:true,docs:true,courses:true,albums:true,cls:true};
+  }catch(e){}
+}
+function enqueue(key,fn){const p=(queues[key]||Promise.resolve()).catch(()=>{}).then(fn);queues[key]=p;return p}
+function saveDoc(col,id,data){return enqueue(col+'/'+id,async()=>{if(col==='settings'){S.cls={...(S.cls||{}),...data};await persistState();return;} const arr=stateList(col)||[]; const idx=arr.findIndex(x=>x.id===id); if(idx>=0){Object.assign(arr[idx],data);} else {arr.push({id,...data});} await persistState();})}
+async function addDoc(col,data){const entry=Object.assign({id:uid(),createdBy:S.me.id||null,createdAt:Date.now()},data); const arr=stateList(col); if(!arr)throw new Error('Không tìm thấy danh sách dữ liệu: '+col); arr.push(entry); await persistState(); return entry.id}
+function delDoc(col,id){return enqueue(col+'/'+id,async()=>{const arr=stateList(col)||[]; const idx=arr.findIndex(x=>x.id===id); if(idx>=0) arr.splice(idx,1); await persistState();})}
+function mutate(col,list,id,fn){
+  return enqueue(col+'/'+id,async()=>{
+    const cur=S[list].find(x=>x.id===id);
+    if(!cur)throw new Error('Mục này không còn tồn tại.');
+    const n=clone(cur);delete n.id;fn(n);
+    const idx=S[list].findIndex(x=>x.id===id); if(idx>=0){ S[list][idx]={...S[list][idx], ...n, id}; }
+    await persistState();
+  });
+}
+async function dropAssets(ids){
+  if(!ids||!ids.length)return;
+}
+function guessType(f){
+  if(OK_TYPES.indexOf(f.type)>=0)return f.type;
+  const ext=(f.name.split('.').pop()||'').toLowerCase();
+  if(EXT[ext])return EXT[ext];
+  const err=new Error('Không thể tải lên tệp “'+f.name+'”. Chỉ nhận PDF, ảnh, video MP4/WebM, CSV, TXT, Markdown, JSON. Với Word, PowerPoint, Excel hãy xuất sang PDF hoặc dùng “Thêm liên kết”.');
+  throw err;
+}
+async function shrink(f){
+  if(!/^image\/(jpeg|png|webp)$/.test(f.type))return f;
+  try{
+    const bmp=await createImageBitmap(f);
+    const sc=Math.min(1,1800/Math.max(bmp.width,bmp.height));
+    if(sc===1&&f.size<1500000)return f;
+    const c=document.createElement('canvas');c.width=Math.round(bmp.width*sc);c.height=Math.round(bmp.height*sc);
+    c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+    const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.86));
+    return(b&&b.size<f.size)?b:f;
+  }catch(e){return f}
+}
+async function upload(f,image,context={}){
+  if(f.size>MAX_UPLOAD_BYTES)throw Object.assign(new Error('Tệp quá lớn.'),{code:'too_large'});
+  const g=githubSettings();
+  let type=guessType(f),blob=f;
+  if(image){
+    if(type.indexOf('image/')!==0)throw new Error('“'+f.name+'” không phải là ảnh.');
+    blob=await shrink(f);if(blob!==f)type='image/jpeg';
+  }
+  const path=uploadPath(f.name,context,blob!==f);
+  const reader=new FileReader();
+  const dataUrl=await new Promise((resolve,reject)=>{reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Không thể đọc tệp.'));reader.readAsDataURL(blob);});
+  const content=String(dataUrl).split(',')[1];
+  const result=await enqueue('github-write',()=>githubRequest(g,contentUrl(g,path),{method:'PUT',body:JSON.stringify({message:'Upload '+path,branch:g.branch,content})}));
+  if(!result.content?.path)throw new Error('GitHub chưa xác nhận tệp đã lưu.');
+  const url='https://raw.githubusercontent.com/'+g.repo+'/'+encodeURIComponent(g.branch)+'/'+path.split('/').map(encodeURIComponent).join('/');
+  return {id:url,path,sizeBytes:blob.size||0,contentType:type};
+}
+const mediaSrc=id=>{const s=String(id||'');return /^(data:|blob:|https?:)/i.test(s)?s:'/_blob/'+s.replace(/^\s+|\s+$/g,'');};
+const itemHref=it=>it.kind==='link'?(/^https?:\/\//i.test(it.link||'')?it.link:'#'):mediaSrc(it.assetId);
+function kindLabel(it){
+  if(it.kind==='link')return 'LINK';const m=it.mime||'';
+  if(m==='application/pdf')return 'PDF';if(m.indexOf('image/')===0)return 'ẢNH';if(m.indexOf('video/')===0)return 'VIDEO';
+  if(m==='text/csv')return 'CSV';return 'TỆP';
+}
+const ownerName=o=>{const p=S.names[o.createdBy];return(p&&p.name)||''};
+function ensureNames(list){return list}
+
+async function init(){
+  sched();
+  loadState();
+  try{
+    const url=G.repo?'https://raw.githubusercontent.com/'+G.repo+'/'+encodeURIComponent(G.branch)+'/data/solop-static.json':'./data/solop-static.json';
+    const response=await fetch(url,{cache:'no-store'});
+    if(response.ok){const remote=await response.json();const local=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!local||(remote.updatedAt||0)>(local.updatedAt||0)){localStorage.setItem(STORAGE_KEY,JSON.stringify(remote));loadState();}}
+  }catch(e){}
+  S.ready=true;
+  S.noDb=true;
+  S.role='member';
+  S.editMode=false;
+  {
+    S.loaded={events:true,anns:true,folders:true,docs:true,courses:true,albums:true,cls:true};
+  }
+  sched();
+}
+
+/* ---------- modal ---------- */
+function fieldHtml(f){
+  const id='f_'+f.name,v=f.value==null?'':f.value;let ctl;
+  if(f.type==='checkbox')return '<div class="field check"><input type="checkbox" id="'+id+'" name="'+f.name+'"'+(f.value?' checked':'')+'><label for="'+id+'">'+esc(f.label)+'</label></div>';
+  if(f.type==='textarea')ctl='<textarea id="'+id+'" name="'+f.name+'" rows="'+(f.rows||4)+'" placeholder="'+esc(f.placeholder||'')+'">'+esc(v)+'</textarea>';
+  else if(f.type==='select')ctl='<select id="'+id+'" name="'+f.name+'">'+f.options.map(o=>'<option value="'+esc(o[0])+'"'+(String(o[0])===String(v)?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>';
+  else if(f.type==='file')ctl='<input id="'+id+'" name="'+f.name+'" type="file"'+(f.multiple?' multiple':'')+' accept="'+esc(f.accept||'')+'">';
+  else ctl='<input id="'+id+'" name="'+f.name+'" type="'+(f.type||'text')+'" value="'+esc(v)+'" placeholder="'+esc(f.placeholder||'')+'"'+(f.min!=null?' min="'+f.min+'"':'')+(f.max!=null?' max="'+f.max+'"':'')+' autocomplete="off">';
+  return '<div class="field'+(f.half?' half':'')+'"><label for="'+id+'">'+esc(f.label)+(f.required?' <span class="req">*</span>':'')+'</label>'+ctl+(f.hint?'<small>'+esc(f.hint)+'</small>':'')+'</div>';
+}
+function closeModal(){const m=$('#modal');m.hidden=true;m.innerHTML='';document.body.classList.remove('lock')}
+function openForm(o){
+  const m=$('#modal');
+  m.innerHTML='<div class="scrim" data-act="closeModal"></div><form class="sheet" id="mform" novalidate role="dialog" aria-modal="true" aria-labelledby="mtitle"><h2 id="mtitle">'+esc(o.title)+'</h2>'+(o.intro?'<p class="intro">'+esc(o.intro)+'</p>':'')+(o.fields||[]).map(fieldHtml).join('')+'<p class="err" id="merr" role="alert" hidden></p><div class="sheet-actions"><button type="button" class="btn ghost" data-act="closeModal">Huỷ</button><button class="btn '+(o.danger?'danger solid':'primary')+'" type="submit" id="msubmit">'+esc(o.submit||'Lưu')+'</button></div></form>';
+  m.hidden=false;document.body.classList.add('lock');
+  const form=$('#mform'),btn=$('#msubmit'),err=$('#merr');
+  const first=form.querySelector('input:not([type=checkbox]),textarea,select');if(first)first.focus();
+  form.addEventListener('submit',async ev=>{
+    ev.preventDefault();err.hidden=true;
+    const vals={};
+    for(const f of(o.fields||[])){
+      const el=form.elements[f.name];
+      if(f.type==='file')vals[f.name]=[...el.files];
+      else if(f.type==='checkbox')vals[f.name]=el.checked;
+      else vals[f.name]=f.type==='password'?el.value:(el.value||'').trim();
+      const empty=f.type==='file'?!vals[f.name].length:vals[f.name]==='';
+      if(f.required&&empty){err.textContent='Vui lòng '+(f.type==='file'?'chọn':'nhập')+' “'+f.label+'”.';err.hidden=false;el.focus();return}
+    }
+    const label=btn.textContent;btn.disabled=true;
+    try{await o.onSubmit(vals,t=>{btn.textContent=t});closeModal();render()}
+    catch(e){err.textContent=friendly(e);err.hidden=false;btn.disabled=false;btn.textContent=label}
+  });
+}
+function confirmBox(title,intro,submit,fn){openForm({title,intro,submit,danger:true,fields:[],onSubmit:fn})}
+
+/* ---------- lightbox ---------- */
+function openLb(ids,i,albumId){S.lb={ids,i,albumId:albumId||null};renderLb()}
+function renderLb(){
+  const el=$('#lb'),b=S.lb;
+  if(!b){el.hidden=true;el.innerHTML='';document.body.classList.remove('lock');return}
+  document.body.classList.add('lock');el.hidden=false;
+  const many=b.ids.length>1;
+  el.innerHTML='<img src="'+esc(mediaSrc(b.ids[b.i]))+'" alt="Ảnh '+(b.i+1)+' trên '+b.ids.length+'">'
+   +'<button class="lbtn close" data-act="lbClose" aria-label="Đóng">Đóng</button>'
+   +(b.albumId&&W()?'<button class="lbtn del" data-act="lbDel">Xoá ảnh</button>':'')
+   +(many?'<button class="lbtn prev" data-act="lbPrev" aria-label="Ảnh trước">‹</button><button class="lbtn next" data-act="lbNext" aria-label="Ảnh sau">›</button>':'')
+   +'<div class="cnt">'+(b.i+1)+' / '+b.ids.length+'</div>';
+}
+
+/* ---------- calendar ---------- */
+function occurrences(){
+  const out=[];
+  for(const e of S.events){
+    if(!e.date)continue;
+    const w=Math.max(1,Math.min(52,+e.weeks||1));
+    for(let k=0;k<w;k++)out.push(Object.assign({},e,{date:addDays(e.date,7*k),k,w}));
+  }
+  return out;
+}
+const cmpOcc=(a,b)=>(a.date+(a.start||'00:00')).localeCompare(b.date+(b.start||'00:00'))||String(a.title).localeCompare(String(b.title));
+const timeOf=o=>o.start?(o.end?o.start+'–'+o.end:o.start):'Cả ngày';
+function chipHtml(o){return '<span class="chip '+esc('t-'+o.type)+'">'+(o.start?esc(o.start)+' ':'')+esc(o.title)+'</span>'}
+function evRow(o){
+  const t=TYPES[o.type]||TYPES.hoc;
+  return '<div class="ev"><time>'+esc(timeOf(o))+'</time><div><h4>'+esc(o.title)+'</h4><div class="meta"><span class="tag '+(o.type==='han'?'red':o.type==='hd'?'teal':'')+'">'+esc(t)+'</span>'+(o.place?'<span class="sub">'+esc(o.place)+'</span>':'')+(o.w>1?'<span class="tag plain">Hàng tuần · '+(o.k+1)+'/'+o.w+'</span>':'')+(o.sample?'<span class="tag hl">Ví dụ</span>':'')+'</div>'+(o.note?'<p>'+esc(o.note)+'</p>':'')+'</div><div class="ev-acts">'+(W()&&mine(o)?'<button class="link-btn" data-act="editEvent" data-id="'+esc(o.id)+'">Sửa</button><button class="link-btn red" data-act="delEvent" data-id="'+esc(o.id)+'">Xoá'+(o.w>1?' chuỗi':'')+'</button>':'')+'</div></div>';
+}
+function viewLich(){
+  const y=S.cal.y,m=S.cal.m,todayIso=iso(new Date());
+  const occ=occurrences(),by={};
+  occ.forEach(o=>{(by[o.date]=by[o.date]||[]).push(o)});
+  Object.keys(by).forEach(k=>by[k].sort(cmpOcc));
+  const off=(new Date(y,m,1).getDay()+6)%7,dim=new Date(y,m+1,0).getDate(),rows=Math.ceil((off+dim)/7);
+  let cells='';
+  for(let i=0;i<rows*7;i++){
+    const d=new Date(y,m,1-off+i),s=iso(d),list=by[s]||[],out=d.getMonth()!==m;
+    cells+='<button type="button" class="day'+(out?' out':'')+(s===todayIso?' today':'')+(s===S.cal.sel?' sel':'')+'" data-act="selDay" data-date="'+s+'" aria-label="'+esc(longDate(s))+(list.length?', '+list.length+' mục':'')+'" aria-pressed="'+(s===S.cal.sel)+'"><span class="n">'+d.getDate()+'</span><span class="chips">'+list.slice(0,2).map(chipHtml).join('')+(list.length>2?'<span class="more">+'+(list.length-2)+' nữa</span>':'')+'</span><span class="dots">'+list.slice(0,4).map(o=>'<i class="dot t-'+esc(o.type)+'"></i>').join('')+'</span></button>';
+  }
+  const dow=['T2','T3','T4','T5','T6','T7','CN'].map(x=>'<div class="dow">'+x+'</div>').join('');
+  const sel=by[S.cal.sel]||[];
+  const upcoming=occ.filter(o=>o.date>=todayIso).sort(cmpOcc).slice(0,6);
+  const emptyAll=S.loaded.events&&!S.events.length;
+  return '<div class="cal-head"><h2>Tháng '+(m+1)+', '+y+'</h2><button class="btn sm" data-act="calToday">Hôm nay</button><button class="btn sm" data-act="calPrev" aria-label="Tháng trước">‹ Trước</button><button class="btn sm" data-act="calNext" aria-label="Tháng sau">Sau ›</button>'+(W()?'<button class="btn primary" data-act="addEvent">+ Thêm lịch</button>':'')+'</div>'
+  +(emptyAll?'<div class="empty" style="margin-bottom:16px"><h3>Chưa có lịch nào</h3><p>'+(W()?'Bấm “Thêm lịch” để tạo buổi học, hạn nộp bài hoặc hoạt động của lớp.':'Cán bộ lớp sẽ thêm lịch học và hoạt động tại đây.')+'</p>'+(A()?'<button class="btn" data-act="seed">Thêm dữ liệu mẫu</button>':'')+'</div>':'')
+  +'<div class="cal-layout"><div><div class="mgrid">'+dow+cells+'</div><div class="legend"><span><i class="dot t-hoc"></i>Buổi học</span><span><i class="dot t-hd"></i>Hoạt động</span><span><i class="dot t-han"></i>Hạn nộp · Thi</span></div></div>'
+  +'<aside><div class="panel"><div class="kicker">Ngày đã chọn</div><h3>'+esc(longDate(S.cal.sel))+'</h3>'+(sel.length?sel.map(evRow).join(''):'<p class="sub" style="margin-top:8px">Không có lịch trong ngày này.</p>')+(W()?'<div style="margin-top:12px"><button class="btn sm" data-act="addEvent">+ Thêm vào ngày này</button></div>':'')+'</div>'
+  +'<div class="panel"><div class="kicker">Sắp tới</div>'+(upcoming.length?upcoming.map(o=>{const d=parse(o.date);return '<div class="up"><div class="dbox"><b>'+d.getDate()+'</b><small>Th '+(d.getMonth()+1)+'</small></div><div><h4>'+esc(o.title)+'</h4><p>'+esc(DOW[d.getDay()])+' · '+esc(timeOf(o))+(o.place?' · '+esc(o.place):'')+'</p></div></div>'}).join(''):'<p class="sub">Chưa có lịch sắp tới.</p>')+'</div></aside></div>';
+}
+function eventForm(e){
+  const edit=!!e;
+  openForm({title:edit?'Sửa lịch':'Thêm lịch',submit:edit?'Lưu thay đổi':'Thêm lịch',fields:[
+    {name:'title',label:'Tên buổi học / hoạt động',required:true,value:edit?e.title:'',placeholder:'VD: Học lý thuyết · Nhập môn Lập trình'},
+    {name:'type',label:'Loại',type:'select',options:Object.keys(TYPES).map(k=>[k,TYPES[k]]),value:edit?e.type:'hoc'},
+    {name:'date',label:'Ngày',type:'date',required:true,value:edit?e.date:S.cal.sel,half:true},
+    {name:'weeks',label:'Lặp hàng tuần (số tuần)',type:'number',min:1,max:52,value:edit?(e.weeks||1):1,half:true,hint:'Để 1 nếu chỉ diễn ra một lần.'},
+    {name:'start',label:'Bắt đầu',type:'time',value:edit?e.start:'',half:true},
+    {name:'end',label:'Kết thúc',type:'time',value:edit?e.end:'',half:true},
+    {name:'place',label:'Địa điểm / hình thức',value:edit?e.place:'',placeholder:'Phòng học, link họp trực tuyến…'},
+    {name:'note',label:'Ghi chú',type:'textarea',rows:3,value:edit?e.note:''}
+  ],onSubmit:async v=>{
+    const data={title:v.title,type:v.type,date:v.date,weeks:Math.max(1,Math.min(52,parseInt(v.weeks,10)||1)),start:v.start,end:v.end,place:v.place,note:v.note};
+    if(edit)await mutate('events','events',e.id,n=>Object.assign(n,data));
+    else await addDoc('events',data);
+    S.cal.sel=v.date;const d=parse(v.date);S.cal.y=d.getFullYear();S.cal.m=d.getMonth();
+  }});
+}
+
+/* ---------- announcements ---------- */
+function viewThongBao(){
+  const list=S.anns.slice().sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.createdAt-a.createdAt);
+  let h='<div class="bar"><div class="grow"><h2>Thông báo hoạt động</h2><p class="sub">Tin mới nhất của lớp, tin ghim hiển thị đầu danh sách.</p></div>'+(W()?'<button class="btn primary" data-act="addAnn">+ Đăng thông báo</button>':'')+'</div>';
+  if(!S.loaded.anns)return h+'<p class="sub">Đang tải…</p>';
+  if(!list.length)return h+'<div class="empty"><h3>Chưa có thông báo</h3><p>'+(W()?'Đăng thông báo đầu tiên để cả lớp cùng nắm thông tin.':'Khi cán bộ lớp đăng thông báo, bạn sẽ thấy tại đây.')+'</p>'+(A()?'<button class="btn" data-act="seed">Thêm dữ liệu mẫu</button>':'')+'</div>';
+  return h+'<div class="ann-list">'+list.map(a=>{
+    const who=ownerName(a)||(a.authorRole==='admin'?'Quản trị':'Cán bộ lớp');
+    return '<article class="ann'+(a.pinned?' pinned':'')+(a.important?' imp':'')+'"><div class="head">'+(a.createdAt>S.newCut?'<span class="tag hl">Mới</span>':'')+(a.pinned?'<span class="tag">Đã ghim</span>':'')+(a.important?'<span class="tag red">Quan trọng</span>':'')+(a.sample?'<span class="tag hl">Ví dụ</span>':'')+'</div><h3>'+esc(a.title)+'</h3><div class="body">'+linkify(a.body||'')+'</div><div class="foot"><span>'+esc(who)+' · '+esc(stamp(a.createdAt))+'</span><span class="sp"></span>'+(W()?'<button class="link-btn" data-act="pinAnn" data-id="'+esc(a.id)+'">'+(a.pinned?'Bỏ ghim':'Ghim')+'</button>':'')+(W()&&mine(a)?'<button class="link-btn red" data-act="delAnn" data-id="'+esc(a.id)+'">Xoá</button>':'')+'</div></article>';
+  }).join('')+'</div>';
+}
+
+/* ---------- documents ---------- */
+function viewTaiLieu(){
+  const f=S.folder;
+  const count=id=>S.docs.filter(d=>(d.folder||'')===id).length;
+  const fl=S.folders.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'vi'));
+  if(f!=='all'&&f!==''&&!fl.some(x=>x.id===f))S.folder='all';
+  const cur=S.folder;
+  const docs=S.docs.filter(d=>cur==='all'||(d.folder||'')===cur).sort((a,b)=>b.createdAt-a.createdAt);
+  const folderName=id=>{const x=fl.find(z=>z.id===id);return x?x.name:'Chưa phân loại'};
+  const fbtn=(id,name,c)=>'<button class="folder" data-act="openFolder" data-id="'+esc(id)+'" aria-current="'+(cur===id)+'"><span>'+esc(name)+'</span><span class="c">'+c+'</span></button>';
+  const curF=fl.find(x=>x.id===cur);
+  let h='<div class="bar"><div class="grow"><h2>Tài liệu</h2><p class="sub">Tệp PDF, ảnh, video và liên kết của lớp, sắp xếp theo thư mục.</p></div>'+(W()?'<div class="acts"><button class="btn" data-act="addFolder">+ Thư mục</button><button class="btn" data-act="linkDoc">+ Liên kết</button><button class="btn primary" data-act="upDoc">Tải tệp lên</button></div>':'')+'</div>';
+  if(!S.loaded.docs)return h+'<p class="sub">Đang tải…</p>';
+  h+='<div class="split"><div><div class="folders">'+fbtn('all','Tất cả tài liệu',S.docs.length)+fl.map(x=>fbtn(x.id,x.name,count(x.id))).join('')+(count('')?fbtn('','Chưa phân loại',count('')):'')+'</div>'+(curF&&A()?'<div style="margin-top:10px"><button class="link-btn red" data-act="delFolder" data-id="'+esc(curF.id)+'">Xoá thư mục này</button></div>':'')+'</div>';
+  if(!docs.length)h+='<div class="empty"><h3>Thư mục trống</h3><p>'+(W()?'Tải tệp lên hoặc dán liên kết Google Drive, OneDrive cho tài liệu Word, PowerPoint, Excel.':'Chưa có tài liệu nào trong mục này.')+'</p></div>';
+  else h+='<div class="files">'+docs.map(d=>{
+    const who=ownerName(d);
+    return '<div class="file"><div class="ext '+kindLabel(d)+'">'+kindLabel(d)+'</div><div style="min-width:0"><a class="nm" href="'+esc(itemHref(d))+'"'+(d.kind==='file'?' download="'+esc(d.name)+'"':'')+' target="_blank" rel="noopener noreferrer">'+esc(d.name)+'</a><div class="mt">'+(cur==='all'?'<span class="tag plain">'+esc(folderName(d.folder||''))+'</span>':'')+(d.size?'<span>'+fmtSize(d.size)+'</span>':'')+'<span>'+esc(stamp(d.createdAt))+'</span>'+(who?'<span>'+esc(who)+'</span>':'')+'</div></div><div>'+(W()&&mine(d)?'<button class="link-btn red" data-act="delDoc" data-id="'+esc(d.id)+'">Xoá</button>':'')+'</div></div>';
+  }).join('')+'</div>';
+  return h+'</div>';
+}
+const folderOptions=()=>[['','Chưa phân loại']].concat(S.folders.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'vi')).map(x=>[x.id,x.name]));
+
+/* ---------- courses ---------- */
+function viewHocPhan(){
+  if(S.courseId){const c=S.courses.find(x=>x.id===S.courseId);if(c)return courseDetail(c);S.courseId=null}
+  let h='<div class="bar"><div class="grow"><h2>Học phần</h2><p class="sub">Mỗi học phần gồm các bài giảng kèm tài liệu, tài liệu tham khảo, hình ảnh và ghi chú.</p></div>'+(W()?'<button class="btn primary" data-act="addCourse">+ Thêm học phần</button>':'')+'</div>';
+  if(!S.loaded.courses)return h+'<p class="sub">Đang tải…</p>';
+  if(!S.courses.length)return h+'<div class="empty"><h3>Chưa có học phần</h3><p>'+(W()?'Thêm học phần đầu tiên, nhập luôn danh sách bài giảng nếu đã có.':'Học phần và bài giảng sẽ hiển thị tại đây.')+'</p>'+(A()?'<button class="btn" data-act="seed">Thêm dữ liệu mẫu</button>':'')+'</div>';
+  const list=S.courses.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'vi'));
+  return h+'<div class="grid">'+list.map(c=>'<button class="card" data-act="openCourse" data-id="'+esc(c.id)+'"><div>'+(c.code?'<span class="tag">'+esc(c.code)+'</span> ':'')+(c.sample?'<span class="tag hl">Ví dụ</span>':'')+'</div><h3>'+esc(c.name)+'</h3><p class="sub">'+(c.teacher?'Giảng viên: '+esc(c.teacher)+' · ':'')+(c.lectures||[]).length+' bài giảng</p></button>').join('')+'</div>';
+}
+function itemList(cur,key){
+  const items=cur[key]||[];
+  if(!items.length)return '<p class="sub">Chưa có mục nào.</p>';
+  return '<ul class="lst">'+items.map((it,i)=>'<li class="file"><div class="ext '+kindLabel(it)+'">'+kindLabel(it)+'</div><div style="min-width:0"><a class="nm" href="'+esc(itemHref(it))+'"'+(it.kind==='file'?' download="'+esc(it.name)+'"':'')+' target="_blank" rel="noopener noreferrer">'+esc(it.name)+'</a>'+(it.size?'<div class="mt"><span>'+fmtSize(it.size)+'</span></div>':'')+'</div>'+(W()?'<button class="link-btn red" data-act="delItem" data-key="'+key+'" data-i="'+i+'">Xoá</button>':'<span></span>')+'</li>').join('')+'</ul>';
+}
+function sectAdd(key){return W()?'<div class="acts"><button class="btn sm" data-act="addItem" data-key="'+key+'" data-mode="file">Tải tệp</button><button class="btn sm" data-act="addItem" data-key="'+key+'" data-mode="link">Thêm liên kết</button></div>':''}
+function courseDetail(c){
+  const lec=c.lectures||[];
+  if(!lec.some(l=>l.id===S.lectureId))S.lectureId=lec[0]?lec[0].id:null;
+  const cur=lec.find(l=>l.id===S.lectureId);
+  let h='<div class="bar"><div class="grow"><button class="link-btn" data-act="backCourses">‹ Tất cả học phần</button><h2 style="margin-top:4px">'+esc(c.name)+'</h2><p class="sub">'+(c.code?esc(c.code)+' · ':'')+(c.teacher?'Giảng viên: '+esc(c.teacher)+' · ':'')+lec.length+' bài giảng</p></div>'+(W()?'<div class="acts"><button class="btn" data-act="editCourse">Sửa học phần</button><button class="btn primary" data-act="addLecture">+ Thêm bài giảng</button>'+(mine(c)?'<button class="btn danger" data-act="delCourse">Xoá</button>':'')+'</div>':'')+'</div>';
+  if(!lec.length)return h+'<div class="empty"><h3>Học phần chưa có bài giảng</h3><p>'+(W()?'Bấm “Thêm bài giảng” để tạo bài giảng đầu tiên.':'Bài giảng sẽ hiển thị tại đây.')+'</p></div>';
+  h+='<div class="lec-layout"><nav class="lec-nav" aria-label="Danh sách bài giảng">'+lec.map((l,i)=>'<button class="lec-btn" data-act="selLecture" data-id="'+esc(l.id)+'" aria-current="'+(l.id===S.lectureId)+'"><span class="no">'+(i+1)+'</span><span>'+esc(l.title)+'</span></button>').join('')+'</nav>';
+  const imgs=cur.images||[];
+  h+='<section class="panel"><div class="bar" style="margin-bottom:0"><div class="grow"><div class="kicker">Bài giảng '+(lec.indexOf(cur)+1)+'</div><h3 style="font-size:21px">'+esc(cur.title)+'</h3></div>'+(W()?'<div class="acts"><button class="btn sm" data-act="renameLecture">Đổi tên</button><button class="btn sm danger" data-act="delLecture">Xoá bài giảng</button></div>':'')+'</div>'
+   +'<div class="sect"><div class="sect-h"><h4>Ghi chú</h4>'+(W()?'<button class="btn sm" data-act="editNote">'+(cur.note?'Sửa ghi chú':'Thêm ghi chú')+'</button>':'')+'</div>'+(cur.note?'<div class="note">'+linkify(cur.note)+'</div>':'<p class="sub">Chưa có ghi chú.</p>')+'</div>'
+   +'<div class="sect"><div class="sect-h"><h4>Tài liệu</h4>'+sectAdd('materials')+'</div>'+itemList(cur,'materials')+'</div>'
+   +'<div class="sect"><div class="sect-h"><h4>Tài liệu tham khảo</h4>'+sectAdd('refs')+'</div>'+itemList(cur,'refs')+'</div>'
+  +'<div class="sect"><div class="sect-h"><h4>Hình ảnh</h4>'+(W()?'<button class="btn sm" data-act="addLecImg">Thêm ảnh</button>':'')+'</div>'+(imgs.length?'<div class="mini">'+imgs.map((im,i)=>'<div class="thumb-wrap"><button class="ph" data-act="openLecImg" data-i="'+i+'" aria-label="Xem ảnh '+(i+1)+'"><img src="'+esc(mediaSrc(im.assetId))+'" alt="" loading="lazy"></button>'+(W()?'<button class="btn sm x" data-act="delLecImg" data-i="'+i+'" aria-label="Xoá ảnh '+(i+1)+'">Xoá</button>':'')+'</div>').join('')+'</div>':'<p class="sub">Chưa có hình ảnh.</p>')+'</div></section></div>';
+  return h;
+}
+function curCourse(){return S.courses.find(x=>x.id===S.courseId)}
+function curLec(c){return(c.lectures||[]).find(l=>l.id===S.lectureId)}
+
+/* ---------- albums ---------- */
+function viewHinhAnh(){
+  if(S.albumId){const a=S.albums.find(x=>x.id===S.albumId);if(a)return albumDetail(a);S.albumId=null}
+  let h='<div class="bar"><div class="grow"><h2>Hình ảnh hoạt động</h2><p class="sub">Mỗi hoạt động là một album, ảnh được nén nhẹ khi tải lên.</p></div>'+(W()?'<button class="btn primary" data-act="addAlbum">+ Tạo album</button>':'')+'</div>';
+  if(!S.loaded.albums)return h+'<p class="sub">Đang tải…</p>';
+  if(!S.albums.length)return h+'<div class="empty"><h3>Chưa có album</h3><p>'+(W()?'Tạo album cho một buổi sinh hoạt, chuyến đi hoặc sự kiện của lớp.':'Album ảnh hoạt động sẽ hiển thị tại đây.')+'</p></div>';
+  const list=S.albums.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||b.createdAt-a.createdAt);
+  return h+'<div class="grid">'+list.map(a=>{const p=a.photos||[];return '<button class="album" data-act="openAlbum" data-id="'+esc(a.id)+'">'+(p.length?'<img class="cover" src="'+esc(mediaSrc(p[0].assetId))+'" alt="" loading="lazy">':'<span class="cover"></span>')+'<span class="in"><h3>'+esc(a.title)+'</h3><span class="sub">'+(a.date?esc(shortDate(a.date))+' · ':'')+p.length+' ảnh</span></span></button>'}).join('')+'</div>';
+}
+function albumDetail(a){
+  const p=a.photos||[];
+  return '<div class="bar"><div class="grow"><button class="link-btn" data-act="backAlbums">‹ Tất cả album</button><h2 style="margin-top:4px">'+esc(a.title)+'</h2><p class="sub">'+(a.date?esc(longDate(a.date))+' · ':'')+p.length+' ảnh</p>'+(a.desc?'<p style="margin-top:6px;max-width:70ch;overflow-wrap:anywhere">'+esc(a.desc)+'</p>':'')+'</div>'+(W()?'<div class="acts"><button class="btn primary" data-act="addPhotos">+ Thêm ảnh</button>'+(mine(a)?'<button class="btn danger" data-act="delAlbum">Xoá album</button>':'')+'</div>':'')+'</div>'
+  +(p.length?'<div class="photos">'+p.map((x,i)=>'<button class="ph" data-act="openPhoto" data-i="'+i+'" aria-label="Xem ảnh '+(i+1)+'"><img src="'+esc(mediaSrc(x.assetId))+'" alt="" loading="lazy"></button>').join('')+'</div>':'<div class="empty"><h3>Album chưa có ảnh</h3><p>'+(W()?'Bấm “Thêm ảnh” để tải ảnh của hoạt động lên.':'Ảnh sẽ hiển thị tại đây.')+'</p></div>');
+}
+
+/* ---------- roles ---------- */
+function viewQuyen(){
+  const r=S.role,rc=(k,t,d)=>'<div class="rc'+(r===k||(k==='member'&&(r==='guest'))?' me':'')+'"><h3>'+t+(r===k?' <span class="tag hl">Bạn</span>':'')+'</h3><p>'+d+'</p></div>';
+  const Y='<td class="c yes" aria-label="Có">✓</td>',N='<td class="c no" aria-label="Không">—</td>';
+  const rows=[['Xem lịch, thông báo, tài liệu, học phần, hình ảnh',Y,Y,Y],['Thêm và sửa lịch, hoạt động',N,Y,Y],['Đăng và ghim thông báo',N,Y,Y],['Tạo thư mục, tải tài liệu',N,Y,Y],['Thêm học phần, bài giảng, ghi chú',N,Y,Y],['Tạo album, tải ảnh',N,Y,Y],['Xoá nội dung do người khác tạo',N,N,Y],['Sửa thông tin lớp, quản lý phân quyền',N,N,Y]];
+  let h='<div class="bar"><div class="grow"><h2>Phân quyền</h2><p class="sub">Ba vai trò, do nền tảng kiểm soát nên không thể tự nâng quyền từ trang này.</p></div></div>'
+   +'<div class="three">'+rc('admin','Quản trị','Toàn quyền: quản lý nội dung của mọi người, sửa thông tin lớp, cấp quyền.')+rc('officer','Cán bộ lớp','Thêm và sửa lịch, thông báo, tài liệu, học phần, album. Xoá nội dung do chính mình tạo.')+rc('member','Thành viên','Xem toàn bộ thông tin và mở tài liệu, ảnh của lớp.')+'</div>'
+   +'<div class="tbl"><table><thead><tr><th>Chức năng</th><th class="c">Thành viên</th><th class="c">Cán bộ lớp</th><th class="c">Quản trị</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+x[0]+'</td>'+x[1]+x[2]+x[3]+'</tr>').join('')+'</tbody></table></div>'
+   +'<div class="panel" style="margin-top:18px"><h3>Cấp vai trò cho người trong lớp</h3><p class="sub" style="margin-top:4px">Vai trò gắn với mức chia sẻ của trang. Người sở hữu trang mở nút Chia sẻ rồi mời từng người:</p><ol class="steps"><li><b>Quản trị</b>: mức Editor (hoặc Owner).</li><li><b>Cán bộ lớp</b>: mức Contributor.</li><li><b>Thành viên</b>: mức Viewer hoặc Commenter.</li></ol></div>';
+  if(A()){
+    h+='<div class="panel"><h3>Công cụ quản trị</h3><p class="sub" style="margin-top:4px">Đặt tên lớp hiển thị ở đầu trang, hoặc thêm dữ liệu mẫu để xem thử rồi xoá đi.</p><div class="acts" style="margin-top:12px"><button class="btn primary" data-act="editClass">Sửa thông tin lớp</button><button class="btn" data-act="seed">Thêm dữ liệu mẫu</button><button class="btn danger" data-act="unseed">Xoá dữ liệu mẫu</button></div></div>';
+  }
+  return h;
+}
+
+/* ---------- shell render ---------- */
+function render(){
+  const roleKey=S.ready?S.role:null,rl=roleKey?ROLE[roleKey]:null;
+  const chip=$('#roleChip');chip.className='role '+(rl?rl[1]:'');chip.innerHTML='<i></i><span>'+(S.editMode?'Chế độ sửa':'Chế độ xem')+'</span>';
+  const authBtn=$('#authBtn'); if(authBtn){ authBtn.textContent = S.editMode ? 'Tắt Edit mode' : 'Edit mode'; authBtn.classList.toggle('primary', S.editMode); }
+  const c=S.cls||{};
+  const h1=$('#clsName');h1.textContent=CONFIG.appName;h1.className='';
+  $('#eyebrow').textContent=[c.name,c.term,c.school].filter(Boolean).join(' · ');$('#eyebrow').hidden=!$('#eyebrow').textContent;
+  document.title=CONFIG.appName;
+  const unread=S.anns.filter(a=>a.createdAt>S.annSeen).length;
+  $('#tabs').innerHTML=TABS.map(t=>'<button class="tab" role="tab" data-act="tab" data-tab="'+t[0]+'" aria-selected="'+(S.tab===t[0])+'">'+t[1]+(t[0]==='thongbao'&&unread&&S.tab!=='thongbao'?' <span class="badge" aria-label="'+unread+' thông báo mới">'+unread+'</span>':'')+'</button>').join('');
+  let body='';
+  if(S.ready&&S.noDb)body='<div class="notice warn">Dữ liệu lớp được lưu tại trình duyệt. Kết nối GitHub trong Edit mode để lưu tệp vào repository và đồng bộ dữ liệu lớp.</div>';
+  else if(S.err)body='<div class="notice warn">'+esc(S.err)+'</div>';
+  if(S.editMode)body+='<div class="acts" style="margin-bottom:16px"><button class="btn sm" data-act="editClass">Thông tin lớp</button><button class="btn sm" data-act="connectGithub">Kết nối GitHub</button><button class="btn sm danger" data-act="unseed">Xoá dữ liệu mẫu</button></div>';
+  const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh}[S.tab];
+  $('#view').innerHTML=body+(S.ready?v():'<p class="sub">Đang tải dữ liệu lớp…</p>');
+  if(S.lb)renderLb();
+}
+function setTab(t){
+  if(S.tab==='thongbao'&&t!=='thongbao'){S.annSeen=Date.now();store.set('annSeen',String(S.annSeen))}
+  if(t==='thongbao'){S.newCut=S.annSeen;S.annSeen=Date.now();store.set('annSeen',String(S.annSeen))}
+  S.tab=t;store.set('tab',t);render();window.scrollTo(0,0);
+}
+
+/* ---------- seed ---------- */
+async function seed(){
+  const t=iso(new Date()),mon=addDays(t,-((new Date().getDay()+6)%7));
+  const ev=[
+    {title:'Học lý thuyết · Nhập môn Công nghệ thông tin',type:'hoc',date:addDays(mon,1),start:'07:00',end:'09:30',place:'Phòng A2-301',weeks:12,note:'Mang theo laptop.'},
+    {title:'Nộp bài tập nhóm số 1',type:'han',date:addDays(mon,9),start:'23:59',end:'',place:'Nộp trên hệ thống học tập',weeks:1,note:''},
+    {title:'Giao lưu chào năm học mới',type:'hd',date:addDays(mon,11),start:'18:30',end:'21:00',place:'Hội trường B',weeks:1,note:'Cả lớp cùng tham gia.'}
+  ];
+  for(const e of ev)await addDoc('events',Object.assign({sample:true},e));
+  await addDoc('announcements',{sample:true,title:'Chào mừng học kỳ mới',body:'Cả lớp theo dõi lịch học và thông báo tại trang này. Tài liệu từng bài giảng nằm trong mục Học phần.',pinned:true,important:false,authorRole:'admin'});
+  await addDoc('announcements',{sample:true,title:'Nhắc nộp bài tập nhóm',body:'Hạn nộp bài tập nhóm số 1 được ghi trong Lịch học. Nhóm trưởng kiểm tra đủ thành viên trước khi nộp.',pinned:false,important:true,authorRole:'admin'});
+  await addDoc('folders',{sample:true,name:'Chung'});
+  await addDoc('folders',{sample:true,name:'Slide bài giảng'});
+  await addDoc('courses',{sample:true,name:'Nhập môn Công nghệ thông tin',code:'IT101',teacher:'',lectures:[
+    {id:uid(),title:'Tổng quan về công nghệ thông tin',note:'Nội dung chính: khái niệm, các lĩnh vực ứng dụng.',materials:[],refs:[],images:[]},
+    {id:uid(),title:'Biểu diễn và lưu trữ dữ liệu',note:'',materials:[],refs:[],images:[]},
+    {id:uid(),title:'Mạng máy tính và Internet',note:'',materials:[],refs:[],images:[]}]});
+}
+async function unseed(){
+  const cols=[['events','events'],['announcements','anns'],['folders','folders'],['courses','courses']];
+  for(const p of cols)for(const x of S[p[1]].slice())if(x.sample)await delDoc(p[0],x.id);
+}
+
+/* ---------- actions ---------- */
+const act={
+  connectGithub:()=>openForm({title:'Kết nối GitHub',submit:'Kết nối',intro:'Dùng repository công khai để mọi người mở được tệp. Token cần quyền Contents: Read and write; chỉ giữ trong phiên này. Tệp đã tải lên được giữ trên GitHub khi xoá mục khỏi sổ lớp.',fields:[
+    {name:'repo',label:'Repository (chủ-sở-hữu/tên-repo)',required:true,value:G.repo,placeholder:'ten-tai-khoan/k02a02-notebook'},
+    {name:'branch',label:'Nhánh',required:true,value:G.branch||'main'},
+    {name:'token',label:'GitHub token',type:'password',required:true}
+  ],onSubmit:async v=>{
+    if(!/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(v.repo))throw new Error('Repository phải có dạng chủ-sở-hữu/tên-repo.');
+    const g={repo:v.repo,branch:v.branch,token:v.token};
+    const repo=await githubRequest(g,'https://api.github.com/repos/'+g.repo);
+    if(repo.private)throw new Error('Hãy dùng repository công khai để tài liệu và ảnh có thể mở trên trang tĩnh.');
+    await githubRequest(g,'https://api.github.com/repos/'+g.repo+'/branches/'+encodeURIComponent(g.branch));
+    Object.assign(G,g);store.set('githubRepo',G.repo);store.set('githubBranch',G.branch);
+    toast('Đã kết nối GitHub. Tệp mới sẽ lưu vào nhánh '+G.branch+'.');
+  }}),
+  editMode:()=>{
+    if(S.editMode){S.editMode=false;closeModal();render();return}
+    openForm({title:'Edit mode',submit:'Mở khóa',fields:[{name:'password',label:'Mật khẩu',type:'password',required:true}],onSubmit:async v=>{
+      if(!globalThis.crypto?.subtle)throw new Error('Vui lòng mở trang bằng HTTPS hoặc localhost.');
+      if(!await verifyPassword(v.password))throw new Error('Mật khẩu không đúng.');
+      S.editMode=true;toast('Đã bật Edit mode.');
+    }});
+  },
+  tab:el=>setTab(el.dataset.tab),
+  closeModal:()=>closeModal(),
+  calPrev:()=>{S.cal.m--;if(S.cal.m<0){S.cal.m=11;S.cal.y--}render()},
+  calNext:()=>{S.cal.m++;if(S.cal.m>11){S.cal.m=0;S.cal.y++}render()},
+  calToday:()=>{const n=new Date();S.cal={y:n.getFullYear(),m:n.getMonth(),sel:iso(n)};render()},
+  selDay:el=>{S.cal.sel=el.dataset.date;const d=parse(S.cal.sel);if(d.getMonth()!==S.cal.m){S.cal.m=d.getMonth();S.cal.y=d.getFullYear()}render()},
+  addEvent:()=>eventForm(null),
+  editEvent:el=>{const e=S.events.find(x=>x.id===el.dataset.id);if(e)eventForm(e)},
+  delEvent:el=>{const e=S.events.find(x=>x.id===el.dataset.id);if(!e)return;confirmBox('Xoá lịch?','“'+e.title+'”'+((+e.weeks||1)>1?' và toàn bộ '+e.weeks+' tuần lặp lại':'')+' sẽ bị xoá khỏi lịch lớp.','Xoá',()=>delDoc('events',e.id))},
+  addAnn:()=>openForm({title:'Đăng thông báo',submit:'Đăng',fields:[
+    {name:'title',label:'Tiêu đề',required:true,placeholder:'VD: Đổi phòng học tuần này'},
+    {name:'body',label:'Nội dung',type:'textarea',rows:6,required:true,hint:'Đường dẫn http/https sẽ tự thành liên kết.'},
+    {name:'important',label:'Đánh dấu quan trọng',type:'checkbox',value:false},
+    {name:'pinned',label:'Ghim lên đầu danh sách',type:'checkbox',value:false}],
+    onSubmit:async v=>{
+      const title=v.title.trim();
+      const announcementId=await addDoc('announcements',{title,body:v.body,important:v.important,pinned:v.pinned,authorRole:'member'});
+      const date=iso(new Date());
+      await addDoc('events',{title:'TB: '+(title.length>38?title.slice(0,35)+'…':title),type:'hd',date,weeks:1,note:'Thông báo lớp',announcementId});
+      S.cal.sel=date;const today=parse(date);S.cal.y=today.getFullYear();S.cal.m=today.getMonth();
+      return announcementId;
+    }}),
+  pinAnn:async el=>{const a=S.anns.find(x=>x.id===el.dataset.id);if(!a)return;try{await mutate('announcements','anns',a.id,n=>{n.pinned=!n.pinned})}catch(e){toast(friendly(e))}},
+  delAnn:el=>{const a=S.anns.find(x=>x.id===el.dataset.id);if(!a)return;confirmBox('Xoá thông báo?','“'+a.title+'” và ghi chú trên lịch sẽ bị xoá.','Xoá',async()=>{for(const event of S.events.filter(x=>x.announcementId===a.id))await delDoc('events',event.id);await delDoc('announcements',a.id)})},
+  openFolder:el=>{S.folder=el.dataset.id;render()},
+  addFolder:()=>openForm({title:'Thư mục mới',submit:'Tạo thư mục',fields:[{name:'name',label:'Tên thư mục',required:true,placeholder:'VD: Đề cương, Slide, Bài tập'}],onSubmit:async v=>{const id=await addDoc('folders',{name:v.name});S.folder=id}}),
+  delFolder:el=>{const f=S.folders.find(x=>x.id===el.dataset.id);if(!f)return;confirmBox('Xoá thư mục?','Thư mục “'+f.name+'” sẽ bị xoá. Tài liệu bên trong chuyển sang “Chưa phân loại”.','Xoá',async()=>{for(const d of S.docs.filter(x=>x.folder===f.id))await mutate('docs','docs',d.id,n=>{n.folder=''});await delDoc('folders',f.id);S.folder='all'})},
+  upDoc:()=>openForm({title:'Tải tệp lên',submit:'Tải lên',intro:'Nhận PDF, ảnh, video MP4/WebM, CSV, TXT, Markdown, JSON (tối đa 100 MB mỗi tệp). Với Word, PowerPoint, Excel hãy xuất PDF hoặc dùng “Thêm liên kết”.',fields:[
+    {name:'folder',label:'Thư mục',type:'select',options:folderOptions(),value:(S.folder!=='all'?S.folder:'')},
+    {name:'files',label:'Chọn tệp',type:'file',multiple:true,accept:ACCEPT_ALL,required:true}],
+    onSubmit:async(v,prog)=>{let n=0;for(const f of v.files){prog('Đang tải '+(n+1)+'/'+v.files.length+'…');const r=await upload(f,false,{folderName:(S.folders.find(x=>x.id===v.folder)||{}).name});await addDoc('docs',{name:f.name,folder:v.folder,kind:'file',assetId:r.id,githubPath:r.path,size:r.sizeBytes,mime:r.contentType});n++}}}),
+  linkDoc:()=>openForm({title:'Thêm liên kết tài liệu',submit:'Thêm',fields:[
+    {name:'name',label:'Tên hiển thị',required:true,placeholder:'VD: Slide chương 1 (Google Drive)'},
+    {name:'link',label:'Đường dẫn',type:'url',required:true,placeholder:'https://…'},
+    {name:'folder',label:'Thư mục',type:'select',options:folderOptions(),value:(S.folder!=='all'?S.folder:'')}],
+    onSubmit:async v=>{if(!/^https?:\/\//i.test(v.link))throw new Error('Đường dẫn phải bắt đầu bằng http:// hoặc https://');await addDoc('docs',{name:v.name,folder:v.folder,kind:'link',link:v.link})}}),
+  delDoc:el=>{const d=S.docs.find(x=>x.id===el.dataset.id);if(!d)return;confirmBox('Xoá tài liệu?','“'+d.name+'” sẽ bị xoá khỏi thư mục.','Xoá',async()=>{await delDoc('docs',d.id);if(d.assetId)await dropAssets([d.assetId])})},
+  addCourse:()=>openForm({title:'Thêm học phần',submit:'Tạo học phần',fields:[
+    {name:'name',label:'Tên học phần',required:true,placeholder:'VD: Cơ sở dữ liệu'},
+    {name:'code',label:'Mã học phần',half:true},{name:'teacher',label:'Giảng viên',half:true},
+    {name:'lectures',label:'Tên các bài giảng',type:'textarea',rows:5,placeholder:'Bài 1: …\nBài 2: …',hint:'Mỗi dòng là một bài giảng. Có thể thêm sau.'}],
+    onSubmit:async v=>{const lectures=v.lectures.split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({id:uid(),title:t,note:'',materials:[],refs:[],images:[]}));const id=await addDoc('courses',{name:v.name,code:v.code,teacher:v.teacher,lectures});S.courseId=id;S.lectureId=lectures[0]?lectures[0].id:null}}),
+  openCourse:el=>{S.courseId=el.dataset.id;S.lectureId=null;render();window.scrollTo(0,0)},
+  backCourses:()=>{S.courseId=null;render()},
+  selLecture:el=>{S.lectureId=el.dataset.id;render()},
+  editCourse:()=>{const c=curCourse();if(!c)return;openForm({title:'Sửa học phần',submit:'Lưu',fields:[{name:'name',label:'Tên học phần',required:true,value:c.name},{name:'code',label:'Mã học phần',half:true,value:c.code},{name:'teacher',label:'Giảng viên',half:true,value:c.teacher}],onSubmit:v=>mutate('courses','courses',c.id,n=>{n.name=v.name;n.code=v.code;n.teacher=v.teacher})})},
+  delCourse:()=>{const c=curCourse();if(!c)return;confirmBox('Xoá học phần?','“'+c.name+'” cùng toàn bộ bài giảng, tài liệu và ảnh trong đó sẽ bị xoá.','Xoá học phần',async()=>{const ids=[];(c.lectures||[]).forEach(l=>{(l.materials||[]).concat(l.refs||[]).forEach(i=>{if(i.assetId)ids.push(i.assetId)});(l.images||[]).forEach(i=>ids.push(i.assetId))});await delDoc('courses',c.id);S.courseId=null;await dropAssets(ids)})},
+  addLecture:()=>{const c=curCourse();if(!c)return;openForm({title:'Thêm bài giảng',submit:'Thêm',fields:[{name:'title',label:'Tên bài giảng',required:true,placeholder:'Bài '+((c.lectures||[]).length+1)+': …'}],onSubmit:async v=>{const id=uid();await mutate('courses','courses',c.id,n=>{n.lectures=n.lectures||[];n.lectures.push({id,title:v.title,note:'',materials:[],refs:[],images:[]})});S.lectureId=id}})},
+  renameLecture:()=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;openForm({title:'Đổi tên bài giảng',submit:'Lưu',fields:[{name:'title',label:'Tên bài giảng',required:true,value:l.title}],onSubmit:v=>mutate('courses','courses',c.id,n=>{n.lectures.find(x=>x.id===l.id).title=v.title})})},
+  delLecture:()=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;confirmBox('Xoá bài giảng?','“'+l.title+'” cùng tài liệu và ảnh đính kèm sẽ bị xoá.','Xoá',async()=>{const ids=[];(l.materials||[]).concat(l.refs||[]).forEach(i=>{if(i.assetId)ids.push(i.assetId)});(l.images||[]).forEach(i=>ids.push(i.assetId));await mutate('courses','courses',c.id,n=>{n.lectures=n.lectures.filter(x=>x.id!==l.id)});S.lectureId=null;await dropAssets(ids)})},
+  editNote:()=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;openForm({title:'Ghi chú bài giảng',submit:'Lưu ghi chú',fields:[{name:'note',label:'Ghi chú',type:'textarea',rows:9,value:l.note||''}],onSubmit:v=>mutate('courses','courses',c.id,n=>{n.lectures.find(x=>x.id===l.id).note=v.note})})},
+  addItem:el=>{
+    const c=curCourse(),l=c&&curLec(c);if(!l)return;const key=el.dataset.key,label=key==='refs'?'tài liệu tham khảo':'tài liệu';
+    const push=item=>mutate('courses','courses',c.id,n=>{const x=n.lectures.find(z=>z.id===l.id);x[key]=x[key]||[];x[key].push(item)});
+    if(el.dataset.mode==='link')openForm({title:'Thêm liên kết '+label,submit:'Thêm',fields:[{name:'name',label:'Tên hiển thị',required:true},{name:'link',label:'Đường dẫn',type:'url',required:true,placeholder:'https://…'}],onSubmit:async v=>{if(!/^https?:\/\//i.test(v.link))throw new Error('Đường dẫn phải bắt đầu bằng http:// hoặc https://');await push({kind:'link',name:v.name,link:v.link})}});
+    else openForm({title:'Tải tệp '+label,submit:'Tải lên',intro:'Nhận PDF, ảnh, video MP4/WebM, CSV, TXT, Markdown, JSON. Với Word, PowerPoint, Excel hãy xuất PDF hoặc thêm liên kết.',fields:[{name:'files',label:'Chọn tệp',type:'file',multiple:true,accept:ACCEPT_ALL,required:true}],onSubmit:async(v,prog)=>{let n=0;for(const f of v.files){prog('Đang tải '+(n+1)+'/'+v.files.length+'…');const r=await upload(f,false,lectureUploadContext(c,l,key==='refs'?'tham-khao':'tai-lieu'));await push({kind:'file',name:f.name,assetId:r.id,githubPath:r.path,size:r.sizeBytes,mime:r.contentType});n++}}});
+  },
+  delItem:async el=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;const key=el.dataset.key,i=+el.dataset.i,it=(l[key]||[])[i];if(!it)return;try{await mutate('courses','courses',c.id,n=>{n.lectures.find(z=>z.id===l.id)[key].splice(i,1)});if(it.assetId)await dropAssets([it.assetId])}catch(e){toast(friendly(e))}},
+  addLecImg:()=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;openForm({title:'Thêm hình ảnh',submit:'Tải lên',intro:'Ảnh lớn sẽ được nén trước khi tải lên.',fields:[{name:'files',label:'Chọn ảnh',type:'file',multiple:true,accept:ACCEPT_IMG,required:true}],onSubmit:async(v,prog)=>{let n=0;for(const f of v.files){prog('Đang tải '+(n+1)+'/'+v.files.length+'…');const r=await upload(f,true,lectureUploadContext(c,l,'hinh-anh'));await mutate('courses','courses',c.id,x=>{const y=x.lectures.find(z=>z.id===l.id);y.images=y.images||[];y.images.push({assetId:r.id,githubPath:r.path,name:f.name})});n++}}})},
+  delLecImg:async el=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;const i=+el.dataset.i,im=(l.images||[])[i];if(!im)return;try{await mutate('courses','courses',c.id,n=>{n.lectures.find(z=>z.id===l.id).images.splice(i,1)});await dropAssets([im.assetId])}catch(e){toast(friendly(e))}},
+  openLecImg:el=>{const c=curCourse(),l=c&&curLec(c);if(l)openLb((l.images||[]).map(x=>x.assetId),+el.dataset.i,null)},
+  addAlbum:()=>openForm({title:'Tạo album',submit:'Tạo album',intro:'Ảnh lớn sẽ được nén trước khi tải lên. Có thể thêm ảnh sau.',fields:[
+    {name:'title',label:'Tên hoạt động',required:true,placeholder:'VD: Dã ngoại cuối kỳ'},
+    {name:'date',label:'Ngày diễn ra',type:'date',value:iso(new Date())},
+    {name:'desc',label:'Mô tả',type:'textarea',rows:3},
+    {name:'files',label:'Ảnh',type:'file',multiple:true,accept:ACCEPT_IMG}],
+    onSubmit:async(v,prog)=>{const id=await addDoc('albums',{title:v.title,date:v.date,desc:v.desc,photos:[]});S.albumId=id;let n=0;for(const f of v.files){prog('Đang tải '+(n+1)+'/'+v.files.length+'…');const r=await upload(f,true,albumUploadContext({id,title:v.title,date:v.date}));await mutate('albums','albums',id,x=>{x.photos.push({assetId:r.id,githubPath:r.path,name:f.name})});n++}}}),
+  openAlbum:el=>{S.albumId=el.dataset.id;render();window.scrollTo(0,0)},
+  backAlbums:()=>{S.albumId=null;render()},
+  addPhotos:()=>{const a=S.albums.find(x=>x.id===S.albumId);if(!a)return;openForm({title:'Thêm ảnh vào album',submit:'Tải lên',intro:'Ảnh lớn sẽ được nén trước khi tải lên.',fields:[{name:'files',label:'Chọn ảnh',type:'file',multiple:true,accept:ACCEPT_IMG,required:true}],onSubmit:async(v,prog)=>{let n=0;for(const f of v.files){prog('Đang tải '+(n+1)+'/'+v.files.length+'…');const r=await upload(f,true,albumUploadContext(a));await mutate('albums','albums',a.id,x=>{x.photos=x.photos||[];x.photos.push({assetId:r.id,githubPath:r.path,name:f.name})});n++}}})},
+  delAlbum:()=>{const a=S.albums.find(x=>x.id===S.albumId);if(!a)return;confirmBox('Xoá album?','Album “'+a.title+'” và toàn bộ ảnh trong đó sẽ bị xoá.','Xoá album',async()=>{const ids=(a.photos||[]).map(p=>p.assetId);await delDoc('albums',a.id);S.albumId=null;await dropAssets(ids)})},
+  openPhoto:el=>{const a=S.albums.find(x=>x.id===S.albumId);if(a)openLb((a.photos||[]).map(p=>p.assetId),+el.dataset.i,a.id)},
+  lbClose:()=>{S.lb=null;renderLb()},
+  lbPrev:()=>{S.lb.i=(S.lb.i-1+S.lb.ids.length)%S.lb.ids.length;renderLb()},
+  lbNext:()=>{S.lb.i=(S.lb.i+1)%S.lb.ids.length;renderLb()},
+  lbDel:async()=>{const b=S.lb;if(!b||!b.albumId)return;const id=b.ids[b.i];try{await mutate('albums','albums',b.albumId,n=>{n.photos=n.photos.filter(p=>p.assetId!==id)});S.lb=null;renderLb();await dropAssets([id])}catch(e){toast(friendly(e))}},
+  editClass:()=>openForm({title:'Thông tin lớp',submit:'Lưu',fields:[{name:'name',label:'Tên lớp',required:true,value:S.cls.name||'',placeholder:'VD: Lớp K70 Công nghệ thông tin'},{name:'term',label:'Học kỳ',half:true,value:S.cls.term||'',placeholder:'Học kỳ I, 2026–2027'},{name:'school',label:'Trường / Khoa',half:true,value:S.cls.school||''}],onSubmit:v=>saveDoc('settings','class',{name:v.name,term:v.term,school:v.school})}),
+  seed:()=>confirmBox('Thêm dữ liệu mẫu?','Thêm vài lịch, thông báo, thư mục và một học phần có nhãn “Ví dụ”. Bạn có thể xoá chúng bất cứ lúc nào trong mục Phân quyền.','Thêm',seed),
+  unseed:()=>confirmBox('Xoá dữ liệu mẫu?','Mọi mục có nhãn “Ví dụ” sẽ bị xoá. Nội dung thật của lớp được giữ nguyên.','Xoá',unseed)
+};
+document.addEventListener('click',async ev=>{
+  const el=ev.target.closest('[data-act]');if(!el)return;
+  const fn=act[el.dataset.act];if(!fn)return;
+  const readActions=['editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
+  if(!S.editMode&&!readActions.includes(el.dataset.act)){toast('Vui lòng bật Edit mode.');return}
+  try{await fn(el,ev)}catch(e){toast(friendly(e))}
+});
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='Escape'){if(S.lb){S.lb=null;renderLb()}else if(!$('#modal').hidden)closeModal()}
+  if(S.lb&&S.lb.ids.length>1){if(ev.key==='ArrowLeft')act.lbPrev();if(ev.key==='ArrowRight')act.lbNext()}
+});
+document.addEventListener('error',ev=>{if(ev.target&&ev.target.tagName==='IMG')ev.target.classList.add('broken')},true);
+init();
+})();
+</script>
+
+</body></html>
