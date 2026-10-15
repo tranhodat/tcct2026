@@ -78,6 +78,14 @@
           "materials": [],
           "refs": [],
           "images": []
+        },
+        {
+          "id": "r4rrtoh6",
+          "title": "Bài 2: Chính quyền địa phương ở Việt Nam",
+          "note": "",
+          "materials": [],
+          "refs": [],
+          "images": []
         }
       ]
     }
@@ -89,7 +97,7 @@
   "cls": {},
   "folder": "ibdhn9ts",
   "courseId": "9prw41rr",
-  "lectureId": null,
+  "lectureId": "8fzqv62o",
   "albumId": null,
-  "updatedAt": 1792100620681
+  "updatedAt": 1792100669908
 }
