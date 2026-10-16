@@ -477,25 +477,36 @@ function friendly(e){
 const queues={};
 const stateKey={announcements:'anns'};
 const stateList=col=>S[stateKey[col]||col];
+const syncState={revision:null,busy:false,error:'',ready:false};
+function sharedSnapshot(){return {events:S.events,anns:S.anns,folders:S.folders,docs:S.docs,courses:S.courses,albums:S.albums,cls:S.cls};}
 function persistState(){
-  const payload={events:S.events,anns:S.anns,folders:S.folders,docs:S.docs,courses:S.courses,albums:S.albums,settings:{class:S.cls},cls:S.cls,folder:S.folder,courseId:S.courseId,lectureId:S.lectureId,albumId:S.albumId,updatedAt:Date.now()};
-  try{localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));}catch(e){loadState();sched();throw new Error('Không lưu được dữ liệu: bộ nhớ trình duyệt đã đầy hoặc bị chặn. Hãy dùng liên kết thay cho tệp lớn.')}
-  sched();
-  if(G.token){
-    const g=githubSettings();
-    return enqueue('github-write',async()=>{
-      const url=contentUrl(g,'data/solop-static.json');
-      const current=await fetch(url+'&ref='+encodeURIComponent(g.branch),{headers:{'X-Edit-Password':g.token,Accept:'application/json'},cache:'no-store'});
-      if(!current.ok&&current.status!==404){
-        const error=await current.json().catch(()=>({}));
-        throw new Error((error.message||'Không đọc được GitHub ('+current.status+').')+' Dữ liệu vẫn lưu tại trình duyệt.');
-      }
-      const existing=current.ok?await current.json():null;
-      const body={message:'Update notebook data',branch:g.branch,content:btoa(unescape(encodeURIComponent(JSON.stringify(payload,null,2))))};
-      if(existing)body.sha=existing.sha;
-      await githubRequest(g,url,{method:'PUT',body:JSON.stringify(body)});
-    });
+ const payload=clone(sharedSnapshot()),pendingId=uid();
+ try{localStorage.setItem(STORAGE_KEY,JSON.stringify({...payload,updatedAt:Date.now()}));localStorage.setItem('solop.pendingState',JSON.stringify({id:pendingId,state:payload}));}catch(e){throw new Error('Không lưu được bản dự phòng trên máy.');}
+ sched();if(!G.token)return;
+ return enqueue('github-write',async()=>{
+  try{
+   if(!syncState.ready)throw new Error('Chưa tải được dữ liệu chung. Hãy tắt Edit mode và đồng bộ lại.');
+   const r=await fetch('/api/state',{method:'PUT',headers:{'Content-Type':'application/json','X-Edit-Password':G.token},body:JSON.stringify({state:payload,revision:syncState.revision})});
+   const data=await r.json();if(!r.ok)throw new Error(data.message||'Không đồng bộ được dữ liệu lên server.');
+   auditNotice(r);syncState.revision=data.revision;syncState.error='';
+   const pending=readLocalJson('pendingState',null);
+   if(pending?.id===pendingId){localStorage.setItem('solop.pendingState','null');localStorage.setItem(STORAGE_KEY,JSON.stringify(data.state));}
+  }catch(e){syncState.error=e.message;sched();throw e;}
+ });
+}
+async function syncShared(){
+ if(syncState.busy)return false;syncState.busy=true;
+ try{
+  const r=await fetch('/api/state',{cache:'no-store'});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không tải được dữ liệu chung.');
+  const changed=data.revision!==syncState.revision;
+  {
+   data.state=data.state||{events:[],anns:[],folders:[],docs:[],courses:[],albums:[],cls:{}};
+   const local=localStorage.getItem(STORAGE_KEY);
+   if(!syncState.ready&&local){let previous;try{previous=JSON.parse(local)||{}}catch{previous={}}if(JSON.stringify(previous.docs)!==JSON.stringify(data.state.docs)||JSON.stringify(previous.courses)!==JSON.stringify(data.state.courses)||JSON.stringify(previous.albums)!==JSON.stringify(data.state.albums))localStorage.setItem('solop.recoveryState',local);}
+   localStorage.setItem(STORAGE_KEY,JSON.stringify(data.state));loadState();
   }
+  syncState.revision=data.revision;syncState.ready=true;syncState.error='';return changed;
+ }catch(e){syncState.error=e.message;return false;}finally{syncState.busy=false;sched();}
 }
 function loadState(){
   try{
@@ -585,11 +596,7 @@ async function init(){
   }catch(e){}
   sched();
   loadState();
-  try{
-    const url=G.repo?'https://raw.githubusercontent.com/'+G.repo+'/'+encodeURIComponent(G.branch)+'/data/solop-static.json':'./data/solop-static.json';
-    const response=await fetch(url,{cache:'no-store'});
-    if(response.ok){const remote=await response.json();const local=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!local||(remote.updatedAt||0)>(local.updatedAt||0)){localStorage.setItem(STORAGE_KEY,JSON.stringify(remote));loadState();}}
-  }catch(e){}
+  await syncShared();
   if(S.tab==='ykien')loadComments();if(S.tab==='baocao')loadReports();if(S.tab==='danhsach')loadRoster();
   refreshNews();setInterval(checkUpdates,60000);setInterval(()=>refreshNews(),15*60000);
   S.ready=true;
@@ -819,31 +826,20 @@ function render(){
   const unread=S.anns.filter(a=>a.createdAt>S.annSeen).length;
   $('#tabs').innerHTML=TABS.map(t=>'<button class="tab" role="tab" data-act="tab" data-tab="'+t[0]+'" aria-selected="'+(S.tab===t[0])+'">'+t[1]+(t[0]==='thongbao'&&unread&&S.tab!=='thongbao'?' <span class="badge" aria-label="'+unread+' thông báo mới">'+unread+'</span>':'')+'</button>').join('');
   let body='';
-  body+=devicePanel();
+  body+=devicePanel();if(syncState.error)body+='<p class="notice warn" role="alert">'+esc(syncState.error)+'</p>';
   if(S.err)body+='<div class="notice warn">'+esc(S.err)+'</div>';
-  if(S.editMode)body+='<div class="acts" style="margin-bottom:16px"><button class="btn sm" data-act="editClass">Thông tin lớp</button><button class="btn sm" data-act="systemLog">Nhật ký hệ thống</button></div>';
+  if(S.editMode)body+='<div class="acts" style="margin-bottom:16px"><button class="btn sm" data-act="editClass">Thông tin lớp</button><button class="btn sm" data-act="systemLog">Nhật ký hệ thống</button><button class="btn sm" data-act="recoverShared">Đồng bộ dữ liệu còn thiếu trên máy</button></div>';
   const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh,tinmoi:viewTinMoi,ykien:viewYKien,baocao:viewBaoCao,nhatky:viewNhatKy,danhsach:viewDanhSach}[S.tab];
   $('#view').innerHTML=body+(S.ready?v():'<p class="sub">Đang tải dữ liệu lớp…</p>');
   if(S.lb)renderLb();
 }
 const device={update:'',checking:false};
 function safeNewsLink(value){try{const u=new URL(value);return ['http:','https:'].includes(u.protocol)?u.href:'#'}catch(e){return '#'}}
-function devicePanel(){return device.update?'<div class="update-notice" role="status">'+esc(device.update)+'</div>':'';}
+function devicePanel(){return '<div style="margin-bottom:12px"><button class="btn sm" data-act="syncNow">↻ Đồng bộ dữ liệu</button></div>'+(device.update?'<div class="update-notice" role="status">'+esc(device.update)+'</div>':'');}
 
 async function checkUpdates(){
-  if(device.checking||S.editMode||document.visibilityState==='hidden')return;
-  device.checking=true;
-  try{
-    const url=G.repo?'https://raw.githubusercontent.com/'+G.repo+'/'+encodeURIComponent(G.branch)+'/data/solop-static.json':'./data/solop-static.json';
-    const r=await fetch(url,{cache:'no-store'});if(!r.ok)return;const remote=await r.json();const local=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
-    if((remote.updatedAt||0)<=(local?.updatedAt||0))return;
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(remote));loadState();
-    if(store.get('notify')!=='off'){
-      device.update='Hệ thống có cập nhật mới. Lịch, thông báo và tài liệu đã được đồng bộ.';
-      if('Notification' in window&&Notification.permission==='granted')try{new Notification('Sổ lớp có cập nhật',{body:device.update,tag:'notebook-update'})}catch(e){}
-    }
-    sched();
-  }catch(e){}finally{device.checking=false;}
+ if(device.checking||S.editMode||document.visibilityState==='hidden')return;device.checking=true;
+ try{if(await syncShared()){if(store.get('notify')!=='off'){device.update='Hệ thống có cập nhật mới. Dữ liệu lớp đã được đồng bộ từ server.';if('Notification' in window&&Notification.permission==='granted')try{new Notification('Sổ lớp có cập nhật',{body:device.update,tag:'notebook-update'})}catch(e){}}}if(S.tab==='baocao')await loadReports();if(S.tab==='ykien')await loadComments();}finally{device.checking=false;sched();}
 }
 function setTab(t){
   if(S.tab==='thongbao'&&t!=='thongbao'){S.annSeen=Date.now();store.set('annSeen',String(S.annSeen))}
@@ -877,8 +873,8 @@ async function unseed(){
 /* ---------- actions ---------- */
 const act={
   notifications:async()=>{if(store.get('notify')!=='off'&& !('Notification' in window&&Notification.permission==='default')){store.set('notify','off');render();return;}store.set('notify','on');if('Notification' in window&&Notification.permission==='default')await Notification.requestPermission();render();toast('Đã bật thông báo cập nhật khi đang mở trang.');},
-  editMode:()=>{
-    if(S.editMode){S.editMode=false;G.token='';closeModal();render();return}
+  editMode:async()=>{
+    if(S.editMode){S.editMode=false;G.token='';closeModal();await syncShared();render();return}if(!await syncShared()&&!syncState.ready){toast(syncState.error||'Chưa kết nối được dữ liệu chung.');return;}
     openForm({title:'Edit mode',submit:'Mở khóa',fields:[{name:'password',label:'Mật khẩu',type:'password',required:true}],onSubmit:async v=>{
       if(!globalThis.crypto?.subtle)throw new Error('Vui lòng mở trang bằng HTTPS hoặc localhost.');
       if(!await verifyPassword(v.password))throw new Error('Mật khẩu không đúng.');
@@ -1021,6 +1017,23 @@ async function loadRoster(){if(roster.loading)return;roster.loading=true;roster.
 Object.assign(act,{rosterRefresh:()=>loadRoster(),rosterGroup:el=>{roster.group=el.dataset.group;render()}});
 document.addEventListener('input',event=>{if(event.target.id!=='rosterSearch')return;roster.query=event.target.value;const results=$('#rosterResults');if(results)results.innerHTML=rosterTable();});
 
+function recoveryPlan(){
+ const pending=JSON.parse(localStorage.getItem('solop.pendingState')||'null');
+ const backup=pending?.state||readLocalJson('recoveryState',null);
+ const added=[];
+ function merge(current,old){
+  const out=clone(current||[]);
+  for(const entry of old||[]){if(!entry||typeof entry!=='object')continue;const identity=e=>e.id||e.assetId||e.githubPath||e.link;const key=identity(entry);if(!key)continue;const match=out.find(e=>identity(e)===key);
+   if(!match){out.push(clone(entry));added.push(entry.name||entry.title||'Tệp đính kèm');}
+   else for(const field of Object.keys(entry))if(Array.isArray(entry[field])&&Array.isArray(match[field]))match[field]=merge(match[field],entry[field]);
+  }return out;
+ }
+ const state=clone(sharedSnapshot());if(backup)for(const key of ['events','anns','folders','docs','courses','albums'])state[key]=merge(state[key],backup[key]);return {state,added};
+}
+Object.assign(act,{
+ syncNow:async()=>{if(S.editMode){toast('Tắt Edit mode trước khi tải lại dữ liệu chung.');return;}await syncShared();if(S.tab==='baocao')await loadReports();if(S.tab==='ykien')await loadComments();if(S.tab==='danhsach')await loadRoster();render();},
+ recoverShared:()=>{const plan=recoveryPlan();if(!plan.added.length){toast('Không có mục hoặc tệp còn thiếu để bổ sung từ bản lưu trên máy.');return;}openForm({title:'Đồng bộ dữ liệu còn thiếu trên máy',submit:'Bổ sung lên hệ thống',intro:'Bổ sung '+plan.added.length+' mục/tệp: '+plan.added.slice(0,12).join(', ')+'. Chỉ bổ sung mục còn thiếu, không thay nội dung chung đang có. Bản lưu cũ có thể chứa mục đã được xóa; hãy kiểm tra trước khi xác nhận.',fields:[],onSubmit:async()=>{Object.assign(S,plan.state);await persistState();}});}
+});
 const feedback={items:[],busy:false,error:'',loaded:false};
 function viewYKien(){
   return '<div class="bar"><div class="grow"><h2>Ý kiến của lớp</h2><p class="sub">Mọi người đều có thể gửi ý kiến, không cần bật Edit mode. Ý kiến được chia sẻ với cả lớp.</p></div><button class="btn" data-act="commentsRefresh" '+(feedback.busy?'disabled':'')+'>Làm mới</button><button class="btn primary" data-act="commentAdd" aria-label="Thêm ý kiến">＋ Thêm ý kiến</button></div>'+(feedback.error?'<p class="notice warn" role="alert">'+esc(feedback.error)+'</p>':'')+(feedback.busy?'<p class="sub" role="status">Đang tải ý kiến…</p>':'')+'<div class="feedback-list">'+(feedback.items.length?feedback.items.slice().sort((a,b)=>b.createdAt-a.createdAt).map(c=>'<article class="feedback-card"><span class="feedback-avatar" aria-hidden="true">'+esc((c.name||'?').slice(0,1).toUpperCase())+'</span><div><div class="feedback-meta"><strong>'+esc(c.name)+'</strong><time>'+esc(stamp(c.createdAt))+'</time></div><p>'+esc(c.text)+'</p></div></article>').join(''):feedback.loaded?'<div class="empty"><h3>Chưa có ý kiến</h3><p>Bấm ＋ để chia sẻ ý kiến đầu tiên với cả lớp.</p></div>':'')+'</div>';
@@ -1108,7 +1121,7 @@ document.addEventListener('submit',async event=>{
 document.addEventListener('click',async ev=>{
   const el=ev.target.closest('[data-act]');if(!el)return;
   const fn=act[el.dataset.act];if(!fn)return;
-  const readActions=['rosterRefresh','rosterGroup','reportSubmit','reportsRefresh','reportSelect','commentAdd','commentsRefresh','newsAdd','newsRemove','newsRefresh','newsMode','newsSave','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
+  const readActions=['syncNow','rosterRefresh','rosterGroup','reportSubmit','reportsRefresh','reportSelect','commentAdd','commentsRefresh','newsAdd','newsRemove','newsRefresh','newsMode','newsSave','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
   if(!S.editMode&&!readActions.includes(el.dataset.act)){toast('Vui lòng bật Edit mode.');return}
   try{await fn(el,ev)}catch(e){toast(friendly(e))}
 });

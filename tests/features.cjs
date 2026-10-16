@@ -32,7 +32,7 @@ vm.createContext(ctx);vm.runInContext(js,ctx);
  await t.refreshNews(true);assert.equal(calls,1);assert.equal(t.news.cache['https://example.com/rss'].items.length,1);assert(t.news.errors.length);
  t.S.editMode=false;
  const remote={updatedAt:Date.now()+1000,events:[{id:'new',title:'New event'}],anns:[],docs:[],courses:[],folders:[],albums:[]};
- ctx.fetch=async()=>({ok:true,json:async()=>remote});
+ ctx.fetch=async()=>({ok:true,json:async()=>({state:remote,revision:String(remote.updatedAt)})});
  await t.checkUpdates();assert.equal(t.S.events[0].id,'new');assert(t.device.update);
  t.device.update='';await t.checkUpdates();assert.equal(t.device.update,'');
  t.S.editMode=true;remote.updatedAt+=1000;remote.events=[{id:'other'}];await t.checkUpdates();assert.equal(t.S.events[0].id,'new');

@@ -62,3 +62,11 @@ If an action succeeds but its GitHub audit write fails, its response marks X-Aud
 The final Danh s?ch l?p tab reads data/class-roster.json, imported from the CHIA T? sheet of DANH SACH CHIA TO.xlsx: 29 members (15 in group 1, 14 in group 2). Columns preserve the workbook: sequence number, full name, birth date, position/workplace, phone and notes. Split name cells are joined; Excel serial birth dates are formatted as dd/mm/yyyy. Phone values with nine digits and no initial zero have been prefixed with 0; existing formatting is otherwise preserved.
 
 The view includes group filters, accent-insensitive search across all columns, role badges, a sticky table header and horizontal scrolling on small screens. The roster is independent of class metadata saves. Deploy the JSON file with both HTML entrypoints. Validation: node tests/roster.cjs.
+
+## Shared data synchronization
+
+The browser now reads shared metadata through GET /api/state, which reads the configured GitHub repository on the server with Cache-Control: no-store. It uses the GitHub file SHA as a revision instead of comparing browser timestamps or reading raw.githubusercontent.com metadata. PUT /api/state requires the Edit mode password and the last confirmed revision; concurrent changes return 409 rather than overwriting another device. Server time supplies updatedAt. General metadata is restricted to 700 KiB.
+
+Refresh runs on startup, every minute in view mode, when returning to the page, and through the manual sync button. The active report/comment view is refreshed too. Failed writes keep a pending browser snapshot and show the actual error. Old browser data is backed up before authoritative shared data is applied.
+
+To publish old local-only documents/attachments: deploy the updated APIs and HTML, open the device that still contains those entries, enable Edit mode, and select the recovery button. Review the proposed additions and confirm. Recovery adds missing records and nested attachments without replacing existing shared records; old deleted entries may also appear in the review, so verify the list. After saving, other devices can refresh through the sync button. RSS sources and saved news remain device-local by design. Tests: node tests/sync.cjs.
