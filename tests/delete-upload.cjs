@@ -1,0 +1,20 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+let js=fs.readFileSync('index.html','utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
+js=js.replace('function openForm(o){','function openForm(o){globalThis.form=o;return;').replace('async function upload(f,image,context={}){','async function upload(f,image,context={}){return {id:"https://example.com/"+f.name,path:f.name,sizeBytes:10,contentType:"application/pdf"};');
+js=js.replace('init();','globalThis.test={S,act};');
+const storage=new Map(),node={hidden:true,innerHTML:''};
+const ctx={console,TextEncoder,URL,crypto:require('node:crypto').webcrypto,window:{},document:{addEventListener(){},querySelector:()=>node,body:{classList:{remove(){}}}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},requestAnimationFrame:()=>1,cancelAnimationFrame(){},setTimeout,clearTimeout};
+vm.createContext(ctx);vm.runInContext(js,ctx);
+(async()=>{
+ const t=ctx.test;t.S.editMode=true;
+ t.act.upDoc();assert(ctx.form.fields.some(f=>f.name==='name'&&f.label==='Tên tài liệu'));
+ await ctx.form.onSubmit({name:'Custom title',folder:'',files:[{name:'one.pdf'}]},()=>{});assert.equal(t.S.docs[0].name,'Custom title');assert.equal(t.S.docs[0].originalName,'one.pdf');
+ t.act.upDoc();await ctx.form.onSubmit({name:'Set',folder:'',files:[{name:'two.pdf'},{name:'three.pdf'}]},()=>{});assert.equal(t.S.docs[1].name,'Set — two.pdf');assert.equal(t.S.docs[2].name,'Set — three.pdf');
+ t.act.upDoc();await ctx.form.onSubmit({name:'',folder:'',files:[{name:'original.pdf'}]},()=>{});assert.equal(t.S.docs.at(-1).name,'original.pdf');
+ const id=t.S.docs[0].id;t.act.delDoc({dataset:{id}});assert.equal(t.S.docs.length,4);assert(ctx.form.intro.includes('Bạn có chắc chắn'));await ctx.form.onSubmit();assert.equal(t.S.docs.length,3);
+ t.S.courses=[{id:'c',lectures:[{id:'l',materials:[{name:'Material'}],images:[{name:'Image',assetId:'image'}]}]}];t.S.courseId='c';t.S.lectureId='l';
+ t.act.delItem({dataset:{key:'materials',i:'0'}});assert.equal(t.S.courses[0].lectures[0].materials.length,1);assert(ctx.form.danger);await ctx.form.onSubmit();assert.equal(t.S.courses[0].lectures[0].materials.length,0);
+ t.act.delLecImg({dataset:{i:'0'}});assert.equal(t.S.courses[0].lectures[0].images.length,1);await ctx.form.onSubmit();assert.equal(t.S.courses[0].lectures[0].images.length,0);
+ t.S.albums=[{id:'a',photos:[{assetId:'image'}]}];t.S.lb={albumId:'a',ids:['image'],i:0};t.act.lbDel();assert.equal(t.S.albums[0].photos.length,1);await ctx.form.onSubmit();assert.equal(t.S.albums[0].photos.length,0);
+ console.log('PASS: custom/multiple/default upload names, preserved original name, deletion only after confirmation for documents, lecture attachments, lecture images and album images.');
+})().catch(e=>{console.error(e);process.exitCode=1});

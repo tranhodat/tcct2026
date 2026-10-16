@@ -241,7 +241,7 @@ td.c,th.c{text-align:center}
 .steps li{margin:4px 0}
 
 /* modal */
-#modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+#modal{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:16px}
 .scrim{position:absolute;inset:0;background:var(--scrim)}
 .sheet{position:relative;width:100%;max-width:520px;max-height:calc(100% - 8px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .sheet>*{grid-column:1/-1}
@@ -612,7 +612,7 @@ function fieldHtml(f){
   else ctl='<input id="'+id+'" name="'+f.name+'" type="'+(f.type||'text')+'" value="'+esc(v)+'" placeholder="'+esc(f.placeholder||'')+'"'+(f.min!=null?' min="'+f.min+'"':'')+(f.max!=null?' max="'+f.max+'"':'')+' autocomplete="off">';
   return '<div class="field'+(f.half?' half':'')+'"><label for="'+id+'">'+esc(f.label)+(f.required?' <span class="req">*</span>':'')+'</label>'+ctl+(f.hint?'<small>'+esc(f.hint)+'</small>':'')+'</div>';
 }
-function closeModal(){const m=$('#modal');m.hidden=true;m.innerHTML='';document.body.classList.remove('lock')}
+function closeModal(){const m=$('#modal');m.hidden=true;m.innerHTML='';if(!S.lb)document.body.classList.remove('lock')}
 function openForm(o){
   const m=$('#modal');
   m.innerHTML='<div class="scrim" data-act="closeModal"></div><form class="sheet" id="mform" novalidate role="dialog" aria-modal="true" aria-labelledby="mtitle"><h2 id="mtitle">'+esc(o.title)+'</h2>'+(o.intro?'<p class="intro">'+esc(o.intro)+'</p>':'')+(o.fields||[]).map(fieldHtml).join('')+'<p class="err" id="merr" role="alert" hidden></p><div class="sheet-actions"><button type="button" class="btn ghost" data-act="closeModal">Huỷ</button><button class="btn '+(o.danger?'danger solid':'primary')+'" type="submit" id="msubmit">'+esc(o.submit||'Lưu')+'</button></div></form>';
@@ -635,7 +635,7 @@ function openForm(o){
     catch(e){err.textContent=friendly(e);err.hidden=false;btn.disabled=false;btn.textContent=label}
   });
 }
-function confirmBox(title,intro,submit,fn){openForm({title,intro,submit,danger:true,fields:[],onSubmit:fn})}
+function confirmBox(title,intro,submit,fn){openForm({title,intro:(/xoá|xóa/i.test(title)?'Bạn có chắc chắn muốn xóa? ':'')+intro,submit,danger:true,fields:[],onSubmit:fn})}
 
 /* ---------- lightbox ---------- */
 function openLb(ids,i,albumId){S.lb={ids,i,albumId:albumId||null};renderLb()}
@@ -913,9 +913,10 @@ const act={
   addFolder:()=>openForm({title:'Thư mục mới',submit:'Tạo thư mục',fields:[{name:'name',label:'Tên thư mục',required:true,placeholder:'VD: Đề cương, Slide, Bài tập'}],onSubmit:async v=>{const id=await addDoc('folders',{name:v.name});S.folder=id}}),
   delFolder:el=>{const f=S.folders.find(x=>x.id===el.dataset.id);if(!f)return;confirmBox('Xoá thư mục?','Thư mục “'+f.name+'” sẽ bị xoá. Tài liệu bên trong chuyển sang “Chưa phân loại”.','Xoá',async()=>{for(const d of S.docs.filter(x=>x.folder===f.id))await mutate('docs','docs',d.id,n=>{n.folder=''});await delDoc('folders',f.id);S.folder='all'})},
   upDoc:()=>openForm({title:'Tải tệp lên',submit:'Tải lên',intro:'Nhận PDF, ảnh, video MP4/WebM, CSV, TXT, Markdown, JSON (tối đa 3 MB mỗi tệp). Với Word, PowerPoint, Excel hãy xuất PDF hoặc dùng “Thêm liên kết”.',fields:[
+    {name:'name',label:'Tên tài liệu',placeholder:'Nhập tên hiển thị cho tài liệu',hint:'Bỏ trống để dùng tên tệp. Nếu chọn nhiều tệp, tên này sẽ được ghép với từng tên tệp.'},
     {name:'folder',label:'Thư mục',type:'select',options:folderOptions(),value:(S.folder!=='all'?S.folder:'')},
     {name:'files',label:'Chọn tệp',type:'file',multiple:true,accept:ACCEPT_ALL,required:true}],
-    onSubmit:async(v,prog)=>{let n=0;for(const f of v.files){prog('Đang tải '+(n+1)+'/'+v.files.length+'…');const r=await upload(f,false,{folderName:(S.folders.find(x=>x.id===v.folder)||{}).name});await addDoc('docs',{name:f.name,folder:v.folder,kind:'file',assetId:r.id,githubPath:r.path,size:r.sizeBytes,mime:r.contentType});n++}}}),
+    onSubmit:async(v,prog)=>{let n=0;for(const f of v.files){prog('Đang tải '+(n+1)+'/'+v.files.length+'…');const r=await upload(f,false,{folderName:(S.folders.find(x=>x.id===v.folder)||{}).name});await addDoc('docs',{name:v.name?.trim()?(v.files.length>1?v.name.trim()+' — '+f.name:v.name.trim()):f.name,originalName:f.name,folder:v.folder,kind:'file',assetId:r.id,githubPath:r.path,size:r.sizeBytes,mime:r.contentType});n++}}}),
   linkDoc:()=>openForm({title:'Thêm liên kết tài liệu',submit:'Thêm',fields:[
     {name:'name',label:'Tên hiển thị',required:true,placeholder:'VD: Slide chương 1 (Google Drive)'},
     {name:'link',label:'Đường dẫn',type:'url',required:true,placeholder:'https://…'},
@@ -943,9 +944,9 @@ const act={
     if(el.dataset.mode==='link')openForm({title:'Thêm liên kết '+label,submit:'Thêm',fields:[{name:'name',label:'Tên hiển thị',required:true},{name:'link',label:'Đường dẫn',type:'url',required:true,placeholder:'https://…'}],onSubmit:async v=>{if(!/^https?:\/\//i.test(v.link))throw new Error('Đường dẫn phải bắt đầu bằng http:// hoặc https://');await push({kind:'link',name:v.name,link:v.link})}});
     else openForm({title:'Tải tệp '+label,submit:'Tải lên',intro:'Nhận PDF, ảnh, video MP4/WebM, CSV, TXT, Markdown, JSON. Với Word, PowerPoint, Excel hãy xuất PDF hoặc thêm liên kết.',fields:[{name:'files',label:'Chọn tệp',type:'file',multiple:true,accept:ACCEPT_ALL,required:true}],onSubmit:async(v,prog)=>{let n=0;for(const f of v.files){prog('Đang tải '+(n+1)+'/'+v.files.length+'…');const r=await upload(f,false,lectureUploadContext(c,l,key==='refs'?'tham-khao':'tai-lieu'));await push({kind:'file',name:f.name,assetId:r.id,githubPath:r.path,size:r.sizeBytes,mime:r.contentType});n++}}});
   },
-  delItem:async el=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;const key=el.dataset.key,i=+el.dataset.i,it=(l[key]||[])[i];if(!it)return;try{await mutate('courses','courses',c.id,n=>{n.lectures.find(z=>z.id===l.id)[key].splice(i,1)});if(it.assetId)await dropAssets([it.assetId])}catch(e){toast(friendly(e))}},
+  delItem:el=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;const key=el.dataset.key,i=+el.dataset.i,it=(l[key]||[])[i];if(!it)return;confirmBox('Xóa tài liệu bài giảng?','“'+it.name+'” sẽ bị xóa khỏi bài giảng.','Xóa',async()=>{await mutate('courses','courses',c.id,n=>{n.lectures.find(z=>z.id===l.id)[key].splice(i,1)});if(it.assetId)await dropAssets([it.assetId]);});},
   addLecImg:()=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;openForm({title:'Thêm hình ảnh',submit:'Tải lên',intro:'Ảnh lớn sẽ được nén trước khi tải lên.',fields:[{name:'files',label:'Chọn ảnh',type:'file',multiple:true,accept:ACCEPT_IMG,required:true}],onSubmit:async(v,prog)=>{let n=0;for(const f of v.files){prog('Đang tải '+(n+1)+'/'+v.files.length+'…');const r=await upload(f,true,lectureUploadContext(c,l,'hinh-anh'));await mutate('courses','courses',c.id,x=>{const y=x.lectures.find(z=>z.id===l.id);y.images=y.images||[];y.images.push({assetId:r.id,githubPath:r.path,name:f.name})});n++}}})},
-  delLecImg:async el=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;const i=+el.dataset.i,im=(l.images||[])[i];if(!im)return;try{await mutate('courses','courses',c.id,n=>{n.lectures.find(z=>z.id===l.id).images.splice(i,1)});await dropAssets([im.assetId])}catch(e){toast(friendly(e))}},
+  delLecImg:el=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;const i=+el.dataset.i,im=(l.images||[])[i];if(!im)return;confirmBox('Xóa ảnh bài giảng?','Ảnh “'+(im.name||'đã chọn')+'” sẽ bị xóa khỏi bài giảng.','Xóa',async()=>{await mutate('courses','courses',c.id,n=>{n.lectures.find(z=>z.id===l.id).images.splice(i,1)});await dropAssets([im.assetId]);});},
   openLecImg:el=>{const c=curCourse(),l=c&&curLec(c);if(l)openLb((l.images||[]).map(x=>x.assetId),+el.dataset.i,null)},
   addAlbum:()=>openForm({title:'Tạo album',submit:'Tạo album',intro:'Ảnh lớn sẽ được nén trước khi tải lên. Có thể thêm ảnh sau.',fields:[
     {name:'title',label:'Tên hoạt động',required:true,placeholder:'VD: Dã ngoại cuối kỳ'},
@@ -961,7 +962,7 @@ const act={
   lbClose:()=>{S.lb=null;renderLb()},
   lbPrev:()=>{S.lb.i=(S.lb.i-1+S.lb.ids.length)%S.lb.ids.length;renderLb()},
   lbNext:()=>{S.lb.i=(S.lb.i+1)%S.lb.ids.length;renderLb()},
-  lbDel:async()=>{const b=S.lb;if(!b||!b.albumId)return;const id=b.ids[b.i];try{await mutate('albums','albums',b.albumId,n=>{n.photos=n.photos.filter(p=>p.assetId!==id)});S.lb=null;renderLb();await dropAssets([id])}catch(e){toast(friendly(e))}},
+  lbDel:()=>{const b=S.lb;if(!b||!b.albumId)return;const id=b.ids[b.i],albumId=b.albumId;confirmBox('Xóa ảnh?','Ảnh đã chọn sẽ bị xóa khỏi album.','Xóa',async()=>{await mutate('albums','albums',albumId,n=>{n.photos=n.photos.filter(p=>p.assetId!==id)});S.lb=null;renderLb();await dropAssets([id]);});},
   editClass:()=>openForm({title:'Thông tin lớp',submit:'Lưu',fields:[{name:'name',label:'Tên lớp',required:true,value:S.cls.name||'',placeholder:'VD: Lớp K70 Công nghệ thông tin'},{name:'term',label:'Học kỳ',half:true,value:S.cls.term||'',placeholder:'Học kỳ I, 2026–2027'},{name:'school',label:'Trường / Khoa',half:true,value:S.cls.school||''}],onSubmit:v=>saveDoc('settings','class',{name:v.name,term:v.term,school:v.school})}),
   seed:()=>confirmBox('Thêm dữ liệu mẫu?','Thêm vài lịch, thông báo, thư mục và một học phần có nhãn “Ví dụ”. Bạn có thể xoá chúng bất cứ lúc nào trong mục Phân quyền.','Thêm',seed),
   unseed:()=>confirmBox('Xoá dữ liệu mẫu?','Mọi mục có nhãn “Ví dụ” sẽ bị xoá. Nội dung thật của lớp được giữ nguyên.','Xoá',unseed)
@@ -1095,7 +1096,7 @@ async function refreshNews(force=false){
 Object.assign(act,{
   newsRefresh:()=>refreshNews(true),
   newsMode:el=>{news.mode=el.dataset.mode==='saved'?'saved':'new';render()},
-  newsRemove:el=>{const source=news.sources[Number(el.dataset.i)];news.sources=news.sources.filter(n=>n!==source);delete news.cache[source];saveNewsLocal();render()},
+  newsRemove:el=>{const source=news.sources[Number(el.dataset.i)];if(!source)return;confirmBox('Xóa nguồn tin?','Nguồn “'+newsLabel(source)+'” và cache của nguồn này sẽ bị xóa khỏi thiết bị. Tin đã lưu vẫn được giữ.','Xóa',()=>{news.sources=news.sources.filter(n=>n!==source);delete news.cache[source];saveNewsLocal();});},
   newsSave:el=>{const item=newsItems()[Number(el.dataset.i)];if(!item)return;const i=news.saved.findIndex(n=>n.link===item.link);if(i>=0)news.saved.splice(i,1);else news.saved.unshift({...item});saveNewsLocal();render()}
 });
 document.addEventListener('submit',async event=>{
@@ -1113,8 +1114,8 @@ document.addEventListener('click',async ev=>{
 });
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){checkUpdates();refreshNews();}});
 document.addEventListener('keydown',ev=>{
-  if(ev.key==='Escape'){if(S.lb){S.lb=null;renderLb()}else if(!$('#modal').hidden)closeModal()}
-  if(S.lb&&S.lb.ids.length>1){if(ev.key==='ArrowLeft')act.lbPrev();if(ev.key==='ArrowRight')act.lbNext()}
+  if(ev.key==='Escape'){if(!$('#modal').hidden)closeModal();else if(S.lb){S.lb=null;renderLb()}}
+  if(S.lb&&$('#modal').hidden&&S.lb.ids.length>1){if(ev.key==='ArrowLeft')act.lbPrev();if(ev.key==='ArrowRight')act.lbNext()}
 });
 document.addEventListener('error',ev=>{if(ev.target&&ev.target.tagName==='IMG')ev.target.classList.add('broken')},true);
 init();

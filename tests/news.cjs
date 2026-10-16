@@ -27,7 +27,7 @@ function app(data=new Map()){
  t.news.cache['https://example.com/feed']={savedAt:Date.now(),items:[{title:'A saved article',link:'https://example.com/article',description:'Summary'}]};
  t.act.newsSave({dataset:{i:'0'}});assert.equal(t.news.saved.length,1);
  t.act.newsMode({dataset:{mode:'saved'}});assert(t.viewTinMoi().includes('A saved article'));
- t.act.newsRemove({dataset:{i:'0'}});assert.equal(t.news.sources.length,1);assert.equal(t.news.saved.length,1);
+ t.act.newsRemove({dataset:{i:'0'}});assert.equal(t.news.sources.length,2);await ctx.form.onSubmit();assert.equal(t.news.sources.length,1);assert.equal(t.news.saved.length,1);
  const legacy=app(new Map([['solop-static-v1',JSON.stringify({announcements:[null,{id:'legacy',title:'Legacy announcement',body:'Body',createdAt:1}]})]]));legacy.t.loadState();assert.equal(legacy.t.S.anns.length,1);assert(legacy.t.viewThongBao().includes('Legacy announcement'));
  const restored=app(data);assert.equal(restored.t.news.saved.length,1);assert.equal(restored.t.news.sources.length,1);
  restored.t.act.newsMode({dataset:{mode:'saved'}});restored.t.act.newsSave({dataset:{i:'0'}});assert.equal(restored.t.news.saved.length,0);
