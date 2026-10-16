@@ -1,4 +1,5 @@
 const { timingSafeEqual } = require('node:crypto');
+const {audit}=require('../lib/github-store');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -30,6 +31,10 @@ module.exports = async function handler(req, res) {
     const upstream = await fetch(url + (req.method === 'GET' ? '?ref=' + encodeURIComponent(branch) : ''), { method: req.method, headers, ...(body ? { body } : {}) });
     const data = await upstream.json();
     if (!upstream.ok) return fail(upstream.status, upstream.status === 401 ? 'GitHub từ chối GITHUB_TOKEN trên Vercel. Kiểm tra token và Redeploy.' : 'GitHub (' + upstream.status + '): ' + (data.message || 'Request failed'));
+    if(req.method==='PUT'){
+      const logged=await audit(path==='data/solop-static.json'?'class.data.update':'file.upload',{actor:'editor',path,commit:data.commit?.sha||null});
+      res.setHeader('X-Audit-Status',logged?'saved':'failed');
+    }
     return res.status(upstream.status).json(req.method === 'GET' ? { sha: data.sha } : { content: { path: data.content?.path, download_url: data.content?.download_url } });
   } catch { return fail(502, 'Không kết nối được GitHub hoặc yêu cầu không hợp lệ.'); }
 };

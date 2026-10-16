@@ -321,6 +321,18 @@ td.c,th.c{text-align:center}
 .course-teacher{font-size:13px;line-height:1.7;color:var(--muted)}
 .course-teacher strong{font-size:16px;color:var(--ink)}
 .course-bottom{margin-top:auto;padding-top:18px;border-top:1px solid #cbd4e866;font-size:13px;color:var(--accent)}
+.ann-rows{display:grid;gap:10px}.ann-row{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.ann-row summary{display:flex;align-items:center;gap:14px;padding:14px 18px;cursor:pointer;list-style:none}.ann-row summary::-webkit-details-marker{display:none}
+.ann-icon{display:grid;place-items:center;flex-shrink:0;width:38px;height:38px;border-radius:12px;background:#eaf0ff;color:#4168c0;font-size:20px;font-weight:700}
+.ann-row-main{display:grid;gap:3px;min-width:0;flex:1}.ann-row-main strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ann-row-meta{font-size:12px;color:var(--muted)}
+.ann-row-tags{display:flex;gap:5px;flex-wrap:wrap}.ann-chevron{color:var(--muted);transition:transform .15s}.ann-row[open] .ann-chevron{transform:rotate(180deg)}
+.ann-row[open] .ann-row-main strong{white-space:normal}.ann-row summary:hover{background:var(--bg)}.ann-row summary:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.ann-urgent{border-left:4px solid #e5a17f}.ann-urgent .ann-icon{background:#fff0e6;color:#ae5930}.ann-pinned{border-left:4px solid #8ca6df}.ann-pinned .ann-icon{background:#eef0ff;color:#5e62a9}
+.ann-expanded{padding:0 20px 20px 70px}.ann-expanded .body{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}.ann-expanded .acts{margin-top:12px}
+.report-rounds{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:20px}.report-round[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}.report-detail{margin-top:20px}.report-description{white-space:pre-wrap;margin-bottom:20px;overflow-wrap:anywhere}.submission{padding:18px 0;border-top:1px solid var(--line)}.submission ul{padding-left:20px;margin-top:8px}.submission li{padding:4px 0;overflow-wrap:anywhere}
+.feedback-list{display:grid;gap:12px}.feedback-card{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;border:1px solid var(--line);background:var(--surface);padding:20px;border-radius:16px}
+.feedback-avatar{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#eaf4ef;color:#38775a;font-weight:700}.feedback-meta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.feedback-meta time{font-size:12px;color:var(--muted)}.feedback-card p{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:8px}
+@media(max-width:600px){.ann-row summary{gap:9px;padding:12px}.ann-row-tags{max-width:90px}.ann-expanded{padding:0 14px 16px}.ann-row-meta{font-size:11px}.feedback-card{padding:14px;gap:10px}}
 .bell{position:relative;padding:9px;border-radius:50%;width:40px;height:40px;justify-content:center}
 .bell-dot{position:absolute;right:4px;top:4px;width:7px;height:7px;border-radius:50%;background:var(--teal)}
 .bell[aria-pressed="false"] .bell-dot{display:none}
@@ -407,16 +419,17 @@ function githubSettings(){
   return {...G};
 }
 const contentUrl=(g,path)=>'/api/github?path='+encodeURIComponent(path);
+function auditNotice(response){if(response.headers?.get('X-Audit-Status')==='failed'){device.update='Thao tác đã thành công nhưng chưa lưu được nhật ký vào GitHub. Cần kiểm tra Vercel Logs.';sched();}}
 async function githubRequest(g,url,options={}){
   const response=await fetch(url,{...options,headers:{'X-Edit-Password':g.token,Accept:'application/vnd.github+json','Content-Type':'application/json',...(options.headers||{})}});
   if(!response.ok){const e=await response.json().catch(()=>({}));throw new Error('GitHub ('+response.status+'): '+(e.message||'Không thực hiện được yêu cầu.'));}
-  return response.json();
+  auditNotice(response);return response.json();
 }
 function lectureUploadContext(c,l,section){return {kind:'course',courseName:c.code?c.code+'-'+c.name:c.name,courseId:c.id,lectureName:l.title,lectureId:l.id,section};}
 function albumUploadContext(a){return {kind:'album',albumName:a.title,albumId:a.id,date:a.date};}
 
 const TYPES={hoc:'Buổi học',hd:'Hoạt động',han:'Hạn nộp · Thi'};
-const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tinmoi','Tin mới'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh']];
+const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh'],['tinmoi','Tin mới'],['baocao','Nộp báo cáo'],['ykien','Ý kiến']];
 const ROLE={admin:['Quản trị','admin'],officer:['Cán bộ lớp','officer'],member:['Thành viên','member'],unknown:['Quyền chưa xác định','member'],guest:['Khách','member']};
 const OK_TYPES=['image/png','image/jpeg','image/gif','image/webp','image/svg+xml','video/mp4','video/webm','application/pdf','text/csv','text/markdown','application/json','text/plain'];
 const EXT={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',mp4:'video/mp4',webm:'video/webm',csv:'text/csv',md:'text/markdown',json:'application/json',txt:'text/plain'};
@@ -569,6 +582,7 @@ async function init(){
     const response=await fetch(url,{cache:'no-store'});
     if(response.ok){const remote=await response.json();const local=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!local||(remote.updatedAt||0)>(local.updatedAt||0)){localStorage.setItem(STORAGE_KEY,JSON.stringify(remote));loadState();}}
   }catch(e){}
+  if(S.tab==='ykien')loadComments();if(S.tab==='baocao')loadReports();
   refreshNews();setInterval(checkUpdates,60000);setInterval(()=>refreshNews(),15*60000);
   S.ready=true;
   S.noDb=true;
@@ -692,9 +706,9 @@ function viewThongBao(){
   let h='<div class="bar"><div class="grow"><h2>Thông báo hoạt động</h2><p class="sub">Tin mới nhất của lớp, tin ghim hiển thị đầu danh sách.</p></div>'+(W()?'<button class="btn primary" data-act="addAnn">+ Đăng thông báo</button>':'')+'</div>';
   if(!S.loaded.anns)return h+'<p class="sub">Đang tải…</p>';
   if(!list.length)return h+'<div class="empty"><h3>Chưa có thông báo</h3><p>'+(W()?'Đăng thông báo đầu tiên để cả lớp cùng nắm thông tin.':'Khi cán bộ lớp đăng thông báo, bạn sẽ thấy tại đây.')+'</p>'+(A()?'<button class="btn" data-act="seed">Thêm dữ liệu mẫu</button>':'')+'</div>';
-  return h+'<div class="ann-list">'+list.map(a=>{
+  return h+'<div class="ann-rows">'+list.map(a=>{
     const who=ownerName(a)||(a.authorRole==='admin'?'Quản trị':'Cán bộ lớp');
-    return '<article class="ann'+(a.pinned?' pinned':'')+(a.important?' imp':'')+'"><div class="head">'+(a.createdAt>S.newCut?'<span class="tag hl">Mới</span>':'')+(a.pinned?'<span class="tag">Đã ghim</span>':'')+(a.important?'<span class="tag red">Quan trọng</span>':'')+(a.sample?'<span class="tag hl">Ví dụ</span>':'')+'</div><h3>'+esc(a.title)+'</h3><div class="body">'+linkify(a.body||'')+'</div><div class="foot"><span>'+esc(who)+' · '+esc(stamp(a.createdAt))+'</span><span class="sp"></span>'+(W()?'<button class="link-btn" data-act="pinAnn" data-id="'+esc(a.id)+'">'+(a.pinned?'Bỏ ghim':'Ghim')+'</button>':'')+(W()&&mine(a)?'<button class="link-btn red" data-act="delAnn" data-id="'+esc(a.id)+'">Xoá</button>':'')+'</div></article>';
+    return '<details class="ann-row '+(a.important?'ann-urgent':a.pinned?'ann-pinned':'')+'"><summary><span class="ann-icon" aria-hidden="true">'+(a.important?'!':a.pinned?'◆':'▤')+'</span><span class="ann-row-main"><strong>'+esc(a.title)+'</strong><span class="ann-row-meta">'+esc(who)+' · '+esc(stamp(a.createdAt))+'</span></span><span class="ann-row-tags">'+(a.createdAt>S.newCut?'<span class="tag hl">Mới</span>':'')+(a.pinned?'<span class="tag">Đã ghim</span>':'')+(a.important?'<span class="tag red">Quan trọng</span>':'')+'</span><span class="ann-chevron" aria-hidden="true">⌄</span></summary><div class="ann-expanded"><div class="body">'+linkify(a.body||'')+'</div>'+(W()?'<div class="acts"><button class="link-btn" data-act="pinAnn" data-id="'+esc(a.id)+'">'+(a.pinned?'Bỏ ghim':'Ghim')+'</button><button class="link-btn red" data-act="delAnn" data-id="'+esc(a.id)+'">Xoá</button></div>':'')+'</div></details>';
   }).join('')+'</div>';
 }
 
@@ -799,8 +813,8 @@ function render(){
   let body='';
   body+=devicePanel();
   if(S.err)body+='<div class="notice warn">'+esc(S.err)+'</div>';
-  if(S.editMode)body+='<div class="acts" style="margin-bottom:16px"><button class="btn sm" data-act="editClass">Thông tin lớp</button></div>';
-  const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh,tinmoi:viewTinMoi}[S.tab];
+  if(S.editMode)body+='<div class="acts" style="margin-bottom:16px"><button class="btn sm" data-act="editClass">Thông tin lớp</button><button class="btn sm" data-act="systemLog">Nhật ký hệ thống</button></div>';
+  const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh,tinmoi:viewTinMoi,ykien:viewYKien,baocao:viewBaoCao,nhatky:viewNhatKy}[S.tab];
   $('#view').innerHTML=body+(S.ready?v():'<p class="sub">Đang tải dữ liệu lớp…</p>');
   if(S.lb)renderLb();
 }
@@ -826,7 +840,7 @@ async function checkUpdates(){
 function setTab(t){
   if(S.tab==='thongbao'&&t!=='thongbao'){S.annSeen=Date.now();store.set('annSeen',String(S.annSeen))}
   if(t==='thongbao'){S.newCut=S.annSeen;S.annSeen=Date.now();store.set('annSeen',String(S.annSeen))}
-  S.tab=t;store.set('tab',t);render();window.scrollTo(0,0);
+  if(!TABS.some(tab=>tab[0]===t))return;S.tab=t;store.set('tab',t);render();window.scrollTo(0,0);if(t==='ykien')loadComments();if(t==='baocao')loadReports();
 }
 
 /* ---------- seed ---------- */
@@ -945,6 +959,56 @@ const act={
   unseed:()=>confirmBox('Xoá dữ liệu mẫu?','Mọi mục có nhãn “Ví dụ” sẽ bị xoá. Nội dung thật của lớp được giữ nguyên.','Xoá',unseed)
 };
 // Included inside the application closure in both HTML entrypoints.
+const reports={rounds:[],submissions:[],selected:'',busy:false,error:'',loaded:false};
+const journal={events:[],date:iso(new Date()),error:'',total:0};
+async function reportRequest(body){const r=await fetch('/api/reports',{method:'POST',headers:{'Content-Type':'application/json',...(G.token?{'X-Edit-Password':G.token}:{})},body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không lưu được báo cáo.');auditNotice(r);return data;}
+async function loadReports(){
+  if(reports.busy)return;const selected=reports.selected;reports.busy=true;reports.error='';sched();
+  try{const r=await fetch('/api/reports'+(selected?'?roundId='+encodeURIComponent(selected):''),{cache:'no-store'});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không tải được đợt nộp.');if(selected===reports.selected){reports.rounds=data.rounds||[];reports.submissions=data.submissions||[];reports.loaded=true;}}catch(e){reports.error=e.message}finally{reports.busy=false;sched();if(selected!==reports.selected)loadReports();}
+}
+function viewBaoCao(){
+ const round=reports.rounds.find(r=>r.id===reports.selected),now=Date.now();
+ let h='<div class="bar"><div class="grow"><h2>Nộp báo cáo</h2><p class="sub">Các đợt nộp của lớp · giờ Việt Nam (UTC+7). Mỗi tệp tối đa 3 MB, tối đa 30 tệp/lần nộp.</p></div><button class="btn" data-act="reportsRefresh">Làm mới</button>'+(W()?'<button class="btn primary" data-act="reportCreate">＋ Tạo đợt nộp</button>':'')+'</div>';
+ if(reports.error)h+='<p class="notice warn" role="alert">'+esc(reports.error)+'</p>';
+ if(reports.busy)h+='<p class="sub">Đang tải báo cáo…</p>';
+ h+='<div class="report-rounds">'+reports.rounds.slice().sort((a,b)=>Date.parse(b.opensAt)-Date.parse(a.opensAt)).map(r=>{const state=now<Date.parse(r.opensAt)?'Sắp mở':now>Date.parse(r.closesAt)?'Đã hết hạn':'Đang nhận bài';return '<button class="card report-round" data-act="reportSelect" data-id="'+esc(r.id)+'" aria-pressed="'+(r.id===reports.selected)+'"><span class="tag '+(state==='Đang nhận bài'?'teal':'plain')+'">'+state+'</span><h3>'+esc(r.title)+'</h3><p class="sub">Từ '+esc(reportStamp(r.opensAt))+'<br>Đến '+esc(reportStamp(r.closesAt))+'</p></button>'}).join('')+'</div>';
+ if(!reports.rounds.length&&reports.loaded)h+='<div class="empty"><h3>Chưa có đợt nộp báo cáo</h3></div>';
+ if(round){const open=now>=Date.parse(round.opensAt)&&now<=Date.parse(round.closesAt);h+='<section class="panel report-detail"><div class="bar"><div class="grow"><h3>'+esc(round.title)+'</h3><p class="sub">Hạn nộp: '+esc(reportStamp(round.closesAt))+'</p></div>'+(W()?'<button class="btn" data-act="reportEdit">Sửa đợt nộp</button>':'')+(open?'<button class="btn primary" data-act="reportSubmit">＋ Nộp báo cáo</button>':'<span class="tag plain">Ngoài thời gian nhận bài</span>')+'</div><p class="report-description">'+esc(round.description||'')+'</p><h3>Bài đã nộp ('+reports.submissions.length+')</h3><p class="sub">Tên, mã học viên và tệp nộp được hiển thị cho lớp.</p>'+reports.submissions.slice().sort((a,b)=>b.updatedAt-a.updatedAt).map(s=>'<article class="submission"><strong>'+esc(s.name)+' · '+esc(s.studentId)+'</strong><p class="sub">'+esc(reportStamp(s.updatedAt))+' · '+s.files.length+' tệp</p><ul>'+s.files.map(f=>'<li><a href="'+esc(safeNewsLink(f.url))+'" target="_blank" rel="noopener noreferrer">'+esc(f.name)+'</a> <span class="sub">'+fmtSize(f.size)+'</span></li>').join('')+'</ul></article>').join('')+'</section>';}
+ return h;
+}
+function reportStamp(value){return new Date(value).toLocaleString('vi-VN',{timeZone:'Asia/Bangkok'});}
+function reportLocal(value){const d=new Date(value);return new Date(d.getTime()+7*3600000).toISOString().slice(0,16);}
+function reportForm(round){openForm({title:round?'Sửa đợt nộp':'Tạo đợt nộp báo cáo',submit:'Lưu đợt nộp',intro:'Thời gian theo giờ Việt Nam (UTC+7).',fields:[{name:'title',label:'Tên đợt nộp',required:true,value:round?.title||''},{name:'description',label:'Yêu cầu báo cáo',type:'textarea',value:round?.description||''},{name:'opensAt',label:'Bắt đầu nhận bài',type:'datetime-local',required:true,value:round?reportLocal(round.opensAt):reportLocal(Date.now())},{name:'closesAt',label:'Hạn nộp',type:'datetime-local',required:true,value:round?reportLocal(round.closesAt):reportLocal(Date.now()+7*86400000)}],onSubmit:async v=>{const data=await reportRequest({...v,action:round?'edit':'create',...(round?{id:round.id}:{}),opensAt:v.opensAt+':00+07:00',closesAt:v.closesAt+':00+07:00'});reports.selected=data.round.id;await loadReports();}});}
+async function loadJournal(){journal.error='';try{const r=await fetch('/api/logs?date='+encodeURIComponent(journal.date),{headers:{'X-Edit-Password':G.token},cache:'no-store'});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không đọc được nhật ký.');journal.events=data.events||[];journal.total=data.total||0;}catch(e){journal.error=e.message}sched();}
+function viewNhatKy(){if(!W())return '<div class="empty">Bật Edit mode để xem nhật ký hệ thống.</div>';return '<div class="bar"><div class="grow"><h2>Nhật ký hệ thống</h2><p class="sub">Nhật ký phía server · tối đa 50 bản ghi mới nhất trong ngày đã chọn.</p></div><button class="btn" data-act="logDate">Chọn ngày</button><button class="btn" data-act="logRefresh">Làm mới</button></div><p class="sub">'+esc(journal.date)+' · '+journal.total+' bản ghi</p>'+(journal.error?'<p class="notice warn">'+esc(journal.error)+'</p>':'')+'<div class="feedback-list">'+journal.events.map(e=>'<article class="feedback-card"><span class="feedback-avatar">↳</span><div><strong>'+esc(e.action)+'</strong><p class="sub">'+esc(reportStamp(e.at))+' · '+esc(e.actor||'system')+'</p><p class="sub">'+esc([e.path,e.roundId,e.commentId,e.commit].filter(Boolean).join(' · '))+'</p><small>'+esc(e.id)+'</small></div></article>').join('')+'</div>';}
+Object.assign(act,{
+ reportsRefresh:()=>loadReports(),reportSelect:el=>{reports.selected=el.dataset.id;reports.submissions=[];render();return loadReports()},
+ reportCreate:()=>reportForm(),reportEdit:()=>reportForm(reports.rounds.find(r=>r.id===reports.selected)),
+ reportSubmit:()=>{const roundId=reports.selected,submissionId=crypto.randomUUID(),done=new Set();let identity='';openForm({title:'Nộp báo cáo',submit:'Nộp các tệp đã chọn',intro:'Chọn nhiều tệp cùng lúc. Tệp được lưu lần lượt; nếu gặp lỗi, các tệp đã nộp vẫn được giữ và sẽ được bỏ qua khi thử lại.',fields:[{name:'name',label:'Họ tên',required:true,value:store.get('reportName')||''},{name:'studentId',label:'Mã học viên',required:true,value:store.get('reportStudentId')||''},{name:'files',label:'Các tệp báo cáo',type:'file',multiple:true,required:true,accept:'.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,.csv,.png,.jpg,.jpeg,.webp'}],onSubmit:async(v,progress)=>{
+   if(v.files.length>30||v.files.some(f=>f.size>3*1024*1024||!f.size))throw new Error('Chọn tối đa 30 tệp, mỗi tệp từ 1 byte đến 3 MB.');
+   const nextIdentity=v.name+'|'+v.studentId;if(identity&&identity!==nextIdentity)throw new Error('Bạn đã nộp một số tệp. Giữ nguyên họ tên và mã học viên để thử lại, hoặc mở lần nộp mới.');identity=nextIdentity;
+   let count=0;for(const f of v.files){const key=f.name+'|'+f.size+'|'+f.lastModified;if(done.has(key)){count++;continue;}progress('Đang nộp '+(++count)+'/'+v.files.length+'…');const content=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(Error('Không đọc được '+f.name));reader.readAsDataURL(f)});await reportRequest({action:'submit',roundId,submissionId,name:v.name,studentId:v.studentId,file:{name:f.name,content}});done.add(key);}
+   store.set('reportName',v.name);store.set('reportStudentId',v.studentId);await loadReports();
+ }});},
+ systemLog:()=>{S.tab='nhatky';render();return loadJournal()},logRefresh:()=>loadJournal(),logDate:()=>openForm({title:'Ngày xem nhật ký',fields:[{name:'date',label:'Ngày',type:'date',required:true,value:journal.date}],onSubmit:async v=>{journal.date=v.date;await loadJournal();}})
+});
+const feedback={items:[],busy:false,error:'',loaded:false};
+function viewYKien(){
+  return '<div class="bar"><div class="grow"><h2>Ý kiến của lớp</h2><p class="sub">Mọi người đều có thể gửi ý kiến, không cần bật Edit mode. Ý kiến được chia sẻ với cả lớp.</p></div><button class="btn" data-act="commentsRefresh" '+(feedback.busy?'disabled':'')+'>Làm mới</button><button class="btn primary" data-act="commentAdd" aria-label="Thêm ý kiến">＋ Thêm ý kiến</button></div>'+(feedback.error?'<p class="notice warn" role="alert">'+esc(feedback.error)+'</p>':'')+(feedback.busy?'<p class="sub" role="status">Đang tải ý kiến…</p>':'')+'<div class="feedback-list">'+(feedback.items.length?feedback.items.slice().sort((a,b)=>b.createdAt-a.createdAt).map(c=>'<article class="feedback-card"><span class="feedback-avatar" aria-hidden="true">'+esc((c.name||'?').slice(0,1).toUpperCase())+'</span><div><div class="feedback-meta"><strong>'+esc(c.name)+'</strong><time>'+esc(stamp(c.createdAt))+'</time></div><p>'+esc(c.text)+'</p></div></article>').join(''):feedback.loaded?'<div class="empty"><h3>Chưa có ý kiến</h3><p>Bấm ＋ để chia sẻ ý kiến đầu tiên với cả lớp.</p></div>':'')+'</div>';
+}
+async function loadComments(){
+  if(feedback.busy)return;feedback.busy=true;feedback.error='';sched();
+  try{const r=await fetch('/api/comments',{cache:'no-store'});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không tải được ý kiến.');feedback.items=Array.isArray(data.comments)?data.comments.filter(c=>c&&typeof c.text==='string'):[];feedback.loaded=true;}
+  catch(e){feedback.error=e.message}finally{feedback.busy=false;sched();}
+}
+Object.assign(act,{
+  commentsRefresh:()=>loadComments(),
+  commentAdd:()=>openForm({title:'Thêm ý kiến',submit:'Gửi ý kiến',intro:'Ý kiến được hiển thị công khai cho cả lớp. Bạn có thể bấm ＋ để gửi thêm ý kiến khác.',fields:[{name:'name',label:'Tên của bạn',required:true,value:store.get('commentName')||'',hint:'Tối đa 80 ký tự.'},{name:'text',label:'Ý kiến',type:'textarea',rows:5,required:true,hint:'Tối đa 2.000 ký tự.'}],onSubmit:async v=>{
+    if(v.name.length>80||v.text.length>2000)throw new Error('Tên tối đa 80 ký tự, ý kiến tối đa 2.000 ký tự.');
+    const r=await fetch('/api/comments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:v.name,text:v.text})});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không gửi được ý kiến.');
+    auditNotice(r);store.set('commentName',v.name);feedback.items.push(data.comment);feedback.loaded=true;feedback.error='';
+  }})
+});
 const news={sources:[],cache:{},saved:[],mode:'new',busy:false,errors:[],message:''};
 function readLocalJson(key,fallback){try{const value=JSON.parse(store.get(key)||'null');if(!value)return fallback;if(Array.isArray(fallback)&&!Array.isArray(value))return fallback;if(fallback&&typeof fallback==='object'&&!Array.isArray(fallback)&&(typeof value!=='object'||Array.isArray(value)))return fallback;return value}catch{return fallback}}
 news.sources=readLocalJson('newsSources',[]).filter(x=>typeof x==='string').slice(0,12);
@@ -1015,7 +1079,7 @@ document.addEventListener('submit',async event=>{
 document.addEventListener('click',async ev=>{
   const el=ev.target.closest('[data-act]');if(!el)return;
   const fn=act[el.dataset.act];if(!fn)return;
-  const readActions=['newsAdd','newsRemove','newsRefresh','newsMode','newsSave','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
+  const readActions=['reportSubmit','reportsRefresh','reportSelect','commentAdd','commentsRefresh','newsAdd','newsRemove','newsRefresh','newsMode','newsSave','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
   if(!S.editMode&&!readActions.includes(el.dataset.act)){toast('Vui lòng bật Edit mode.');return}
   try{await fn(el,ev)}catch(e){toast(friendly(e))}
 });

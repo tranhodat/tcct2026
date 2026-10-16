@@ -5,12 +5,13 @@ function app(data=new Map()){
  const node=id=>{if(!nodes.has(id))nodes.set(id,{innerHTML:'',textContent:'',hidden:false,classList:{toggle(){},add(){},remove(){}},attributes:{},setAttribute(k,v){this.attributes[k]=v}});return nodes.get(id)};
  const ctx={console,TextEncoder,URL,crypto:require('node:crypto').webcrypto,window:{scrollTo(){}},document:{querySelector:node,addEventListener:(type,fn)=>{(listeners[type]||=[]).push(fn)},visibilityState:'visible',body:{classList:{remove(){}}}},localStorage:{getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)},requestAnimationFrame:()=>1,cancelAnimationFrame(){},setTimeout:()=>0,clearTimeout(){}};
  let js=html.match(/<script>([\s\S]*?)<\/script>/)[1].replace('function openForm(o){','function openForm(o){globalThis.form=o;return;');
- js=js.replace('init();','globalThis.test={S,G,act,news,viewTinMoi,addNewsSource,newsItems,viewThongBao,render,loadState};');
+ js=js.replace('init();','globalThis.test={S,G,act,news,viewTinMoi,addNewsSource,newsItems,viewThongBao,render,loadState,feedback,viewYKien,TABS};');
  vm.createContext(ctx);vm.runInContext(js,ctx);ctx.test.S.ready=true;ctx.test.S.loaded={anns:true,events:true,docs:true,courses:true,albums:true};
  return {ctx,t:ctx.test,data,node,listeners};
 }
 (async()=>{
  const {ctx,t,data,node,listeners}=app();
+ assert.equal(t.TABS.map(x=>x[0]).join(','),'lich,thongbao,tailieu,hocphan,hinhanh,tinmoi,baocao,ykien');
  // Exercise the tab's actual click handler and rendering, then create and pin an announcement.
  await listeners.click[0]({target:{closest:()=>({dataset:{act:'tab',tab:'thongbao'}})}});
  assert.equal(t.S.tab,'thongbao');assert(node('#view').innerHTML.includes('Chưa có thông báo'));
