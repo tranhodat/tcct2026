@@ -31,10 +31,10 @@ Chạy `node tests/check.cjs`. Kiểm thử gồm chức năng trang, xác thự
 
 ## Device news and update notifications
 
-RSS settings and the last eight articles are stored only in browser localStorage. Use the RSS button to enter a direct public HTTPS feed. Refresh runs every 15 minutes; offline errors preserve cached articles. Clearing browser data removes these settings. The /api/rss function fetches at most 1 MiB and rejects private addresses and redirects.
+The Tin mới tab supports multiple RSS/Atom sources or websites that advertise a feed. Sources, cached articles, and starred articles are stored only in browser localStorage on the current device. Nothing from this tab is committed to GitHub. Switch between Tin mới and Tin đã lưu and use the star to save or remove an article. Removing a source preserves starred articles. Existing single-source RSS settings migrate automatically.
 
-When the page is open, shared data is checked every minute and when returning to the tab. New data displays an update banner; browser notifications require permission from the notification button. Polling pauses in Edit mode. Notifications do not run after the page is closed.
+Use Đọc tin mới to refresh manually. Automatic refresh runs every 15 minutes. Failed sources preserve their cache. The server discovers feeds advertised by websites and checks every redirect against public HTTPS address restrictions. Websites without RSS/Atom require a direct feed URL. Clearing browser data removes local settings and saved articles.
 
-In Edit mode, document rows include Edit for name, folder, notes, and link URL when applicable. Original uploaded file paths are preserved. Course cards display the teacher or a missing-information label.
+The bell before the view-mode label controls update notifications. Data is checked every minute and when returning to the page; polling pauses in Edit mode. Browser notifications require permission and run only while the page is open.
 
-Additional checks: node tests/features.cjs and node tests/rss.cjs.
+Checks: node tests/check.cjs, node tests/api.cjs, node tests/features.cjs, node tests/news.cjs, node tests/rss.cjs.

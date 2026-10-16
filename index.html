@@ -321,7 +321,21 @@ td.c,th.c{text-align:center}
 .course-teacher{font-size:13px;line-height:1.7;color:var(--muted)}
 .course-teacher strong{font-size:16px;color:var(--ink)}
 .course-bottom{margin-top:auto;padding-top:18px;border-top:1px solid #cbd4e866;font-size:13px;color:var(--accent)}
-.device-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:16px}
+.bell{position:relative;padding:9px;border-radius:50%;width:40px;height:40px;justify-content:center}
+.bell-dot{position:absolute;right:4px;top:4px;width:7px;height:7px;border-radius:50%;background:var(--teal)}
+.bell[aria-pressed="false"] .bell-dot{display:none}
+.news-switch{display:flex;padding:3px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.news-switch .btn{border:0}.news-sources{padding:24px;margin-bottom:18px}
+.source-tags{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 16px}
+.source-tag{display:inline-flex;gap:8px;align-items:center;background:#e4ecff;color:#1958b9;border-radius:22px;padding:3px 12px;font-size:14px;max-width:100%;overflow-wrap:anywhere}
+.source-remove{border:0;background:none;color:inherit;font-size:23px;cursor:pointer;padding:0 2px;line-height:1.2}
+.source-form{display:flex;gap:10px;margin-bottom:14px}.source-form input{flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);padding:12px 14px;font:inherit}
+.news-local{font-size:12px;margin-top:10px}.news-articles{display:grid;gap:16px}
+.news-article{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;box-shadow:0 1px 3px #14213d08}
+.news-meta{font-size:13px;color:var(--muted);overflow-wrap:anywhere}.news-article h3{font-size:19px;margin:12px 0 8px}.news-article h3 a{color:var(--ink);text-decoration:none}.news-article h3 a:hover{color:var(--accent)}
+.news-foot{display:flex;justify-content:flex-end;margin-top:14px}.save-news{border:0;border-radius:10px;background:var(--bg);color:var(--muted);font-size:25px;width:42px;height:42px;cursor:pointer}.save-news.is-saved{background:#fff7df;color:#a86500}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:600px){.source-form{flex-wrap:wrap}.source-form input{flex-basis:100%}.news-sources,.news-article{padding:16px}.news-heading{align-items:flex-start}}
 .rss-panel{margin-bottom:20px}.rss-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:14px}
 .rss-item{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface)}
 .rss-item:hover{border-color:var(--accent)}.rss-item time{display:block;font-size:12px;color:var(--muted);margin-top:8px}
@@ -336,7 +350,7 @@ td.c,th.c{text-align:center}
         <div class="eyebrow" id="eyebrow" hidden>Thông tin lớp</div>
         <h1 id="clsName">K02A02 Notebook</h1>
       </div>
-      <div class="hero-tools"><div class="role" id="roleChip"><i></i><span>Đang tải…</span></div><button class="btn sm" id="authBtn" data-act="editMode">Edit mode</button></div>
+      <div class="hero-tools"><button class="btn bell" id="notifyBtn" data-act="notifications" aria-label="Thông báo cập nhật" title="Thông báo cập nhật"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="bell-dot"></span></button><div class="role" id="roleChip"><i></i><span>Đang tải…</span></div><button class="btn sm" id="authBtn" data-act="editMode">Edit mode</button></div>
     </div>
   </div>
 </header>
@@ -402,7 +416,7 @@ function lectureUploadContext(c,l,section){return {kind:'course',courseName:c.co
 function albumUploadContext(a){return {kind:'album',albumName:a.title,albumId:a.id,date:a.date};}
 
 const TYPES={hoc:'Buổi học',hd:'Hoạt động',han:'Hạn nộp · Thi'};
-const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh']];
+const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tinmoi','Tin mới'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh']];
 const ROLE={admin:['Quản trị','admin'],officer:['Cán bộ lớp','officer'],member:['Thành viên','member'],unknown:['Quyền chưa xác định','member'],guest:['Khách','member']};
 const OK_TYPES=['image/png','image/jpeg','image/gif','image/webp','image/svg+xml','video/mp4','video/webm','application/pdf','text/csv','text/markdown','application/json','text/plain'];
 const EXT={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',mp4:'video/mp4',webm:'video/webm',csv:'text/csv',md:'text/markdown',json:'application/json',txt:'text/plain'};
@@ -467,7 +481,7 @@ function loadState(){
     const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return;
     const state=JSON.parse(raw);
     S.events=Array.isArray(state.events)?state.events:[];
-    S.anns=Array.isArray(state.anns)?state.anns:[];
+    S.anns=(Array.isArray(state.anns)?state.anns:Array.isArray(state.announcements)?state.announcements:[]).filter(a=>a&&typeof a==='object');
     S.folders=Array.isArray(state.folders)?state.folders:[];
     S.docs=Array.isArray(state.docs)?state.docs:[];
     S.courses=Array.isArray(state.courses)?state.courses:[];
@@ -555,7 +569,7 @@ async function init(){
     const response=await fetch(url,{cache:'no-store'});
     if(response.ok){const remote=await response.json();const local=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!local||(remote.updatedAt||0)>(local.updatedAt||0)){localStorage.setItem(STORAGE_KEY,JSON.stringify(remote));loadState();}}
   }catch(e){}
-  refreshRss();setInterval(checkUpdates,60000);setInterval(()=>refreshRss(),15*60000);
+  refreshNews();setInterval(checkUpdates,60000);setInterval(()=>refreshNews(),15*60000);
   S.ready=true;
   S.noDb=true;
   S.role='member';
@@ -674,7 +688,7 @@ function eventForm(e){
 
 /* ---------- announcements ---------- */
 function viewThongBao(){
-  const list=S.anns.slice().sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.createdAt-a.createdAt);
+  const list=S.anns.filter(a=>a&&typeof a==='object').slice().sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.createdAt-a.createdAt);
   let h='<div class="bar"><div class="grow"><h2>Thông báo hoạt động</h2><p class="sub">Tin mới nhất của lớp, tin ghim hiển thị đầu danh sách.</p></div>'+(W()?'<button class="btn primary" data-act="addAnn">+ Đăng thông báo</button>':'')+'</div>';
   if(!S.loaded.anns)return h+'<p class="sub">Đang tải…</p>';
   if(!list.length)return h+'<div class="empty"><h3>Chưa có thông báo</h3><p>'+(W()?'Đăng thông báo đầu tiên để cả lớp cùng nắm thông tin.':'Khi cán bộ lớp đăng thông báo, bạn sẽ thấy tại đây.')+'</p>'+(A()?'<button class="btn" data-act="seed">Thêm dữ liệu mẫu</button>':'')+'</div>';
@@ -775,6 +789,7 @@ function render(){
   const roleKey=S.ready?S.role:null,rl=roleKey?ROLE[roleKey]:null;
   const chip=$('#roleChip');chip.className='role '+(rl?rl[1]:'');chip.innerHTML='<i></i><span>'+(S.editMode?'Chế độ sửa':'Chế độ xem')+'</span>';
   const authBtn=$('#authBtn'); if(authBtn){ authBtn.textContent = S.editMode ? 'Tắt Edit mode' : 'Edit mode'; authBtn.classList.toggle('primary', S.editMode); }
+  const bell=$('#notifyBtn');if(bell){const on=store.get('notify')!=='off';bell.setAttribute('aria-pressed',String(on));bell.setAttribute('aria-label',on?'Tắt thông báo cập nhật':'Bật thông báo cập nhật');bell.title=on?'Thông báo cập nhật đang bật':'Thông báo cập nhật đang tắt';}
   const c=S.cls||{};
   const h1=$('#clsName');h1.textContent=CONFIG.appName;h1.className='';
   $('#eyebrow').textContent=[c.name,c.term,c.school].filter(Boolean).join(' · ');$('#eyebrow').hidden=!$('#eyebrow').textContent;
@@ -785,30 +800,14 @@ function render(){
   body+=devicePanel();
   if(S.err)body+='<div class="notice warn">'+esc(S.err)+'</div>';
   if(S.editMode)body+='<div class="acts" style="margin-bottom:16px"><button class="btn sm" data-act="editClass">Thông tin lớp</button></div>';
-  const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh}[S.tab];
+  const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh,tinmoi:viewTinMoi}[S.tab];
   $('#view').innerHTML=body+(S.ready?v():'<p class="sub">Đang tải dữ liệu lớp…</p>');
   if(S.lb)renderLb();
 }
-const device={rss:null,error:'',busy:false,update:'',checking:false};
-try{device.rss=JSON.parse(store.get('rssCache')||'null')}catch(e){}
+const device={update:'',checking:false};
 function safeNewsLink(value){try{const u=new URL(value);return ['http:','https:'].includes(u.protocol)?u.href:'#'}catch(e){return '#'}}
-function devicePanel(){
-  const cache=device.rss,url=store.get('rssUrl');
-  return '<div class="device-tools"><button class="btn sm" data-act="notifications">Thông báo cập nhật: '+(store.get('notify')==='off'?'Tắt':'Bật')+'</button><button class="btn sm" data-act="rssSettings">'+(url?'Đổi nguồn RSS':'Thêm nguồn RSS')+'</button></div>'+(device.update?'<div class="update-notice" role="status">'+esc(device.update)+'</div>':'')+(url?'<section class="panel rss-panel"><div class="bar"><div class="grow"><h3>Tin mới</h3><p class="sub">'+(cache?'Cache thiết bị · '+esc(stamp(cache.savedAt)):'Chưa có bản tin lưu trên thiết bị')+'</p></div><button class="btn sm" data-act="rssRefresh" '+(device.busy?'disabled':'')+'>Làm mới</button></div>'+(device.error?'<p class="sub" role="status">'+esc(device.error)+'</p>':'')+'<div class="rss-list">'+(cache?.items||[]).map(n=>'<a class="rss-item" href="'+esc(safeNewsLink(n.link))+'" target="_blank" rel="noopener noreferrer"><strong>'+esc(n.title)+'</strong>'+(n.date?'<time>'+esc(n.date)+'</time>':'')+'</a>').join('')+'</div></section>':'');
-}
-async function refreshRss(force=false){
-  const url=store.get('rssUrl');if(!url||device.busy)return;
-  if(!force&&device.rss?.url===url&&Date.now()-device.rss.savedAt<15*60000)return;
-  device.busy=true;sched();
-  try{
-    const r=await fetch('/api/rss?url='+encodeURIComponent(url),{cache:'no-store'});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không tải được RSS.');
-    const xml=new DOMParser().parseFromString(data.xml,'text/xml');if(xml.querySelector('parsererror'))throw new Error('Nguồn tin không phải RSS/Atom hợp lệ.');
-    const nodes=[...xml.querySelectorAll('item,entry')];if(!nodes.length&&!xml.querySelector('rss,feed'))throw new Error('Nguồn tin không phải RSS/Atom.');
-    const items=nodes.slice(0,8).map(n=>({title:n.querySelector('title')?.textContent||'Bản tin',link:n.querySelector('link[rel="alternate"]')?.getAttribute('href')||n.querySelector('link')?.getAttribute('href')||n.querySelector('link')?.textContent||'',date:n.querySelector('pubDate,published,updated')?.textContent||''}));
-    if(store.get('rssUrl')!==url)return;
-    device.rss={url,items,savedAt:Date.now()};store.set('rssCache',JSON.stringify(device.rss));device.error='';
-  }catch(e){device.error='Không cập nhật được tin. Giữ bản cache nếu có. '+e.message;}finally{device.busy=false;sched();}
-}
+function devicePanel(){return device.update?'<div class="update-notice" role="status">'+esc(device.update)+'</div>':'';}
+
 async function checkUpdates(){
   if(device.checking||S.editMode||document.visibilityState==='hidden')return;
   device.checking=true;
@@ -855,8 +854,6 @@ async function unseed(){
 
 /* ---------- actions ---------- */
 const act={
-  rssSettings:()=>openForm({title:'Nguồn tin RSS trên thiết bị này',submit:'Lưu nguồn tin',intro:'Link và bản tin cache chỉ lưu trên trình duyệt này. Để trống để xóa nguồn tin.',fields:[{name:'url',label:'Đường dẫn RSS (HTTPS)',value:store.get('rssUrl')||''}],onSubmit:async v=>{if(v.url){const u=new URL(v.url);if(u.protocol!=='https:'||u.username||u.password)throw new Error('Vui lòng nhập link HTTPS hợp lệ.');}store.set('rssUrl',v.url);store.set('rssCache','');device.rss=null;device.error='';if(v.url)await refreshRss();}}),
-  rssRefresh:()=>refreshRss(true),
   notifications:async()=>{if(store.get('notify')!=='off'&& !('Notification' in window&&Notification.permission==='default')){store.set('notify','off');render();return;}store.set('notify','on');if('Notification' in window&&Notification.permission==='default')await Notification.requestPermission();render();toast('Đã bật thông báo cập nhật khi đang mở trang.');},
   editMode:()=>{
     if(S.editMode){S.editMode=false;G.token='';closeModal();render();return}
@@ -947,14 +944,82 @@ const act={
   seed:()=>confirmBox('Thêm dữ liệu mẫu?','Thêm vài lịch, thông báo, thư mục và một học phần có nhãn “Ví dụ”. Bạn có thể xoá chúng bất cứ lúc nào trong mục Phân quyền.','Thêm',seed),
   unseed:()=>confirmBox('Xoá dữ liệu mẫu?','Mọi mục có nhãn “Ví dụ” sẽ bị xoá. Nội dung thật của lớp được giữ nguyên.','Xoá',unseed)
 };
+// Included inside the application closure in both HTML entrypoints.
+const news={sources:[],cache:{},saved:[],mode:'new',busy:false,errors:[],message:''};
+function readLocalJson(key,fallback){try{const value=JSON.parse(store.get(key)||'null');if(!value)return fallback;if(Array.isArray(fallback)&&!Array.isArray(value))return fallback;if(fallback&&typeof fallback==='object'&&!Array.isArray(fallback)&&(typeof value!=='object'||Array.isArray(value)))return fallback;return value}catch{return fallback}}
+news.sources=readLocalJson('newsSources',[]).filter(x=>typeof x==='string').slice(0,12);
+news.cache=readLocalJson('newsCache',{});
+news.saved=readLocalJson('newsSaved',[]).filter(x=>x&&typeof x.link==='string');
+if(!news.sources.length&&store.get('rssUrl')){
+  news.sources=[store.get('rssUrl')];store.set('newsSources',JSON.stringify(news.sources));
+  const old=readLocalJson('rssCache',null);if(old)news.cache[old.url]=old;
+  store.set('rssUrl','');store.set('rssCache','');
+}
+function saveNewsLocal(){
+  try{localStorage.setItem('solop.newsSources',JSON.stringify(news.sources));localStorage.setItem('solop.newsCache',JSON.stringify(news.cache));localStorage.setItem('solop.newsSaved',JSON.stringify(news.saved));}
+  catch{throw new Error('Không lưu được tin trên thiết bị. Bộ nhớ trình duyệt đã đầy hoặc bị chặn.');}
+}
+function newsLabel(url){try{const u=new URL(url);return u.hostname+u.pathname.replace(/\/$/,'')}catch{return url}}
+function newsItems(){
+  if(news.mode==='saved')return news.saved;
+  const seen=new Set();return news.sources.flatMap(source=>(news.cache[source]?.items||[]).map(item=>({...item,source}))).filter(item=>{if(seen.has(item.link))return false;seen.add(item.link);return true}).sort((a,b)=>(Date.parse(b.date)||0)-(Date.parse(a.date)||0));
+}
+function viewTinMoi(){
+  const items=newsItems();
+  return '<div class="bar news-heading"><div class="grow"><h2>Điểm tin công nghệ</h2><p class="sub">Theo dõi bài viết mới từ RSS/Atom và website bạn chọn.</p></div><div class="news-switch" role="group" aria-label="Loại tin"><button class="btn '+(news.mode==='new'?'primary':'')+'" data-act="newsMode" data-mode="new" aria-pressed="'+(news.mode==='new')+'">Tin mới</button><button class="btn '+(news.mode==='saved'?'primary':'')+'" data-act="newsMode" data-mode="saved" aria-pressed="'+(news.mode==='saved')+'">Tin đã lưu</button></div></div>'
+  +'<section class="panel news-sources"><h3>▤ Nguồn tin</h3><div class="source-tags">'+news.sources.map((source,i)=>'<span class="source-tag"><span>'+esc(newsLabel(source))+'</span><button class="source-remove" data-act="newsRemove" data-i="'+i+'" aria-label="Xóa nguồn '+esc(newsLabel(source))+'">×</button></span>').join('')+'</div><form id="newsSourceForm" class="source-form"><label class="sr-only" for="newsSourceInput">Đường dẫn RSS hoặc website</label><input id="newsSourceInput" name="source" placeholder="vd: vnexpress.net/rss/so-hoa.rss" autocomplete="url" required><button class="btn" type="submit">＋ Thêm</button></form><button class="btn primary" data-act="newsRefresh" '+(news.busy?'disabled':'')+'>'+(news.busy?'Đang đọc tin…':'▤ Đọc tin mới')+'</button><p class="sub news-local">Nguồn tin, cache và bài đã lưu chỉ nằm trên trình duyệt của thiết bị này.</p>'+(news.errors.length?'<p class="err" role="status">'+news.errors.map(esc).join('<br>')+'</p>':'')+(news.message?'<p class="sub" role="status">'+esc(news.message)+'</p>':'')+'</section>'
+  +'<div class="news-articles">'+(items.length?items.map((item,i)=>{const saved=news.saved.some(n=>n.link===item.link);return '<article class="news-article"><div class="news-meta"><span class="tag plain">'+esc(item.category||'Tin tức')+'</span> '+esc(newsLabel(item.source||''))+(item.date?' · '+esc(Number.isNaN(Date.parse(item.date))?item.date:stamp(Date.parse(item.date))):'')+'</div><h3><a href="'+esc(safeNewsLink(item.link))+'" target="_blank" rel="noopener noreferrer">'+esc(item.title)+'</a></h3>'+(item.description?'<p>'+esc(item.description)+'</p>':'')+'<div class="news-foot"><button class="save-news '+(saved?'is-saved':'')+'" data-act="newsSave" data-i="'+i+'" aria-pressed="'+saved+'" aria-label="'+(saved?'Bỏ lưu':'Lưu bài viết')+'">'+(saved?'★':'☆')+'</button></div></article>'}).join(''):'<div class="empty"><h3>'+(news.mode==='saved'?'Chưa có tin đã lưu':'Chưa có bản tin')+'</h3><p>'+(news.mode==='saved'?'Bấm ngôi sao trên bài viết để lưu tại thiết bị này.':'Thêm nguồn RSS hoặc website, rồi bấm Đọc tin mới.')+'</p></div>')+'</div>';
+}
+async function addNewsSource(value){
+  const source=new URL(/^https?:\/\//i.test(value)?value:'https://'+value);
+  if(source.protocol!=='https:'||source.username||source.password)throw new Error('Vui lòng nhập link HTTPS công khai.');
+  source.hash='';const url=source.href;
+  if(news.sources.includes(url)){news.message='Nguồn tin này đã có trong danh sách.';render();return;}
+  if(news.sources.length>=12)throw new Error('Tối đa 12 nguồn tin trên thiết bị.');
+  news.sources.push(url);saveNewsLocal();news.message='Đã thêm nguồn tin trên thiết bị này.';render();
+}
+function feedText(value){const doc=new DOMParser().parseFromString(value||'','text/html');return (doc.body.textContent||'').replace(/\s+/g,' ').trim().slice(0,400)}
+async function refreshNews(force=false){
+  if(news.busy||!news.sources.length)return;news.busy=true;news.errors=[];news.message='';sched();
+  const sources=[...news.sources];
+  try{
+    // Two at a time keeps the page responsive with several sources.
+    for(let i=0;i<sources.length;i+=2)await Promise.all(sources.slice(i,i+2).map(async source=>{
+      if(!force&&news.cache[source]&&Date.now()-news.cache[source].savedAt<15*60000)return;
+      try{
+        const r=await fetch('/api/rss?url='+encodeURIComponent(source),{cache:'no-store'});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không đọc được nguồn tin.');
+        const xml=new DOMParser().parseFromString(data.xml,'text/xml');if(xml.querySelector('parsererror')||!xml.querySelector('rss,feed,RDF'))throw new Error('Không tìm thấy RSS/Atom hợp lệ.');
+        const items=[...xml.querySelectorAll('item,entry')].slice(0,20).map(n=>{
+          const rawLink=n.querySelector('link[rel="alternate"]')?.getAttribute('href')||n.querySelector('link')?.getAttribute('href')||n.querySelector('link')?.textContent||'';
+          let link='#';try{link=safeNewsLink(new URL(rawLink,data.feedUrl||source).href)}catch{}
+          return {title:n.querySelector('title')?.textContent||'Bản tin',link,description:feedText(n.querySelector('description,summary')?.textContent),category:n.querySelector('category')?.getAttribute('term')||n.querySelector('category')?.textContent||'',date:n.querySelector('pubDate,published,updated')?.textContent||'',source};
+        }).filter(n=>n.link!=='#');
+        if(news.sources.includes(source))news.cache[source]={items,savedAt:Date.now()};
+      }catch(e){news.errors.push(newsLabel(source)+': '+e.message+' Giữ bản cache nếu có.');}
+    }));
+    saveNewsLocal();news.message='Đã kiểm tra nguồn tin. Cache lưu riêng trên thiết bị.';
+  }catch(e){news.errors.push(e.message)}finally{news.busy=false;sched();}
+}
+Object.assign(act,{
+  newsRefresh:()=>refreshNews(true),
+  newsMode:el=>{news.mode=el.dataset.mode==='saved'?'saved':'new';render()},
+  newsRemove:el=>{const source=news.sources[Number(el.dataset.i)];news.sources=news.sources.filter(n=>n!==source);delete news.cache[source];saveNewsLocal();render()},
+  newsSave:el=>{const item=newsItems()[Number(el.dataset.i)];if(!item)return;const i=news.saved.findIndex(n=>n.link===item.link);if(i>=0)news.saved.splice(i,1);else news.saved.unshift({...item});saveNewsLocal();render()}
+});
+document.addEventListener('submit',async event=>{
+  if(event.target.id!=='newsSourceForm')return;event.preventDefault();
+  try{await addNewsSource(event.target.elements.source.value.trim())}catch(e){news.errors=[e.message];render()}
+});
+
+
 document.addEventListener('click',async ev=>{
   const el=ev.target.closest('[data-act]');if(!el)return;
   const fn=act[el.dataset.act];if(!fn)return;
-  const readActions=['rssSettings','rssRefresh','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
+  const readActions=['newsAdd','newsRemove','newsRefresh','newsMode','newsSave','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
   if(!S.editMode&&!readActions.includes(el.dataset.act)){toast('Vui lòng bật Edit mode.');return}
   try{await fn(el,ev)}catch(e){toast(friendly(e))}
 });
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){checkUpdates();refreshRss();}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){checkUpdates();refreshNews();}});
 document.addEventListener('keydown',ev=>{
   if(ev.key==='Escape'){if(S.lb){S.lb=null;renderLb()}else if(!$('#modal').hidden)closeModal()}
   if(S.lb&&S.lb.ids.length>1){if(ev.key==='ArrowLeft')act.lbPrev();if(ev.key==='ArrowRight')act.lbNext()}

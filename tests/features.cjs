@@ -2,7 +2,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const html=fs.readFileSync('index.html','utf8');
 let js=html.match(/<script>([\s\S]*?)<\/script>/)[1];
 js=js.replace('function openForm(o){','function openForm(o){globalThis.form=o;return;');
-js=js.replace('init();','globalThis.test={S,G,act,device,devicePanel,checkUpdates,refreshRss,viewHocPhan,viewTaiLieu,viewLich,safeNewsLink};');
+js=js.replace('init();','globalThis.test={S,G,act,device,devicePanel,checkUpdates,refreshNews,viewHocPhan,viewTaiLieu,viewLich,safeNewsLink,news,viewTinMoi,addNewsSource,newsItems};');
 const data=new Map();
 const ctx={console,TextEncoder,crypto:require('node:crypto').webcrypto,window:{},document:{addEventListener(){},visibilityState:'visible'},localStorage:{getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)},requestAnimationFrame:()=>1,cancelAnimationFrame(){},setTimeout,clearTimeout};
 vm.createContext(ctx);vm.runInContext(js,ctx);
@@ -25,11 +25,11 @@ vm.createContext(ctx);vm.runInContext(js,ctx);
  assert(t.viewLich().includes('event-han'));
  assert.equal(t.safeNewsLink('javascript:alert(1)'),'#');
  data.set('solop.rssUrl','https://example.com/rss');
- t.device.rss={url:'https://example.com/rss',savedAt:Date.now(),items:[{title:'<unsafe>',link:'javascript:alert(1)'}]};
- assert(t.devicePanel().includes('&lt;unsafe&gt;'));assert(!t.devicePanel().includes('href="javascript:'));
+ const cached={url:'https://example.com/rss',savedAt:Date.now(),items:[{title:'<unsafe>',link:'javascript:alert(1)'}]};
+ t.news.sources=['https://example.com/rss'];t.news.cache={'https://example.com/rss':cached};assert(t.viewTinMoi().includes('&lt;unsafe&gt;'));assert(!t.viewTinMoi().includes('href="javascript:'));
  let calls=0;ctx.fetch=async()=>{calls++;throw Error('offline')};
- await t.refreshRss();assert.equal(calls,0); // Fresh cache avoids network.
- await t.refreshRss(true);assert.equal(calls,1);assert.equal(t.device.rss.items.length,1);assert(t.device.error);
+ await t.refreshNews();assert.equal(calls,0); // Fresh cache avoids network.
+ await t.refreshNews(true);assert.equal(calls,1);assert.equal(t.news.cache['https://example.com/rss'].items.length,1);assert(t.news.errors.length);
  t.S.editMode=false;
  const remote={updatedAt:Date.now()+1000,events:[{id:'new',title:'New event'}],anns:[],docs:[],courses:[],folders:[],albums:[]};
  ctx.fetch=async()=>({ok:true,json:async()=>remote});

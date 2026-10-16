@@ -19,10 +19,16 @@ async function request(url,method='GET'){
   calls++;
   options.lookup(url.hostname,{},(error,address)=>assert.equal(address,'93.184.216.34'));
   const req=new EventEmitter();req.setTimeout=()=>{};
-  const res=new EventEmitter();res.statusCode=200;
-  callback(res);queueMicrotask(()=>{res.emit('data',Buffer.from(xml));res.emit('end')});return req;
+  const res=new EventEmitter();res.statusCode=200;res.headers={};res.resume=()=>{};
+  if(url.pathname==='/redirect'){res.statusCode=302;res.headers.location='/feed';}
+  if(url.pathname==='/private'){res.statusCode=302;res.headers.location='http://127.0.0.1/feed';}
+  const body=url.pathname==='/website'?'<html><head><link rel="alternate" type="application/rss+xml" href="/feed"></head></html>':xml;
+  callback(res);queueMicrotask(()=>{res.emit('data',Buffer.from(body));res.emit('end')});return req;
  };
  const result=await request('https://example.com/rss');assert.equal(result.code,200);assert.equal(result.data.xml,xml);
+ const discovered=await request('https://example.com/website');assert.equal(discovered.code,200);assert.equal(discovered.data.feedUrl,'https://example.com/feed');
+ assert.equal((await request('https://example.com/redirect')).code,200);
+ assert.equal((await request('https://example.com/private')).code,400);
  assert.equal((await request('https://example.com/rss','POST')).code,405);
  console.log('PASS: RSS public HTTPS validation, private address blocking, pinned DNS, feed response and allowed method.');
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>{dns.resolve4=resolve4;https.get=get});
