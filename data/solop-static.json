@@ -25,6 +25,17 @@
       "end": "",
       "place": "Hội trường",
       "note": ""
+    },
+    {
+      "id": "3dh7iw6d",
+      "createdBy": null,
+      "createdAt": 1792111646086,
+      "title": "TB: Tổ chức học tập Nghị quyết",
+      "type": "hd",
+      "date": "2026-10-16",
+      "weeks": 1,
+      "note": "Thông báo lớp",
+      "announcementId": "s0pfyh79"
     }
   ],
   "anns": [
@@ -116,5 +127,5 @@
   "courseId": "9prw41rr",
   "lectureId": "8fzqv62o",
   "albumId": null,
-  "updatedAt": 1792111644061
+  "updatedAt": 1792111646086
 }
