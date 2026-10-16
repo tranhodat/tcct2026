@@ -36,6 +36,13 @@ async function call(handler,method,body={},query={},headers={}){
  assert.equal((await call(reports,'POST',submission)).code,201);
  assert.equal((await call(reports,'POST',submission)).code,201); // Retry does not duplicate file.
  assert.equal((await call(reports,'POST',{...submission,file:{name:'data.csv',content:Buffer.from('a,b').toString('base64')}})).code,201);
+ assert.equal((await call(reports,'POST',{...submission,submissionId:'submission-2',name:'Other'})).code,201);
+ const deleteSubmission={action:'deleteSubmission',roundId,submissionId:'submission-2'};
+ assert.equal((await call(reports,'POST',deleteSubmission)).code,401);
+ assert.equal((await call(reports,'POST',{...deleteSubmission,submissionId:'../bad'},{},{'x-edit-password':'editor'})).code,400);
+ assert.equal((await call(reports,'POST',{...deleteSubmission,submissionId:'missing'},{},{'x-edit-password':'editor'})).code,404);
+ assert.equal((await call(reports,'POST',deleteSubmission,{},{'x-edit-password':'editor'})).code,200);
+ assert(![...files.keys()].some(p=>p.includes('/submission-2/')));
  const list=await call(reports,'GET',{}, {roundId});assert.equal(list.data.submissions.length,1);assert.equal(list.data.submissions[0].files.length,2);
  assert.equal((await call(reports,'POST',{...submission,file:{name:'script.exe',content:'YQ=='}})).code,400);
  assert.equal((await call(reports,'POST',{...submission,file:{name:'a.pdf',content:'A'.repeat(4*1024*1024+4)}})).code,400);
