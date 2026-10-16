@@ -307,6 +307,26 @@ td.c,th.c{text-align:center}
 
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:80;max-width:calc(100% - 32px);box-shadow:var(--shadow);font-size:14px}
 @media (prefers-reduced-motion:no-preference){.card,.album,.btn,.day{transition:border-color .15s,box-shadow .15s,background-color .15s}}
+.event-hoc{background:#f0f3ff;border-left:3px solid #7f94e9}
+.event-hd{background:#edf9f3;border-left:3px solid #6cbca0}
+.event-han{background:#fff1ee;border-left:3px solid #e7a292}
+.ev[class*="event-"],.up[class*="event-"]{--ink:#14213d;--muted:#5a6684;color:var(--ink);border-radius:10px;padding:12px;margin-top:9px}
+.course-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.course-card{--ink:#14213d;--muted:#5a6684;color:var(--ink);min-height:245px;border-radius:20px;padding:24px;background:linear-gradient(145deg,#eef1ff,#fff);border-color:#dce2fc;box-shadow:0 5px 20px #233c7810}
+.course-card.tone-1{background:linear-gradient(145deg,#eaf7f1,#fff);border-color:#d4ebe0}
+.course-card.tone-2{background:linear-gradient(145deg,#fff0e8,#fff);border-color:#f1dfd2}
+.course-top,.course-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%}
+.course-symbol{font-size:32px;color:var(--accent)}
+.course-card h3{font-size:22px;line-height:1.4;margin:10px 0}
+.course-teacher{font-size:13px;line-height:1.7;color:var(--muted)}
+.course-teacher strong{font-size:16px;color:var(--ink)}
+.course-bottom{margin-top:auto;padding-top:18px;border-top:1px solid #cbd4e866;font-size:13px;color:var(--accent)}
+.device-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:16px}
+.rss-panel{margin-bottom:20px}.rss-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:14px}
+.rss-item{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface)}
+.rss-item:hover{border-color:var(--accent)}.rss-item time{display:block;font-size:12px;color:var(--muted);margin-top:8px}
+.update-notice{padding:12px 16px;border-radius:12px;background:#eaf7f1;color:#23523e;margin-bottom:16px;border:1px solid #c8e5d7}
+@media(max-width:600px){.course-grid,.rss-list{grid-template-columns:minmax(0,1fr)}.course-card{min-height:220px}}
 </style>
 
 <header class="hero">
@@ -535,6 +555,7 @@ async function init(){
     const response=await fetch(url,{cache:'no-store'});
     if(response.ok){const remote=await response.json();const local=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!local||(remote.updatedAt||0)>(local.updatedAt||0)){localStorage.setItem(STORAGE_KEY,JSON.stringify(remote));loadState();}}
   }catch(e){}
+  refreshRss();setInterval(checkUpdates,60000);setInterval(()=>refreshRss(),15*60000);
   S.ready=true;
   S.noDb=true;
   S.role='member';
@@ -609,7 +630,7 @@ const timeOf=o=>o.start?(o.end?o.start+'–'+o.end:o.start):'Cả ngày';
 function chipHtml(o){return '<span class="chip '+esc('t-'+o.type)+'">'+(o.start?esc(o.start)+' ':'')+esc(o.title)+'</span>'}
 function evRow(o){
   const t=TYPES[o.type]||TYPES.hoc;
-  return '<div class="ev"><time>'+esc(timeOf(o))+'</time><div><h4>'+esc(o.title)+'</h4><div class="meta"><span class="tag '+(o.type==='han'?'red':o.type==='hd'?'teal':'')+'">'+esc(t)+'</span>'+(o.place?'<span class="sub">'+esc(o.place)+'</span>':'')+(o.w>1?'<span class="tag plain">Hàng tuần · '+(o.k+1)+'/'+o.w+'</span>':'')+(o.sample?'<span class="tag hl">Ví dụ</span>':'')+'</div>'+(o.note?'<p>'+esc(o.note)+'</p>':'')+'</div><div class="ev-acts">'+(W()&&mine(o)?'<button class="link-btn" data-act="editEvent" data-id="'+esc(o.id)+'">Sửa</button><button class="link-btn red" data-act="delEvent" data-id="'+esc(o.id)+'">Xoá'+(o.w>1?' chuỗi':'')+'</button>':'')+'</div></div>';
+  return '<div class="ev event-'+esc(['hoc','hd','han'].includes(o.type)?o.type:'hoc')+'"><time>'+esc(timeOf(o))+'</time><div><h4>'+esc(o.title)+'</h4><div class="meta"><span class="tag '+(o.type==='han'?'red':o.type==='hd'?'teal':'')+'">'+esc(t)+'</span>'+(o.place?'<span class="sub">'+esc(o.place)+'</span>':'')+(o.w>1?'<span class="tag plain">Hàng tuần · '+(o.k+1)+'/'+o.w+'</span>':'')+(o.sample?'<span class="tag hl">Ví dụ</span>':'')+'</div>'+(o.note?'<p>'+esc(o.note)+'</p>':'')+'</div><div class="ev-acts">'+(W()&&mine(o)?'<button class="link-btn" data-act="editEvent" data-id="'+esc(o.id)+'">Sửa</button><button class="link-btn red" data-act="delEvent" data-id="'+esc(o.id)+'">Xoá'+(o.w>1?' chuỗi':'')+'</button>':'')+'</div></div>';
 }
 function viewLich(){
   const y=S.cal.y,m=S.cal.m,todayIso=iso(new Date());
@@ -630,7 +651,7 @@ function viewLich(){
   +(emptyAll?'<div class="empty" style="margin-bottom:16px"><h3>Chưa có lịch nào</h3><p>'+(W()?'Bấm “Thêm lịch” để tạo buổi học, hạn nộp bài hoặc hoạt động của lớp.':'Cán bộ lớp sẽ thêm lịch học và hoạt động tại đây.')+'</p>'+(A()?'<button class="btn" data-act="seed">Thêm dữ liệu mẫu</button>':'')+'</div>':'')
   +'<div class="cal-layout"><div><div class="mgrid">'+dow+cells+'</div><div class="legend"><span><i class="dot t-hoc"></i>Buổi học</span><span><i class="dot t-hd"></i>Hoạt động</span><span><i class="dot t-han"></i>Hạn nộp · Thi</span></div></div>'
   +'<aside><div class="panel"><div class="kicker">Ngày đã chọn</div><h3>'+esc(longDate(S.cal.sel))+'</h3>'+(sel.length?sel.map(evRow).join(''):'<p class="sub" style="margin-top:8px">Không có lịch trong ngày này.</p>')+(W()?'<div style="margin-top:12px"><button class="btn sm" data-act="addEvent">+ Thêm vào ngày này</button></div>':'')+'</div>'
-  +'<div class="panel"><div class="kicker">Sắp tới</div>'+(upcoming.length?upcoming.map(o=>{const d=parse(o.date);return '<div class="up"><div class="dbox"><b>'+d.getDate()+'</b><small>Th '+(d.getMonth()+1)+'</small></div><div><h4>'+esc(o.title)+'</h4><p>'+esc(DOW[d.getDay()])+' · '+esc(timeOf(o))+(o.place?' · '+esc(o.place):'')+'</p></div></div>'}).join(''):'<p class="sub">Chưa có lịch sắp tới.</p>')+'</div></aside></div>';
+  +'<div class="panel"><div class="kicker">Sắp tới</div>'+(upcoming.length?upcoming.map(o=>{const d=parse(o.date);return '<div class="up event-'+esc(['hoc','hd','han'].includes(o.type)?o.type:'hoc')+'"><div class="dbox"><b>'+d.getDate()+'</b><small>Th '+(d.getMonth()+1)+'</small></div><div><h4>'+esc(o.title)+'</h4><p>'+esc(DOW[d.getDay()])+' · '+esc(timeOf(o))+(o.place?' · '+esc(o.place):'')+'</p></div></div>'}).join(''):'<p class="sub">Chưa có lịch sắp tới.</p>')+'</div></aside></div>';
 }
 function eventForm(e){
   const edit=!!e;
@@ -680,7 +701,7 @@ function viewTaiLieu(){
   if(!docs.length)h+='<div class="empty"><h3>Thư mục trống</h3><p>'+(W()?'Tải tệp lên hoặc dán liên kết Google Drive, OneDrive cho tài liệu Word, PowerPoint, Excel.':'Chưa có tài liệu nào trong mục này.')+'</p></div>';
   else h+='<div class="files">'+docs.map(d=>{
     const who=ownerName(d);
-    return '<div class="file"><div class="ext '+kindLabel(d)+'">'+kindLabel(d)+'</div><div style="min-width:0"><a class="nm" href="'+esc(itemHref(d))+'"'+(d.kind==='file'?' download="'+esc(d.name)+'"':'')+' target="_blank" rel="noopener noreferrer">'+esc(d.name)+'</a><div class="mt">'+(cur==='all'?'<span class="tag plain">'+esc(folderName(d.folder||''))+'</span>':'')+(d.size?'<span>'+fmtSize(d.size)+'</span>':'')+'<span>'+esc(stamp(d.createdAt))+'</span>'+(who?'<span>'+esc(who)+'</span>':'')+'</div></div><div>'+(W()&&mine(d)?'<button class="link-btn red" data-act="delDoc" data-id="'+esc(d.id)+'">Xoá</button>':'')+'</div></div>';
+    return '<div class="file"><div class="ext '+kindLabel(d)+'">'+kindLabel(d)+'</div><div style="min-width:0"><a class="nm" href="'+esc(itemHref(d))+'"'+(d.kind==='file'?' download="'+esc(d.name)+'"':'')+' target="_blank" rel="noopener noreferrer">'+esc(d.name)+'</a><div class="mt">'+(cur==='all'?'<span class="tag plain">'+esc(folderName(d.folder||''))+'</span>':'')+(d.size?'<span>'+fmtSize(d.size)+'</span>':'')+'<span>'+esc(stamp(d.createdAt))+'</span>'+(who?'<span>'+esc(who)+'</span>':'')+'</div>'+(d.description?'<p class="sub">'+esc(d.description)+'</p>':'')+'</div><div>'+(W()&&mine(d)?'<button class="link-btn" data-act="editDoc" data-id="'+esc(d.id)+'">Sửa</button><button class="link-btn red" data-act="delDoc" data-id="'+esc(d.id)+'">Xoá</button>':'')+'</div></div>';
   }).join('')+'</div>';
   return h+'</div>';
 }
@@ -693,7 +714,7 @@ function viewHocPhan(){
   if(!S.loaded.courses)return h+'<p class="sub">Đang tải…</p>';
   if(!S.courses.length)return h+'<div class="empty"><h3>Chưa có học phần</h3><p>'+(W()?'Thêm học phần đầu tiên, nhập luôn danh sách bài giảng nếu đã có.':'Học phần và bài giảng sẽ hiển thị tại đây.')+'</p>'+(A()?'<button class="btn" data-act="seed">Thêm dữ liệu mẫu</button>':'')+'</div>';
   const list=S.courses.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'vi'));
-  return h+'<div class="grid">'+list.map(c=>'<button class="card" data-act="openCourse" data-id="'+esc(c.id)+'"><div>'+(c.code?'<span class="tag">'+esc(c.code)+'</span> ':'')+(c.sample?'<span class="tag hl">Ví dụ</span>':'')+'</div><h3>'+esc(c.name)+'</h3><p class="sub">'+(c.teacher?'Giảng viên: '+esc(c.teacher)+' · ':'')+(c.lectures||[]).length+' bài giảng</p></button>').join('')+'</div>';
+  return h+'<div class="grid course-grid">'+list.map((c,i)=>'<button class="card course-card tone-'+(i%3)+'" data-act="openCourse" data-id="'+esc(c.id)+'"><div class="course-top"><span class="tag">'+esc(c.code||'HỌC PHẦN')+'</span><span class="course-symbol" aria-hidden="true">▤</span></div><h3>'+esc(c.name)+'</h3><p class="course-teacher">Giảng viên<br><strong>'+esc(c.teacher||'Chưa cập nhật')+'</strong></p><div class="course-bottom"><span>'+(c.lectures||[]).length+' bài giảng</span><span>Xem bài giảng →</span></div></button>').join('')+'</div>';
 }
 function itemList(cur,key){
   const items=cur[key]||[];
@@ -744,7 +765,7 @@ function viewQuyen(){
    +'<div class="tbl"><table><thead><tr><th>Chức năng</th><th class="c">Thành viên</th><th class="c">Cán bộ lớp</th><th class="c">Quản trị</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+x[0]+'</td>'+x[1]+x[2]+x[3]+'</tr>').join('')+'</tbody></table></div>'
    +'<div class="panel" style="margin-top:18px"><h3>Cấp vai trò cho người trong lớp</h3><p class="sub" style="margin-top:4px">Vai trò gắn với mức chia sẻ của trang. Người sở hữu trang mở nút Chia sẻ rồi mời từng người:</p><ol class="steps"><li><b>Quản trị</b>: mức Editor (hoặc Owner).</li><li><b>Cán bộ lớp</b>: mức Contributor.</li><li><b>Thành viên</b>: mức Viewer hoặc Commenter.</li></ol></div>';
   if(A()){
-    h+='<div class="panel"><h3>Công cụ quản trị</h3><p class="sub" style="margin-top:4px">Đặt tên lớp hiển thị ở đầu trang, hoặc thêm dữ liệu mẫu để xem thử rồi xoá đi.</p><div class="acts" style="margin-top:12px"><button class="btn primary" data-act="editClass">Sửa thông tin lớp</button><button class="btn" data-act="seed">Thêm dữ liệu mẫu</button><button class="btn danger" data-act="unseed">Xoá dữ liệu mẫu</button></div></div>';
+    h+='<div class="panel"><h3>Công cụ quản trị</h3><p class="sub" style="margin-top:4px">Đặt tên lớp hiển thị ở đầu trang, hoặc thêm dữ liệu mẫu để xem thử rồi xoá đi.</p><div class="acts" style="margin-top:12px"><button class="btn primary" data-act="editClass">Sửa thông tin lớp</button><button class="btn" data-act="seed">Thêm dữ liệu mẫu</button></div></div>';
   }
   return h;
 }
@@ -761,11 +782,47 @@ function render(){
   const unread=S.anns.filter(a=>a.createdAt>S.annSeen).length;
   $('#tabs').innerHTML=TABS.map(t=>'<button class="tab" role="tab" data-act="tab" data-tab="'+t[0]+'" aria-selected="'+(S.tab===t[0])+'">'+t[1]+(t[0]==='thongbao'&&unread&&S.tab!=='thongbao'?' <span class="badge" aria-label="'+unread+' thông báo mới">'+unread+'</span>':'')+'</button>').join('');
   let body='';
-  if(S.err)body='<div class="notice warn">'+esc(S.err)+'</div>';
-  if(S.editMode)body+='<div class="acts" style="margin-bottom:16px"><button class="btn sm" data-act="editClass">Thông tin lớp</button><button class="btn sm danger" data-act="unseed">Xoá dữ liệu mẫu</button></div>';
+  body+=devicePanel();
+  if(S.err)body+='<div class="notice warn">'+esc(S.err)+'</div>';
+  if(S.editMode)body+='<div class="acts" style="margin-bottom:16px"><button class="btn sm" data-act="editClass">Thông tin lớp</button></div>';
   const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh}[S.tab];
   $('#view').innerHTML=body+(S.ready?v():'<p class="sub">Đang tải dữ liệu lớp…</p>');
   if(S.lb)renderLb();
+}
+const device={rss:null,error:'',busy:false,update:'',checking:false};
+try{device.rss=JSON.parse(store.get('rssCache')||'null')}catch(e){}
+function safeNewsLink(value){try{const u=new URL(value);return ['http:','https:'].includes(u.protocol)?u.href:'#'}catch(e){return '#'}}
+function devicePanel(){
+  const cache=device.rss,url=store.get('rssUrl');
+  return '<div class="device-tools"><button class="btn sm" data-act="notifications">Thông báo cập nhật: '+(store.get('notify')==='off'?'Tắt':'Bật')+'</button><button class="btn sm" data-act="rssSettings">'+(url?'Đổi nguồn RSS':'Thêm nguồn RSS')+'</button></div>'+(device.update?'<div class="update-notice" role="status">'+esc(device.update)+'</div>':'')+(url?'<section class="panel rss-panel"><div class="bar"><div class="grow"><h3>Tin mới</h3><p class="sub">'+(cache?'Cache thiết bị · '+esc(stamp(cache.savedAt)):'Chưa có bản tin lưu trên thiết bị')+'</p></div><button class="btn sm" data-act="rssRefresh" '+(device.busy?'disabled':'')+'>Làm mới</button></div>'+(device.error?'<p class="sub" role="status">'+esc(device.error)+'</p>':'')+'<div class="rss-list">'+(cache?.items||[]).map(n=>'<a class="rss-item" href="'+esc(safeNewsLink(n.link))+'" target="_blank" rel="noopener noreferrer"><strong>'+esc(n.title)+'</strong>'+(n.date?'<time>'+esc(n.date)+'</time>':'')+'</a>').join('')+'</div></section>':'');
+}
+async function refreshRss(force=false){
+  const url=store.get('rssUrl');if(!url||device.busy)return;
+  if(!force&&device.rss?.url===url&&Date.now()-device.rss.savedAt<15*60000)return;
+  device.busy=true;sched();
+  try{
+    const r=await fetch('/api/rss?url='+encodeURIComponent(url),{cache:'no-store'});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không tải được RSS.');
+    const xml=new DOMParser().parseFromString(data.xml,'text/xml');if(xml.querySelector('parsererror'))throw new Error('Nguồn tin không phải RSS/Atom hợp lệ.');
+    const nodes=[...xml.querySelectorAll('item,entry')];if(!nodes.length&&!xml.querySelector('rss,feed'))throw new Error('Nguồn tin không phải RSS/Atom.');
+    const items=nodes.slice(0,8).map(n=>({title:n.querySelector('title')?.textContent||'Bản tin',link:n.querySelector('link[rel="alternate"]')?.getAttribute('href')||n.querySelector('link')?.getAttribute('href')||n.querySelector('link')?.textContent||'',date:n.querySelector('pubDate,published,updated')?.textContent||''}));
+    if(store.get('rssUrl')!==url)return;
+    device.rss={url,items,savedAt:Date.now()};store.set('rssCache',JSON.stringify(device.rss));device.error='';
+  }catch(e){device.error='Không cập nhật được tin. Giữ bản cache nếu có. '+e.message;}finally{device.busy=false;sched();}
+}
+async function checkUpdates(){
+  if(device.checking||S.editMode||document.visibilityState==='hidden')return;
+  device.checking=true;
+  try{
+    const url=G.repo?'https://raw.githubusercontent.com/'+G.repo+'/'+encodeURIComponent(G.branch)+'/data/solop-static.json':'./data/solop-static.json';
+    const r=await fetch(url,{cache:'no-store'});if(!r.ok)return;const remote=await r.json();const local=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
+    if((remote.updatedAt||0)<=(local?.updatedAt||0))return;
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(remote));loadState();
+    if(store.get('notify')!=='off'){
+      device.update='Hệ thống có cập nhật mới. Lịch, thông báo và tài liệu đã được đồng bộ.';
+      if('Notification' in window&&Notification.permission==='granted')try{new Notification('Sổ lớp có cập nhật',{body:device.update,tag:'notebook-update'})}catch(e){}
+    }
+    sched();
+  }catch(e){}finally{device.checking=false;}
 }
 function setTab(t){
   if(S.tab==='thongbao'&&t!=='thongbao'){S.annSeen=Date.now();store.set('annSeen',String(S.annSeen))}
@@ -798,6 +855,9 @@ async function unseed(){
 
 /* ---------- actions ---------- */
 const act={
+  rssSettings:()=>openForm({title:'Nguồn tin RSS trên thiết bị này',submit:'Lưu nguồn tin',intro:'Link và bản tin cache chỉ lưu trên trình duyệt này. Để trống để xóa nguồn tin.',fields:[{name:'url',label:'Đường dẫn RSS (HTTPS)',value:store.get('rssUrl')||''}],onSubmit:async v=>{if(v.url){const u=new URL(v.url);if(u.protocol!=='https:'||u.username||u.password)throw new Error('Vui lòng nhập link HTTPS hợp lệ.');}store.set('rssUrl',v.url);store.set('rssCache','');device.rss=null;device.error='';if(v.url)await refreshRss();}}),
+  rssRefresh:()=>refreshRss(true),
+  notifications:async()=>{if(store.get('notify')!=='off'&& !('Notification' in window&&Notification.permission==='default')){store.set('notify','off');render();return;}store.set('notify','on');if('Notification' in window&&Notification.permission==='default')await Notification.requestPermission();render();toast('Đã bật thông báo cập nhật khi đang mở trang.');},
   editMode:()=>{
     if(S.editMode){S.editMode=false;G.token='';closeModal();render();return}
     openForm({title:'Edit mode',submit:'Mở khóa',fields:[{name:'password',label:'Mật khẩu',type:'password',required:true}],onSubmit:async v=>{
@@ -842,6 +902,7 @@ const act={
     {name:'link',label:'Đường dẫn',type:'url',required:true,placeholder:'https://…'},
     {name:'folder',label:'Thư mục',type:'select',options:folderOptions(),value:(S.folder!=='all'?S.folder:'')}],
     onSubmit:async v=>{if(!/^https?:\/\//i.test(v.link))throw new Error('Đường dẫn phải bắt đầu bằng http:// hoặc https://');await addDoc('docs',{name:v.name,folder:v.folder,kind:'link',link:v.link})}}),
+  editDoc:el=>{const d=S.docs.find(x=>x.id===el.dataset.id);if(!d)return;openForm({title:'Sửa tài liệu',submit:'Lưu thay đổi',fields:[{name:'name',label:'Tên tài liệu',required:true,value:d.name},{name:'folder',label:'Thư mục',type:'select',options:folderOptions(),value:d.folder||''},...(d.kind==='link'?[{name:'link',label:'Đường dẫn',required:true,value:d.link}]:[]),{name:'description',label:'Ghi chú',type:'textarea',value:d.description||''}],onSubmit:async v=>{if(d.kind==='link'&&!/^https?:\/\//i.test(v.link))throw new Error('Liên kết phải bắt đầu bằng https:// hoặc http://');await mutate('docs','docs',d.id,n=>{n.name=v.name;n.folder=v.folder;n.description=v.description;if(d.kind==='link')n.link=v.link;});}});},
   delDoc:el=>{const d=S.docs.find(x=>x.id===el.dataset.id);if(!d)return;confirmBox('Xoá tài liệu?','“'+d.name+'” sẽ bị xoá khỏi thư mục.','Xoá',async()=>{await delDoc('docs',d.id);if(d.assetId)await dropAssets([d.assetId])})},
   addCourse:()=>openForm({title:'Thêm học phần',submit:'Tạo học phần',fields:[
     {name:'name',label:'Tên học phần',required:true,placeholder:'VD: Cơ sở dữ liệu'},
@@ -889,10 +950,11 @@ const act={
 document.addEventListener('click',async ev=>{
   const el=ev.target.closest('[data-act]');if(!el)return;
   const fn=act[el.dataset.act];if(!fn)return;
-  const readActions=['editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
+  const readActions=['rssSettings','rssRefresh','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
   if(!S.editMode&&!readActions.includes(el.dataset.act)){toast('Vui lòng bật Edit mode.');return}
   try{await fn(el,ev)}catch(e){toast(friendly(e))}
 });
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){checkUpdates();refreshRss();}});
 document.addEventListener('keydown',ev=>{
   if(ev.key==='Escape'){if(S.lb){S.lb=null;renderLb()}else if(!$('#modal').hidden)closeModal()}
   if(S.lb&&S.lb.ids.length>1){if(ev.key==='ArrowLeft')act.lbPrev();if(ev.key==='ArrowRight')act.lbNext()}

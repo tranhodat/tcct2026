@@ -28,3 +28,13 @@ Trang đọc metadata từ repository đã chọn (hoặc `./data/solop-static.j
 ## Kiểm tra
 
 Chạy `node tests/check.cjs`. Kiểm thử gồm chức năng trang, xác thực mật khẩu, đường dẫn upload, ngưỡng dung lượng, lỗi API, metadata SHA và việc không lưu token. API được mô phỏng; không gửi tệp thật 3 MB hoặc commit vào repository thực.
+
+## Device news and update notifications
+
+RSS settings and the last eight articles are stored only in browser localStorage. Use the RSS button to enter a direct public HTTPS feed. Refresh runs every 15 minutes; offline errors preserve cached articles. Clearing browser data removes these settings. The /api/rss function fetches at most 1 MiB and rejects private addresses and redirects.
+
+When the page is open, shared data is checked every minute and when returning to the tab. New data displays an update banner; browser notifications require permission from the notification button. Polling pauses in Edit mode. Notifications do not run after the page is closed.
+
+In Edit mode, document rows include Edit for name, folder, notes, and link URL when applicable. Original uploaded file paths are preserved. Course cards display the teacher or a missing-information label.
+
+Additional checks: node tests/features.cjs and node tests/rss.cjs.
