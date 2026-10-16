@@ -1,0 +1,23 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const data=JSON.parse(fs.readFileSync('data/class-roster.json','utf8'));
+assert.equal(data.members.length,29);
+assert.equal(new Set(data.members.map(m=>m.number)).size,29);
+assert.equal(data.members.filter(m=>m.group==='TỔ 1').length,16);
+assert.equal(data.members.filter(m=>m.group==='TỔ 2').length,13);
+assert.equal(data.members[2].birthDate,'12/05/1995');
+assert.equal(data.members[4].phone,'0944123087');
+assert.equal(data.members[14].phone,'0906.009.284');
+let js=fs.readFileSync('index.html','utf8').match(/<script>([\s\S]*?)<\/script>/)[1];
+js=js.replace('init();','globalThis.test={roster,loadRoster,rosterMembers,rosterTable,viewDanhSach,TABS};');
+const ctx={console,TextEncoder,URL,window:{},document:{addEventListener(){}},localStorage:{getItem:()=>null,setItem(){}},requestAnimationFrame:()=>1,cancelAnimationFrame(){},setTimeout,clearTimeout,fetch:async()=>({ok:true,json:async()=>data})};
+vm.createContext(ctx);vm.runInContext(js,ctx);
+(async()=>{
+ const t=ctx.test;await t.loadRoster();assert.equal(t.TABS.at(-1)[1],'Danh sách lớp');
+ assert.equal(t.rosterMembers().length,29);
+ t.roster.query='tran ho dat';assert.equal(t.rosterMembers().length,1);assert.equal(t.rosterMembers()[0].number,5);
+ t.roster.query='';t.roster.group='TỔ 2';assert.equal(t.rosterMembers().length,13);assert.equal(t.rosterMembers()[0].number,17);
+ t.roster.query='no match';assert(t.rosterTable().includes('Không tìm thấy'));
+ t.roster.query='';t.roster.group='';assert(t.viewDanhSach().includes('Ngày, tháng, năm sinh'));assert(t.viewDanhSach().includes('Chức vụ, đơn vị công tác'));
+ ctx.fetch=async()=>({ok:false});await t.loadRoster();assert(t.roster.error);assert.equal(t.rosterMembers().length,29);
+ console.log('PASS: 29 imported members, group sizes, Excel date conversion, original phone formatting, final tab, accent-insensitive search, filters, numeric ordering and reload fallback.');
+})().catch(e=>{console.error(e);process.exitCode=1});

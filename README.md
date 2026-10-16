@@ -56,3 +56,9 @@ Storage: data/report-rounds.json, data/report-submissions/<round>.json, uploads/
 Editors open Nh?t k? h? th?ng from the Edit mode toolbar and select a day to view the newest 50 entries. The server records class metadata writes, uploads, comments, report-round changes and submitted files from this version onward. Each audit event uses a separate file to avoid lost log entries from concurrent actions. Events contain IDs, server times, actor labels, file paths and GitHub commit IDs where available, and never include tokens, passwords or file bodies. This is an application audit trail, not tamper-proof storage against repository administrators. Public repositories also expose these stored files.
 
 If an action succeeds but its GitHub audit write fails, its response marks X-Audit-Status: failed, the UI displays a warning and the server writes a structured AUDIT_PERSIST_FAILED event to Vercel Logs. No new environment variables are required. Deploy api/reports.js, api/logs.js and lib/github-store.js with the updated site. Additional checks: node tests/reports.cjs and node tests/reports-ui.cjs.
+
+## Class roster
+
+The final Danh s?ch l?p tab reads data/class-roster.json, imported from the CHIA T? sheet of DANH SACH CHIA TO.xlsx: 29 members (16 in group 1, 13 in group 2). Columns preserve the workbook: sequence number, full name, birth date, position/workplace, phone and notes. Split name cells are joined; Excel serial birth dates are formatted as dd/mm/yyyy. Phone values with nine digits and no initial zero have been prefixed with 0; existing formatting is otherwise preserved.
+
+The view includes group filters, accent-insensitive search across all columns, role badges, a sticky table header and horizontal scrolling on small screens. The roster is independent of class metadata saves. Deploy the JSON file with both HTML entrypoints. Validation: node tests/roster.cjs.

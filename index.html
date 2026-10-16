@@ -334,6 +334,13 @@ td.c,th.c{text-align:center}
 .feedback-list{display:grid;gap:12px}.feedback-card{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;border:1px solid var(--line);background:var(--surface);padding:20px;border-radius:16px}
 .feedback-avatar{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#eaf4ef;color:#38775a;font-weight:700}.feedback-meta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.feedback-meta time{font-size:12px;color:var(--muted)}.feedback-card p{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:8px}
 @media(max-width:600px){.ann-row summary{gap:9px;padding:12px}.ann-row-tags{max-width:90px}.ann-expanded{padding:0 14px 16px}.ann-row-meta{font-size:11px}.feedback-card{padding:14px;gap:10px}}
+.roster-hero{display:flex;justify-content:space-between;gap:28px;align-items:center;padding:28px 30px;margin-bottom:20px;border:1px solid #dce4f5;border-radius:20px;background:linear-gradient(120deg,#eaf0ff,#f2f9f6);color:#14213d}
+.roster-eyebrow{font-size:11px;font-weight:700;letter-spacing:1.3px;color:#59719e}.roster-hero h2{font-size:28px;margin:6px 0}.roster-hero p{font-size:13px;max-width:750px;color:#546681;line-height:1.7}
+.roster-stats{display:flex;gap:22px;flex-shrink:0}.roster-stats div{display:grid;text-align:center;gap:4px}.roster-stats strong{font-size:32px;color:#365aaf}.roster-stats span{font-size:12px;color:#546681}
+.roster-panel{padding:22px}.roster-tools{display:flex;gap:12px;align-items:center}.roster-search{display:flex;align-items:center;gap:10px;flex:1;border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--bg)}.roster-search input{width:100%;min-width:0;background:none;border:0;outline:none;color:var(--ink);font:inherit}.roster-search:focus-within{outline:2px solid var(--accent)}.roster-search>span{font-size:24px;color:var(--muted)}
+.roster-filters{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.roster-filters .btn span{padding:0 7px;border-radius:20px;background:#889ac522;font-size:11px}.roster-count{font-size:12px;margin-bottom:12px}
+.roster-scroll{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:70vh}.roster-table{width:100%;min-width:980px;border-collapse:separate;border-spacing:0;text-align:left;font-size:13px}.roster-table thead th{position:sticky;top:0;z-index:2;background:var(--bg);color:var(--muted);font-size:12px;letter-spacing:.2px}.roster-table th,.roster-table td{padding:14px 12px;border-bottom:1px solid var(--line);vertical-align:top}.roster-table tbody tr:not(.roster-group):hover{background:var(--bg)}.roster-name{min-width:175px;color:var(--ink);font-weight:600}.roster-number{width:65px;text-align:center;color:var(--muted)}.roster-nowrap{white-space:nowrap}.roster-workplace{min-width:230px;line-height:1.7}.roster-phone{font-variant-numeric:tabular-nums}.roster-group th{background:#eaf0fc;color:#3d588b;font-weight:700}.roster-group span{font-size:11px;font-weight:400;margin-left:12px}.roster-note{display:inline-block;white-space:nowrap;background:#edf5ee;color:#3d7555;padding:4px 9px;border-radius:8px;font-size:11px}.roster-source{margin-top:14px;font-size:11px}
+@media(max-width:650px){.roster-hero{padding:20px;align-items:flex-start;flex-direction:column;gap:16px}.roster-stats{gap:36px}.roster-stats div{text-align:left}.roster-panel{padding:14px}.roster-tools{align-items:stretch}.roster-search{padding:8px}.roster-search input{font-size:13px}}
 .bell{position:relative;padding:9px;border-radius:50%;width:40px;height:40px;justify-content:center}
 .bell-dot{position:absolute;right:4px;top:4px;width:7px;height:7px;border-radius:50%;background:var(--teal)}
 .bell[aria-pressed="false"] .bell-dot{display:none}
@@ -430,7 +437,7 @@ function lectureUploadContext(c,l,section){return {kind:'course',courseName:c.co
 function albumUploadContext(a){return {kind:'album',albumName:a.title,albumId:a.id,date:a.date};}
 
 const TYPES={hoc:'Buổi học',hd:'Hoạt động',han:'Hạn nộp · Thi'};
-const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh'],['tinmoi','Tin mới'],['baocao','Nộp báo cáo'],['ykien','Ý kiến']];
+const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh'],['tinmoi','Tin mới'],['baocao','Nộp báo cáo'],['ykien','Ý kiến'],['danhsach','Danh s\u00e1ch l\u1edbp']];
 const ROLE={admin:['Quản trị','admin'],officer:['Cán bộ lớp','officer'],member:['Thành viên','member'],unknown:['Quyền chưa xác định','member'],guest:['Khách','member']};
 const OK_TYPES=['image/png','image/jpeg','image/gif','image/webp','image/svg+xml','video/mp4','video/webm','application/pdf','text/csv','text/markdown','application/json','text/plain'];
 const EXT={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',mp4:'video/mp4',webm:'video/webm',csv:'text/csv',md:'text/markdown',json:'application/json',txt:'text/plain'};
@@ -583,7 +590,7 @@ async function init(){
     const response=await fetch(url,{cache:'no-store'});
     if(response.ok){const remote=await response.json();const local=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!local||(remote.updatedAt||0)>(local.updatedAt||0)){localStorage.setItem(STORAGE_KEY,JSON.stringify(remote));loadState();}}
   }catch(e){}
-  if(S.tab==='ykien')loadComments();if(S.tab==='baocao')loadReports();
+  if(S.tab==='ykien')loadComments();if(S.tab==='baocao')loadReports();if(S.tab==='danhsach')loadRoster();
   refreshNews();setInterval(checkUpdates,60000);setInterval(()=>refreshNews(),15*60000);
   S.ready=true;
   S.noDb=true;
@@ -815,7 +822,7 @@ function render(){
   body+=devicePanel();
   if(S.err)body+='<div class="notice warn">'+esc(S.err)+'</div>';
   if(S.editMode)body+='<div class="acts" style="margin-bottom:16px"><button class="btn sm" data-act="editClass">Thông tin lớp</button><button class="btn sm" data-act="systemLog">Nhật ký hệ thống</button></div>';
-  const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh,tinmoi:viewTinMoi,ykien:viewYKien,baocao:viewBaoCao,nhatky:viewNhatKy}[S.tab];
+  const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh,tinmoi:viewTinMoi,ykien:viewYKien,baocao:viewBaoCao,nhatky:viewNhatKy,danhsach:viewDanhSach}[S.tab];
   $('#view').innerHTML=body+(S.ready?v():'<p class="sub">Đang tải dữ liệu lớp…</p>');
   if(S.lb)renderLb();
 }
@@ -841,7 +848,7 @@ async function checkUpdates(){
 function setTab(t){
   if(S.tab==='thongbao'&&t!=='thongbao'){S.annSeen=Date.now();store.set('annSeen',String(S.annSeen))}
   if(t==='thongbao'){S.newCut=S.annSeen;S.annSeen=Date.now();store.set('annSeen',String(S.annSeen))}
-  if(!TABS.some(tab=>tab[0]===t))return;S.tab=t;store.set('tab',t);render();window.scrollTo(0,0);if(t==='ykien')loadComments();if(t==='baocao')loadReports();
+  if(!TABS.some(tab=>tab[0]===t))return;S.tab=t;store.set('tab',t);render();window.scrollTo(0,0);if(t==='ykien')loadComments();if(t==='baocao')loadReports();if(t==='danhsach'&&!roster.data)loadRoster();
 }
 
 /* ---------- seed ---------- */
@@ -997,6 +1004,22 @@ Object.assign(act,{
  }});},
  systemLog:()=>{S.tab='nhatky';render();return loadJournal()},logRefresh:()=>loadJournal(),logDate:()=>openForm({title:'Ngày xem nhật ký',fields:[{name:'date',label:'Ngày',type:'date',required:true,value:journal.date}],onSubmit:async v=>{journal.date=v.date;await loadJournal();}})
 });
+const roster={data:null,loading:false,error:'',query:'',group:''};
+function rosterSearchText(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[đĐ]/g,'d').toLowerCase();}
+function rosterMembers(){const words=rosterSearchText(roster.query).trim().split(/\s+/).filter(Boolean);return (roster.data?.members||[]).filter(m=>(!roster.group||m.group===roster.group)&&words.every(word=>rosterSearchText([m.number,m.name,m.birthDate,m.workplace,m.phone,m.note,m.group].join(' ')).includes(word))).slice().sort((a,b)=>a.number-b.number);}
+function rosterTable(){
+ const members=rosterMembers();let previous='';
+ return '<p class="sub roster-count" role="status">Hiển thị '+members.length+' / '+(roster.data?.members.length||0)+' học viên</p><div class="roster-scroll"><table class="roster-table"><caption class="sr-only">Danh sách lớp theo tổ</caption><thead><tr><th scope="col">Số TT</th><th scope="col">Họ và tên</th><th scope="col">Ngày, tháng, năm sinh</th><th scope="col">Chức vụ, đơn vị công tác</th><th scope="col">Số điện thoại</th><th scope="col">Ghi chú</th></tr></thead><tbody>'+members.map(m=>{const group=m.group!==previous?'<tr class="roster-group"><th colspan="6" scope="rowgroup">'+esc(m.group)+' <span>'+members.filter(x=>x.group===m.group).length+' học viên</span></th></tr>':'';previous=m.group;return group+'<tr><td class="roster-number">'+esc(m.number)+'</td><th scope="row" class="roster-name">'+esc(m.name)+'</th><td class="roster-nowrap">'+esc(m.birthDate)+'</td><td class="roster-workplace">'+esc(m.workplace)+'</td><td class="roster-nowrap roster-phone">'+esc(m.phone||'—')+'</td><td>'+(m.note?'<span class="roster-note">'+esc(m.note)+'</span>':'<span class="sub">—</span>')+'</td></tr>'}).join('')+(members.length?'':'<tr><td colspan="6" class="empty">Không tìm thấy học viên phù hợp.</td></tr>')+'</tbody></table></div>';
+}
+function viewDanhSach(){
+ if(!roster.data)return '<div class="bar"><div class="grow"><h2>Danh sách lớp</h2></div><button class="btn" data-act="rosterRefresh">Tải lại</button></div>'+(roster.error?'<p class="notice warn" role="alert">'+esc(roster.error)+'</p>':'<p class="sub">Đang tải danh sách lớp…</p>');
+ const members=roster.data.members,groups=[...new Set(members.map(m=>m.group))];
+ return '<section class="roster-hero"><div><span class="roster-eyebrow">K02A02 · DANH SÁCH HỌC VIÊN</span><h2>Danh sách lớp</h2><p>'+esc(roster.data.title)+'</p></div><div class="roster-stats"><div><strong>'+members.length+'</strong><span>Học viên</span></div><div><strong>'+groups.length+'</strong><span>Tổ học tập</span></div></div></section><section class="panel roster-panel"><div class="roster-tools"><div class="roster-search"><label class="sr-only" for="rosterSearch">Tìm học viên</label><span aria-hidden="true">⌕</span><input id="rosterSearch" type="search" value="'+esc(roster.query)+'" placeholder="Tìm họ tên, số thứ tự, đơn vị, số điện thoại…" autocomplete="off"></div><button class="btn sm" data-act="rosterRefresh">Tải lại</button></div><div class="roster-filters" role="group" aria-label="Lọc theo tổ">'+[['','Tất cả',members.length],...groups.map(g=>[g,g,members.filter(m=>m.group===g).length])].map(([id,label,count])=>'<button class="btn sm '+(roster.group===id?'primary':'')+'" data-act="rosterGroup" data-group="'+esc(id)+'" aria-pressed="'+(roster.group===id)+'">'+esc(label)+' <span>'+count+'</span></button>').join('')+'</div>'+(roster.error?'<p class="notice warn">'+esc(roster.error)+'</p>':'')+'<div id="rosterResults">'+rosterTable()+'</div><p class="sub roster-source">Nguồn: '+esc(roster.data.source)+' · '+esc(roster.data.sheet)+'. Số điện thoại đã được bổ sung số 0 đầu nếu thiếu.</p></section>';
+}
+async function loadRoster(){if(roster.loading)return;roster.loading=true;roster.error='';try{const response=await fetch('./data/class-roster.json',{cache:'no-store'});if(!response.ok)throw Error('Không tải được danh sách lớp.');const data=await response.json();if(!Array.isArray(data.members))throw Error('Dữ liệu danh sách lớp không hợp lệ.');roster.data=data;}catch(e){roster.error=e.message}finally{roster.loading=false;sched();}}
+Object.assign(act,{rosterRefresh:()=>loadRoster(),rosterGroup:el=>{roster.group=el.dataset.group;render()}});
+document.addEventListener('input',event=>{if(event.target.id!=='rosterSearch')return;roster.query=event.target.value;const results=$('#rosterResults');if(results)results.innerHTML=rosterTable();});
+
 const feedback={items:[],busy:false,error:'',loaded:false};
 function viewYKien(){
   return '<div class="bar"><div class="grow"><h2>Ý kiến của lớp</h2><p class="sub">Mọi người đều có thể gửi ý kiến, không cần bật Edit mode. Ý kiến được chia sẻ với cả lớp.</p></div><button class="btn" data-act="commentsRefresh" '+(feedback.busy?'disabled':'')+'>Làm mới</button><button class="btn primary" data-act="commentAdd" aria-label="Thêm ý kiến">＋ Thêm ý kiến</button></div>'+(feedback.error?'<p class="notice warn" role="alert">'+esc(feedback.error)+'</p>':'')+(feedback.busy?'<p class="sub" role="status">Đang tải ý kiến…</p>':'')+'<div class="feedback-list">'+(feedback.items.length?feedback.items.slice().sort((a,b)=>b.createdAt-a.createdAt).map(c=>'<article class="feedback-card"><span class="feedback-avatar" aria-hidden="true">'+esc((c.name||'?').slice(0,1).toUpperCase())+'</span><div><div class="feedback-meta"><strong>'+esc(c.name)+'</strong><time>'+esc(stamp(c.createdAt))+'</time></div><p>'+esc(c.text)+'</p></div></article>').join(''):feedback.loaded?'<div class="empty"><h3>Chưa có ý kiến</h3><p>Bấm ＋ để chia sẻ ý kiến đầu tiên với cả lớp.</p></div>':'')+'</div>';
@@ -1084,7 +1107,7 @@ document.addEventListener('submit',async event=>{
 document.addEventListener('click',async ev=>{
   const el=ev.target.closest('[data-act]');if(!el)return;
   const fn=act[el.dataset.act];if(!fn)return;
-  const readActions=['reportSubmit','reportsRefresh','reportSelect','commentAdd','commentsRefresh','newsAdd','newsRemove','newsRefresh','newsMode','newsSave','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
+  const readActions=['rosterRefresh','rosterGroup','reportSubmit','reportsRefresh','reportSelect','commentAdd','commentsRefresh','newsAdd','newsRemove','newsRefresh','newsMode','newsSave','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
   if(!S.editMode&&!readActions.includes(el.dataset.act)){toast('Vui lòng bật Edit mode.');return}
   try{await fn(el,ev)}catch(e){toast(friendly(e))}
 });
