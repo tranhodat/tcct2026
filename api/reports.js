@@ -15,6 +15,27 @@ module.exports=async(req,res)=>{
   }
   if(req.headers.origin&&new URL(req.headers.origin).host!==req.headers.host)return res.status(403).json({message:'Nguồn gửi không hợp lệ.'});
   const b=typeof req.body==='string'?JSON.parse(req.body):req.body||{};
+  if(['deleteRound','deleteFile'].includes(b.action)){
+   if(!editor(req))return res.status(401).json({message:'Bật Edit mode để xóa báo cáo.'});
+   if(!validId(b.roundId)||b.action==='deleteFile'&&(!validId(b.submissionId)||typeof b.fileId!=='string'||!/^[a-f0-9]{64}$/.test(b.fileId)))return res.status(400).json({message:'Yêu cầu xóa không hợp lệ.'});
+   if(!(await read(roundsPath,[])).data.some(r=>r.id===b.roundId))return res.status(404).json({message:'Không tìm thấy đợt nộp.'});
+   const path='data/report-submissions/'+b.roundId+'.json',submissions=(await read(path,[])).data;
+   const files=submissions.filter(s=>b.action==='deleteRound'||s.id===b.submissionId).flatMap(s=>(s.files||[]).filter(f=>b.action==='deleteRound'||f.id===b.fileId));
+   if(b.action==='deleteFile'&&!files.length)return res.status(404).json({message:'Không tìm thấy file.'});
+   for(const file of files){
+    if(typeof file.path!=='string'||!file.path.startsWith('uploads/bao-cao/'+b.roundId+'/')||file.path.includes('..'))throw Error('Đường dẫn không hợp lệ.');
+    for(let attempt=0;attempt<4;attempt++){
+     const current=await request(file.path);if(!current)break;
+     try{await request(file.path,'DELETE',{message:'Delete report file',sha:current.sha});break}catch(e){if(![409,422].includes(e.status)||attempt===3)throw e}
+    }
+   }
+   if(b.action==='deleteRound'){
+    await update(path,[],()=>[]);
+    await update(roundsPath,[],list=>list.filter(r=>r.id!==b.roundId));
+   }else await update(path,[],list=>list.map(s=>s.id===b.submissionId?{...s,files:s.files.filter(f=>f.id!==b.fileId)}:s).filter(s=>s.files.length));
+   const logged=await audit(b.action==='deleteRound'?'report.round.delete':'report.file.delete',{actor:'editor',roundId:b.roundId});res.setHeader('X-Audit-Status',logged?'saved':'failed');
+   return res.status(200).json({deleted:true});
+  }
   if(['create','edit'].includes(b.action)){
    if(!editor(req))return res.status(401).json({message:'Bật Edit mode để tạo hoặc sửa đợt nộp.'});
    const title=String(b.title||'').trim(),description=String(b.description||'').trim(),opensAt=new Date(b.opensAt),closesAt=new Date(b.closesAt);
