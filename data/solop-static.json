@@ -58,20 +58,7 @@
       "name": "Quyết định"
     }
   ],
-  "docs": [
-    {
-      "id": "szrtpooq",
-      "createdBy": null,
-      "createdAt": 1792080664824,
-      "name": "So luong nguoi dung - Elearning.png",
-      "folder": "",
-      "kind": "file",
-      "assetId": "https://raw.githubusercontent.com/tranhodat/tcct2026/main/uploads/tai-lieu/chua-phan-loai/so-luong-nguoi-dung-elearning--mv9qk19o-dd98ed18.png",
-      "githubPath": "uploads/tai-lieu/chua-phan-loai/so-luong-nguoi-dung-elearning--mv9qk19o-dd98ed18.png",
-      "size": 28238,
-      "mime": "image/png"
-    }
-  ],
+  "docs": [],
   "courses": [
     {
       "id": "9prw41rr",
@@ -115,5 +102,5 @@
   "courseId": "9prw41rr",
   "lectureId": "8fzqv62o",
   "albumId": null,
-  "updatedAt": 1792113937794
+  "updatedAt": 1792113942839
 }
