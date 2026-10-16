@@ -6,9 +6,12 @@ vm.createContext(ctx);vm.runInContext(js,ctx);
 (async()=>{
  const t=ctx.test;t.reports.rounds=[{id:'round',title:'Reports',opensAt:new Date(Date.now()-60000).toISOString(),closesAt:new Date(Date.now()+60000).toISOString()}];t.reports.selected='round';
  assert(t.viewBaoCao().includes('reportSubmit'));assert(!t.viewBaoCao().includes('reportCreate'));
+ t.reports.submissions=[{studentId:'10',name:'Ten',updatedAt:1,files:[]},{studentId:'2',name:'Two',updatedAt:1,files:[]},{studentId:'1',name:'One',updatedAt:1,files:[]}];
+ const table=t.viewBaoCao();assert(table.includes('File đã nộp'));assert(table.indexOf('<strong>One</strong>')<table.indexOf('<strong>Two</strong>'));assert(table.indexOf('<strong>Two</strong>')<table.indexOf('<strong>Ten</strong>'));
  t.S.editMode=true;assert(t.viewBaoCao().includes('reportCreate'));t.act.reportCreate();assert(ctx.form.fields.some(f=>f.type==='datetime-local'));
  assert.equal(t.reportLocal('2026-10-16T00:00:00Z'),'2026-10-16T07:00');
  t.S.editMode=false;t.act.reportSubmit();assert(ctx.form.fields.find(f=>f.type==='file').multiple);
+ assert.equal(ctx.form.fields[0].label,'Số thứ tự');assert.equal(ctx.form.fields[1].label,'Họ tên');
  let fail=true,calls=[];
  ctx.fetch=async(url,options)=>{
   if(options?.method==='POST'){const b=JSON.parse(options.body);calls.push(b);if(b.file.name==='second.pdf'&&fail)return {ok:false,json:async()=>({message:'Try again'})};return {ok:true,json:async()=>({submission:{}})}}

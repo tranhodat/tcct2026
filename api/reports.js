@@ -27,7 +27,7 @@ module.exports=async(req,res)=>{
   }
   if(b.action!=='submit'||!validId(b.roundId)||!validId(b.submissionId))return res.status(400).json({message:'Yêu cầu nộp không hợp lệ.'});
   const name=typeof b.name==='string'?b.name.trim():'',studentId=typeof b.studentId==='string'?b.studentId.trim():'';
-  if(!name||name.length>80||!studentId||studentId.length>80)return res.status(400).json({message:'Nhập họ tên và mã học viên (tối đa 80 ký tự).'});
+  if(!name||name.length>80||!studentId||studentId.length>80)return res.status(400).json({message:'Nhập họ tên và số thứ tự (tối đa 80 ký tự).'});
   const round=(await read(roundsPath,[])).data.find(r=>r.id===b.roundId);
   if(!round)return res.status(404).json({message:'Không tìm thấy đợt nộp.'});
   const now=Date.now();if(now<Date.parse(round.opensAt)||now>Date.parse(round.closesAt))return res.status(403).json({message:'Đợt nộp chưa mở hoặc đã hết hạn.'});
