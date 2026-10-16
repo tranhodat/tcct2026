@@ -58,7 +58,21 @@
       "name": "Thời khóa biểu"
     }
   ],
-  "docs": [],
+  "docs": [
+    {
+      "id": "sr5wrtgo",
+      "createdBy": null,
+      "createdAt": 1792116732982,
+      "name": "Thời khóa biểu",
+      "originalName": "K02A02-NNPL-14-10.pdf",
+      "folder": "jov5w8h7",
+      "kind": "file",
+      "assetId": "https://raw.githubusercontent.com/tranhodat/tcct2026/main/uploads/tai-lieu/thoi-khoa-bieu/k02a02-nnpl-14-10--mvac0yvq-66ed0d5c.pdf",
+      "githubPath": "uploads/tai-lieu/thoi-khoa-bieu/k02a02-nnpl-14-10--mvac0yvq-66ed0d5c.pdf",
+      "size": 882720,
+      "mime": "application/pdf"
+    }
+  ],
   "courses": [
     {
       "id": "9prw41rr",
@@ -98,9 +112,9 @@
     "class": {}
   },
   "cls": {},
-  "folder": "ibdhn9ts",
+  "folder": "jov5w8h7",
   "courseId": "9prw41rr",
   "lectureId": "8fzqv62o",
   "albumId": null,
-  "updatedAt": 1792116352810
+  "updatedAt": 1792116732982
 }
