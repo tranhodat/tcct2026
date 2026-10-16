@@ -11,7 +11,7 @@ function app(data=new Map()){
 }
 (async()=>{
  const {ctx,t,data,node,listeners}=app();
- assert.equal(t.TABS.map(x=>x[0]).join(','),'lich,thongbao,tailieu,hocphan,hinhanh,tinmoi,baocao,ykien,danhsach');
+ assert.equal(t.TABS.map(x=>x[0]).join(','),'lich,thongbao,tailieu,hocphan,hinhanh,baocao,ykien,danhsach');
  // Exercise the tab's actual click handler and rendering, then create and pin an announcement.
  await listeners.click[0]({target:{closest:()=>({dataset:{act:'tab',tab:'thongbao'}})}});
  assert.equal(t.S.tab,'thongbao');assert(node('#view').innerHTML.includes('Chưa có thông báo'));

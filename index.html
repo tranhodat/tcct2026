@@ -371,7 +371,7 @@ td.c,th.c{text-align:center}
         <div class="eyebrow" id="eyebrow" hidden>Thông tin lớp</div>
         <h1 id="clsName">K02A02 Notebook</h1>
       </div>
-      <div class="hero-tools"><button class="btn bell" id="recoverBtn" data-act="recoverShared" aria-label="Đồng bộ dữ liệu còn thiếu trên máy" title="Đồng bộ dữ liệu còn thiếu trên máy" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 2M4 17l2 2a7 7 0 0 0 12-2"/></svg></button><button class="btn bell" id="notifyBtn" data-act="notifications" aria-label="Thông báo cập nhật" title="Thông báo cập nhật"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="bell-dot"></span></button><div class="role" id="roleChip"><i></i><span>Đang tải…</span></div><button class="btn sm" id="authBtn" data-act="editMode">Edit mode</button></div>
+      <div class="hero-tools"><button class="btn bell" id="recoverBtn" data-act="recoverShared" aria-label="Đồng bộ dữ liệu còn thiếu trên máy" title="Đồng bộ dữ liệu còn thiếu trên máy" hidden><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 2M4 17l2 2a7 7 0 0 0 12-2"/></svg></button><button class="btn bell" id="syncBtn" data-act="syncNow" aria-label="Đồng bộ dữ liệu" title="Đồng bộ dữ liệu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 2M4 17l2 2a7 7 0 0 0 12-2"/></svg></button><button class="btn bell" id="notifyBtn" data-act="notifications" aria-label="Thông báo cập nhật" title="Thông báo cập nhật"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span class="bell-dot"></span></button><div class="role" id="roleChip"><i></i><span>Đang tải…</span></div><button class="btn sm" id="authBtn" data-act="editMode">Edit mode</button></div>
     </div>
   </div>
 </header>
@@ -438,7 +438,7 @@ function lectureUploadContext(c,l,section){return {kind:'course',courseName:c.co
 function albumUploadContext(a){return {kind:'album',albumName:a.title,albumId:a.id,date:a.date};}
 
 const TYPES={hoc:'Buổi học',hd:'Hoạt động',han:'Hạn nộp · Thi'};
-const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh'],['tinmoi','Tin mới'],['baocao','Nộp báo cáo'],['ykien','Ý kiến'],['danhsach','Danh s\u00e1ch l\u1edbp']];
+const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh'],['baocao','Nộp báo cáo'],['ykien','Ý kiến'],['danhsach','Danh s\u00e1ch l\u1edbp']];
 const ROLE={admin:['Quản trị','admin'],officer:['Cán bộ lớp','officer'],member:['Thành viên','member'],unknown:['Quyền chưa xác định','member'],guest:['Khách','member']};
 const OK_TYPES=['image/png','image/jpeg','image/gif','image/webp','image/svg+xml','video/mp4','video/webm','application/pdf','text/csv','text/markdown','application/json','text/plain'];
 const EXT={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',mp4:'video/mp4',webm:'video/webm',csv:'text/csv',md:'text/markdown',json:'application/json',txt:'text/plain'};
@@ -447,7 +447,7 @@ const ACCEPT_IMG='.png,.jpg,.jpeg,.gif,.webp';
 
 const now=new Date();
 const S={db:null,user:null,assets:null,me:{id:null},role:'member',ro:false,ready:false,noDb:false,editMode:false,
-  tab:store.get('tab')||'lich',loaded:{},err:null,names:{},asked:{},
+  tab:TABS.some(([id])=>id===store.get('tab'))?store.get('tab'):'lich',loaded:{},err:null,names:{},asked:{},
   events:[],anns:[],folders:[],docs:[],courses:[],albums:[],cls:{},
   cal:{y:now.getFullYear(),m:now.getMonth(),sel:iso(now)},
   folder:'all',courseId:null,lectureId:null,albumId:null,lb:null,
@@ -836,7 +836,7 @@ function render(){
 }
 const device={update:'',checking:false};
 function safeNewsLink(value){try{const u=new URL(value);return ['http:','https:'].includes(u.protocol)?u.href:'#'}catch(e){return '#'}}
-function devicePanel(){return '<div style="margin-bottom:12px"><button class="btn sm" data-act="syncNow">↻ Đồng bộ dữ liệu</button></div>'+(device.update?'<div class="update-notice" role="status">'+esc(device.update)+'</div>':'');}
+function devicePanel(){return device.update?'<div class="update-notice" role="status">'+esc(device.update)+'</div>':'';}
 
 async function checkUpdates(){
  if(device.checking||S.editMode||document.visibilityState==='hidden')return;device.checking=true;
