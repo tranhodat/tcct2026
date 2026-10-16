@@ -70,18 +70,6 @@
       "githubPath": "uploads/tai-lieu/chua-phan-loai/so-luong-nguoi-dung-elearning--mv9qk19o-dd98ed18.png",
       "size": 28238,
       "mime": "image/png"
-    },
-    {
-      "id": "rpco8vye",
-      "createdBy": null,
-      "createdAt": 1792080833235,
-      "name": "So luong nguoi dung - Elearning.png",
-      "folder": "ibdhn9ts",
-      "kind": "file",
-      "assetId": "https://raw.githubusercontent.com/tranhodat/tcct2026/main/uploads/tai-lieu/quyet-dinh/so-luong-nguoi-dung-elearning--mv9qnn47-de196e7c.png",
-      "githubPath": "uploads/tai-lieu/quyet-dinh/so-luong-nguoi-dung-elearning--mv9qnn47-de196e7c.png",
-      "size": 28238,
-      "mime": "image/png"
     }
   ],
   "courses": [
@@ -127,5 +115,5 @@
   "courseId": "9prw41rr",
   "lectureId": "8fzqv62o",
   "albumId": null,
-  "updatedAt": 1792111646086
+  "updatedAt": 1792113937794
 }
