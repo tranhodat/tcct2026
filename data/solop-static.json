@@ -25,9 +25,31 @@
       "end": "",
       "place": "Hội trường",
       "note": ""
+    },
+    {
+      "id": "3dh7iw6d",
+      "createdBy": null,
+      "createdAt": 1792111646086,
+      "title": "TB: Tổ chức học tập Nghị quyết",
+      "type": "hd",
+      "date": "2026-10-16",
+      "weeks": 1,
+      "note": "Thông báo lớp",
+      "announcementId": "s0pfyh79"
     }
   ],
-  "anns": [],
+  "anns": [
+    {
+      "id": "s0pfyh79",
+      "createdBy": null,
+      "createdAt": 1792111644061,
+      "title": "Tổ chức học tập Nghị quyết",
+      "body": "Tổ chức học tập Nghị quyết \nVào 7g45 ngày 16/10/2026",
+      "important": false,
+      "pinned": false,
+      "authorRole": "member"
+    }
+  ],
   "folders": [
     {
       "id": "ibdhn9ts",
@@ -101,9 +123,9 @@
     "class": {}
   },
   "cls": {},
-  "folder": "ibdhn9ts",
+  "folder": "all",
   "courseId": "9prw41rr",
-  "lectureId": "r4rrtoh6",
+  "lectureId": "8fzqv62o",
   "albumId": null,
-  "updatedAt": 1792100703065
+  "updatedAt": 1792111646086
 }
