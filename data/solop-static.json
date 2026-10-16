@@ -56,6 +56,12 @@
       "createdBy": null,
       "createdAt": 1792078512798,
       "name": "Quyết định"
+    },
+    {
+      "id": "jov5w8h7",
+      "createdBy": null,
+      "createdAt": 1792116315497,
+      "name": "Thời khóa biểu"
     }
   ],
   "docs": [],
@@ -102,5 +108,5 @@
   "courseId": "9prw41rr",
   "lectureId": "8fzqv62o",
   "albumId": null,
-  "updatedAt": 1792113942839
+  "updatedAt": 1792116315497
 }
