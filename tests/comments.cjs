@@ -22,12 +22,13 @@ async function request(method='GET',body,headers={}){
  assert.equal((await request()).data.comments[0].text,'Existing');
  assert.equal((await request('DELETE')).code,405);
  assert.equal((await request('POST',{name:'',text:'x'})).code,400);
- assert.equal((await request('POST',{name:'A',text:'x'.repeat(2001)})).code,400);
+ assert.equal((await request('POST',{name:'A',text:'x'.repeat(20001)})).code,400);
  assert.equal((await request('POST',{name:'A',text:'x'},{origin:'https://other.example',host:'app.example'})).code,403);
  conflict=true;
  const result=await request('POST',{name:'Reader',text:'Public feedback',comments:[],branch:'other',path:'index.html'});
  assert.equal(result.code,201);assert.equal(stored.length,3);assert(stored.some(c=>c.id==='concurrent'));assert.equal(stored.at(-1).text,'Public feedback');
  assert(!JSON.stringify(result.data).includes('server-secret'));
+ assert.equal((await request('POST',{name:'Reader',text:'x'.repeat(20000)})).code,201);
  const id=result.data.comment.id,voterId='test-device-123456789';
  assert.equal((await request('POST',{action:'delete',id})).code,403);
  assert.equal((await request('POST',{action:'vote',id,voterId,voted:true})).data.comment.votes,1);

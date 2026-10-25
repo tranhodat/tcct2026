@@ -24,7 +24,7 @@ module.exports = async (req,res) => {
     if(action==='add'){
     const name=typeof body?.name==='string'?body.name.trim():'';
     const text=typeof body?.text==='string'?body.text.trim():'';
-    if(!name||name.length>80||!text||text.length>2000)return fail(400,'Nhập tên (tối đa 80 ký tự) và ý kiến (tối đa 2.000 ký tự).');
+    if(!name||name.length>80||!text||text.length>20000)return fail(400,'Nhập tên (tối đa 80 ký tự) và ý kiến (tối đa 20.000 ký tự).');
     comment={id:randomUUID(),name,text,createdAt:Date.now()};
     }
   }

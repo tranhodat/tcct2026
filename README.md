@@ -45,7 +45,7 @@ Tabs are ordered: calendar, announcements, documents, courses, images, news, fee
 
 The feedback tab allows every reader to add comments with the plus button without Edit mode. GET/POST /api/comments reads/appends data/comments.json using the existing server-side GITHUB_TOKEN, GITHUB_REPO and GITHUB_BRANCH. No additional environment variables are required. The server validates names/text, fixes the write destination, preserves earlier comments and retries GitHub SHA conflicts. Names are self-reported; comments are shared with everyone. Only the last entered display name is remembered locally.
 
-Limits: 80 characters per name, 2,000 characters per comment, 2,000 comments or 700 KiB total storage. The UI reports write errors and retains the submitted form for retry. Use the refresh button to load other readers' comments. Additional test: node tests/comments.cjs.
+Limits: 80 characters per name, 20,000 characters per comment, 2,000 comments or 700 KiB total storage. The UI reports write errors and retains the submitted form for retry. Use the refresh button to load other readers' comments. Additional test: node tests/comments.cjs.
 
 ## Report rounds and audit trail
 

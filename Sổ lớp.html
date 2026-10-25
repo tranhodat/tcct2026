@@ -1097,8 +1097,8 @@ Object.assign(act,{
   commentVote:el=>changeComment(el.dataset.id,'vote'),
   commentDelete:el=>{if(!W())return;confirmBox('Xoá ý kiến?','Ý kiến và các lượt vote sẽ bị xoá.','Xoá',()=>changeComment(el.dataset.id,'delete'));},
   commentsRefresh:()=>loadComments(),
-  commentAdd:()=>openForm({title:'Thêm ý kiến',submit:'Gửi ý kiến',intro:'Ý kiến được hiển thị công khai cho cả lớp. Bạn có thể bấm ＋ để gửi thêm ý kiến khác.',fields:[{name:'name',label:'Tên của bạn',required:true,value:store.get('commentName')||'',hint:'Tối đa 80 ký tự.'},{name:'text',label:'Ý kiến',type:'textarea',rows:5,required:true,hint:'Tối đa 2.000 ký tự.'}],onSubmit:async v=>{
-    if(v.name.length>80||v.text.length>2000)throw new Error('Tên tối đa 80 ký tự, ý kiến tối đa 2.000 ký tự.');
+  commentAdd:()=>openForm({title:'Thêm ý kiến',submit:'Gửi ý kiến',intro:'Ý kiến được hiển thị công khai cho cả lớp. Bạn có thể bấm ＋ để gửi thêm ý kiến khác.',fields:[{name:'name',label:'Tên của bạn',required:true,value:store.get('commentName')||'',hint:'Tối đa 80 ký tự.'},{name:'text',label:'Ý kiến',type:'textarea',rows:5,required:true,hint:'Tối đa 20.000 ký tự.'}],onSubmit:async v=>{
+    if(v.name.length>80||v.text.length>20000)throw new Error('Tên tối đa 80 ký tự, ý kiến tối đa 20.000 ký tự.');
     const r=await fetch('/api/comments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:v.name,text:v.text})});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không gửi được ý kiến.');
     auditNotice(r);store.set('commentName',v.name);feedback.items.push(data.comment);feedback.loaded=true;feedback.error='';
   }})
