@@ -47,7 +47,7 @@ The feedback tab allows every reader to add comments with the plus button withou
 
 Limits: 80 characters per name, 20,000 characters per comment, 2,000 comments or 700 KiB total storage. The UI reports write errors and retains the submitted form for retry. Use the refresh button to load other readers' comments. Additional test: node tests/comments.cjs.
 
-New comments carry an owner credential generated and stored in the posting browser; only its SHA-256 hash is stored on the server and it is omitted from public API responses. Owners can edit their comments from that browser. Other readers cannot edit them. Edit mode can edit or delete any comment, including older comments without owner credentials. Existing comments cannot safely be assigned to an owner by display name. Clearing browser storage or switching devices loses owner editing access. Voting and editing preserve each other's fields through GitHub SHA conflict retries. UI checks: node tests/comments-ui.cjs.
+New comments carry an owner credential generated and stored in the posting browser; only its SHA-256 hash is stored on the server and it is omitted from public API responses. Owners can edit or delete their comments from that browser. Other readers cannot edit or delete them. Edit mode can edit or delete any comment, including older comments without owner credentials. Existing comments cannot safely be assigned to an owner by display name. Clearing browser storage or switching devices loses owner editing access. Voting and editing preserve each other's fields through GitHub SHA conflict retries. Long comments show the first 200 Unicode characters in a collapsible preview. UI checks: node tests/comments-ui.cjs.
 
 ## Report rounds and audit trail
 

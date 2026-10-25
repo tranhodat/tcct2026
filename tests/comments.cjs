@@ -44,10 +44,13 @@ async function request(method='GET',body,headers={}){
  assert.equal((await request('POST',{action:'edit',id:ownedId,name:'Owner',text:'Hacked'})).code,403);
  assert.equal((await request('POST',{action:'edit',id:ownedId,name:'Owner',text:'Hacked',ownerKey:'wrong-secret-1234567890123456789012345'})).code,403);
  const edited=await request('POST',{action:'edit',id:ownedId,name:'Owner',text:'Updated',ownerKey});assert.equal(edited.code,200);assert.equal(edited.data.comment.text,'Updated');assert(edited.data.comment.updatedAt);
- assert.equal((await request('POST',{action:'delete',id:ownedId,ownerKey})).code,403);
+ assert.equal((await request('POST',{action:'delete',id:ownedId})).code,403);
+ assert.equal((await request('POST',{action:'delete',id:ownedId,ownerKey:'wrong-secret-1234567890123456789012345'})).code,403);
  assert.equal((await request('POST',{action:'edit',id:'prior',name:'A',text:'Legacy edit'},{'x-edit-password':'editor-test'})).code,200);
  assert.equal((await request('POST',{action:'edit',id:'prior',name:'A',text:'Claim legacy',ownerKey})).code,403);
  assert.equal((await request('POST',{action:'edit',id:ownedId,name:'Owner',text:'x'.repeat(20001),ownerKey})).code,400);
+ assert.equal((await request('POST',{action:'delete',id:ownedId,ownerKey})).code,200);
+ assert(!stored.some(c=>c.id===ownedId));
  assert.equal((await request('POST',{action:'delete',id},{'x-edit-password':'wrong'})).code,403);
  assert.equal((await request('POST',{action:'delete',id},{'x-edit-password':'editor-test'})).code,200);
  assert(!stored.some(c=>c.id===id));assert(stored.some(c=>c.id==='prior'));

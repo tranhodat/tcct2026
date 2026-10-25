@@ -4,14 +4,17 @@ const js=html.match(/<script>([\s\S]*?)<\/script>/)[1].replace('function openFor
 const ctx={console,crypto:require('node:crypto').webcrypto,window:{},document:{addEventListener(){}},localStorage:{getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)},requestAnimationFrame:()=>1,cancelAnimationFrame(){},setTimeout,clearTimeout};
 vm.createContext(ctx);vm.runInContext(js,ctx);
 (async()=>{
- const t=ctx.test,c={id:'a',name:'Reader',text:'a'.repeat(51),votes:2};t.feedback.items=[c];
- let view=t.feedbackCard(c);assert(view.includes('<details'));assert(view.includes('a'.repeat(50)+'…'));assert(!view.includes('commentDelete'));assert(view.includes('commentVote'));assert(view.includes('vote-count">2'));
- assert(!t.feedbackCard({...c,text:'a'.repeat(50)}).includes('<details'));
- assert(!view.includes('commentEdit'));data.set('solop.commentOwned.a','yes');assert(t.feedbackCard(c).includes('commentEdit'));assert(!t.feedbackCard(c).includes('commentDelete'));data.delete('solop.commentOwned.a');
+ const t=ctx.test,c={id:'a',name:'Reader',text:'a'.repeat(201),votes:2};t.feedback.items=[c];
+ let view=t.feedbackCard(c);assert(view.includes('<details'));assert(view.includes('a'.repeat(200)+'…'));assert(!view.includes('commentDelete'));assert(view.includes('commentVote'));assert(view.includes('vote-count">2'));
+ assert(!t.feedbackCard({...c,text:'a'.repeat(200)}).includes('<details'));
+ assert(!view.includes('commentEdit'));data.set('solop.commentOwned.a','yes');assert(t.feedbackCard(c).includes('commentEdit'));assert(t.feedbackCard(c).includes('commentDelete'));data.delete('solop.commentOwned.a');
  t.S.editMode=true;t.G.token='editor';assert(t.feedbackCard(c).includes('commentDelete'));
  let requests=[];ctx.fetch=async(url,options)=>{const body=JSON.parse(options.body);requests.push({body,headers:options.headers});return {ok:true,headers:{get(){}},json:async()=>body.action==='delete'?{deleted:'a'}:{comment:{...c,votes:body.voted?3:2},voted:body.voted}}};
  await t.act.commentVote({dataset:{id:'a'}});assert.equal(t.feedback.items[0].votes,3);assert(t.feedbackCard(t.feedback.items[0]).includes('aria-pressed="true"'));
  await t.act.commentVote({dataset:{id:'a'}});assert.equal(t.feedback.items[0].votes,2);assert.equal(requests[0].body.voterId,requests[1].body.voterId);
  t.act.commentDelete({dataset:{id:'a'}});assert(ctx.form.danger);await ctx.form.onSubmit();assert.equal(t.feedback.items.length,0);assert.equal(requests.at(-1).headers['X-Edit-Password'],'editor');
- assert(html.includes("'commentAdd','commentVote','commentEdit','commentsRefresh'"));console.log('PASS: comment preview, public voting, toggle state, editor deletion and confirmation.');
+ t.S.editMode=false;t.G.token='';t.feedback.items=[c];data.set('solop.commentOwned.a','yes');
+ t.act.commentDelete({dataset:{id:'a'}});await ctx.form.onSubmit();assert.equal(t.feedback.items.length,0);assert(requests.at(-1).body.ownerKey);assert(!requests.at(-1).headers['X-Edit-Password']);
+ data.delete('solop.commentOwned.a');ctx.form=null;t.act.commentDelete({dataset:{id:'a'}});assert.equal(ctx.form,null);
+ assert(html.includes("'commentAdd','commentVote','commentEdit','commentDelete','commentsRefresh'"));console.log('PASS: comment preview, public voting, toggle state, editor deletion and confirmation.');
 })().catch(e=>{console.error(e);process.exitCode=1});
