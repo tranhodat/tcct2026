@@ -1,6 +1,6 @@
 const { randomUUID, createHash } = require('node:crypto');
 const {audit,editor}=require('../lib/github-store');
-const publicComment=c=>{const {voters,...rest}=c;return {...rest,votes:Array.isArray(voters)?voters.length:0}};
+const publicComment=c=>{const {voters,ownerHash,...rest}=c;return {...rest,votes:Array.isArray(voters)?voters.length:0}};
 
 module.exports = async (req,res) => {
   res.setHeader('Cache-Control','no-store');
@@ -17,15 +17,16 @@ module.exports = async (req,res) => {
     if(req.headers.origin){try{if(new URL(req.headers.origin).host!==req.headers.host)return fail(403,'Nguồn gửi không hợp lệ.')}catch{return fail(403,'Nguồn gửi không hợp lệ.')}}
     try{body=typeof req.body==='string'?JSON.parse(req.body):req.body}catch{return fail(400,'Dữ liệu không hợp lệ.')}
     action=body?.action||'add';
-    if(!['add','vote','delete'].includes(action))return fail(400,'Thao tác không hợp lệ.');
+    if(!['add','edit','vote','delete'].includes(action))return fail(400,'Thao tác không hợp lệ.');
     if(action==='delete'&&!editor(req))return fail(403,'Vui lòng bật Edit mode để xoá ý kiến.');
     if(action!=='add'&&(typeof body.id!=='string'||!body.id))return fail(400,'Thiếu mã ý kiến.');
     if(action==='vote'&&(typeof body.voterId!=='string'||!/^[a-zA-Z0-9-]{16,80}$/.test(body.voterId)||typeof body.voted!=='boolean'))return fail(400,'Thông tin vote không hợp lệ.');
-    if(action==='add'){
+    if(action==='add'||action==='edit'){
     const name=typeof body?.name==='string'?body.name.trim():'';
     const text=typeof body?.text==='string'?body.text.trim():'';
     if(!name||name.length>80||!text||text.length>20000)return fail(400,'Nhập tên (tối đa 80 ký tự) và ý kiến (tối đa 20.000 ký tự).');
-    comment={id:randomUUID(),name,text,createdAt:Date.now()};
+    if(body.ownerKey!==undefined&&(typeof body.ownerKey!=='string'||!/^[a-zA-Z0-9-]{32,100}$/.test(body.ownerKey)))return fail(400,'Mã người đăng không hợp lệ.');
+    comment={id:randomUUID(),name,text,createdAt:Date.now(),...(action==='add'&&body.ownerKey?{ownerHash:createHash('sha256').update(body.ownerKey).digest('hex')}:{})};
     }
   }
   try{
@@ -43,7 +44,11 @@ module.exports = async (req,res) => {
       }else{
         const target=comments.find(c=>c.id===body.id);if(!target)return fail(404,'Ý kiến đã bị xoá hoặc không tồn tại.');
         if(action==='delete')next=comments.filter(c=>c.id!==body.id);
-        else{
+        else if(action==='edit'){
+          const owns=target.ownerHash&&body.ownerKey&&createHash('sha256').update(body.ownerKey).digest('hex')===target.ownerHash;
+          if(!editor(req)&&!owns)return fail(403,'Bạn chỉ có thể sửa ý kiến do mình đăng.');
+          comment={...target,name:comment.name,text:comment.text,updatedAt:Date.now()};next=comments.map(c=>c.id===body.id?comment:c);
+        }else{
           const voter=createHash('sha256').update(body.voterId).digest('hex'),voters=new Set(target.voters||[]);
           if(body.voted)voters.add(voter);else voters.delete(voter);
           comment={...target,voters:[...voters]};next=comments.map(c=>c.id===body.id?comment:c);
@@ -52,7 +57,7 @@ module.exports = async (req,res) => {
       const content=Buffer.from(JSON.stringify(next));
       if(content.length>700*1024)return fail(409,'Kho ý kiến đã đầy. Vui lòng liên hệ người quản lý lớp.');
       const saved=await fetch(url,{method:'PUT',headers,body:JSON.stringify({branch,message:'Add class feedback',content:content.toString('base64'),...(file?{sha:file.sha}:{})})});
-      if(saved.ok){if(action!=='vote'){const logged=await audit('comment.'+action,{actor:action==='add'?comment.name:'editor',commentId:action==='add'?comment.id:body.id});res.setHeader('X-Audit-Status',logged?'saved':'failed');}return res.status(action==='add'?201:200).json(action==='delete'?{deleted:body.id}:{comment:publicComment(comment),...(action==='vote'?{voted:body.voted}:{})});}
+      if(saved.ok){if(action!=='vote'){const logged=await audit('comment.'+action,{actor:action==='add'||(action==='edit'&&!editor(req))?comment.name:'editor',commentId:action==='add'?comment.id:body.id});res.setHeader('X-Audit-Status',logged?'saved':'failed');}return res.status(action==='add'?201:200).json(action==='delete'?{deleted:body.id}:{comment:publicComment(comment),...(action==='vote'?{voted:body.voted}:{})});}
       if(![409,422].includes(saved.status))return fail(502,'Không gửi được ý kiến lên GitHub ('+saved.status+').');
     }
     return fail(409,'Có người vừa gửi ý kiến. Vui lòng thử lại.');

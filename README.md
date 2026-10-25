@@ -47,6 +47,8 @@ The feedback tab allows every reader to add comments with the plus button withou
 
 Limits: 80 characters per name, 20,000 characters per comment, 2,000 comments or 700 KiB total storage. The UI reports write errors and retains the submitted form for retry. Use the refresh button to load other readers' comments. Additional test: node tests/comments.cjs.
 
+New comments carry an owner credential generated and stored in the posting browser; only its SHA-256 hash is stored on the server and it is omitted from public API responses. Owners can edit their comments from that browser. Other readers cannot edit them. Edit mode can edit or delete any comment, including older comments without owner credentials. Existing comments cannot safely be assigned to an owner by display name. Clearing browser storage or switching devices loses owner editing access. Voting and editing preserve each other's fields through GitHub SHA conflict retries. UI checks: node tests/comments-ui.cjs.
+
 ## Report rounds and audit trail
 
 The N?p b?o c?o tab is placed before ? ki?n. Editors create or edit rounds with opening/closing times in UTC+7. Readers enter a name and student code and submit up to 30 files per submission (3 MiB each). The server validates the deadline, identifiers, formats and file sizes for every file. Uploads are sequential; retries within the same form keep the submission ID and skip successful files. Uploaded file content is deduplicated by SHA-256. Round metadata and submissions use separate GitHub JSON files with SHA conflict retries, so general class-data saves cannot overwrite submissions. Names are self-reported and submitted files are visible to the class/public repository.

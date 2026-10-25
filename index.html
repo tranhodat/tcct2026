@@ -1070,9 +1070,10 @@ Object.assign(act,{
  recoverShared:()=>{const plan=recoveryPlan();if(!plan.added.length){toast('Không có mục hoặc tệp còn thiếu để bổ sung từ bản lưu trên máy.');return;}openForm({title:'Đồng bộ dữ liệu còn thiếu trên máy',submit:'Bổ sung lên hệ thống',intro:'Bổ sung '+plan.added.length+' mục/tệp: '+plan.added.slice(0,12).join(', ')+'. Chỉ bổ sung mục còn thiếu, không thay nội dung chung đang có. Bản lưu cũ có thể chứa mục đã được xóa; hãy kiểm tra trước khi xác nhận.',fields:[],onSubmit:async()=>{Object.assign(S,plan.state);await persistState();}});}
 });
 const feedback={pending:new Set(),items:[],busy:false,error:'',loaded:false};
+function commentOwnerKey(){let key=store.get('commentOwnerKey');if(!key){key=crypto.randomUUID()+crypto.randomUUID();store.set('commentOwnerKey',key)}return key}
 function feedbackCard(c){
  const chars=Array.from(c.text),long=chars.length>50,voted=store.get('commentVote.'+c.id)==='yes',pending=feedback.pending.has(c.id);
- return '<article class="feedback-card comment-card"><button class="comment-vote'+(voted?' voted':'')+'" data-act="commentVote" data-id="'+esc(c.id)+'" aria-pressed="'+voted+'" aria-label="'+(voted?'Bỏ vote':'Vote ý kiến')+'" '+(pending?'disabled':'')+'><span class="vote-star" aria-hidden="true">'+(voted?'★':'☆')+'</span><span class="vote-count">'+(Number(c.votes)||0)+'</span></button><div><div class="feedback-meta"><strong>'+esc(c.name)+'</strong><time>'+esc(stamp(c.createdAt))+'</time>'+(W()?'<button class="link-btn red comment-delete" data-act="commentDelete" data-id="'+esc(c.id)+'" '+(pending?'disabled':'')+'>Xoá</button>':'')+'</div>'+(long?'<details class="comment-text"><summary>'+esc(chars.slice(0,50).join(''))+'… <span class="comment-expand">Xem thêm / Thu gọn</span></summary><p>'+esc(c.text)+'</p></details>':'<p>'+esc(c.text)+'</p>')+'</div></article>';
+ return '<article class="feedback-card comment-card"><button class="comment-vote'+(voted?' voted':'')+'" data-act="commentVote" data-id="'+esc(c.id)+'" aria-pressed="'+voted+'" aria-label="'+(voted?'Bỏ vote':'Vote ý kiến')+'" '+(pending?'disabled':'')+'><span class="vote-star" aria-hidden="true">'+(voted?'★':'☆')+'</span><span class="vote-count">'+(Number(c.votes)||0)+'</span></button><div><div class="feedback-meta"><strong>'+esc(c.name)+'</strong><time>'+esc(stamp(c.createdAt))+'</time>'+(W()||store.get('commentOwned.'+c.id)==='yes'?'<button class="link-btn" data-act="commentEdit" data-id="'+esc(c.id)+'" '+(pending?'disabled':'')+'>Sửa</button>':'')+(W()?'<button class="link-btn red comment-delete" data-act="commentDelete" data-id="'+esc(c.id)+'" '+(pending?'disabled':'')+'>Xoá</button>':'')+'</div>'+(long?'<details class="comment-text"><summary>'+esc(chars.slice(0,50).join(''))+'… <span class="comment-expand">Xem thêm / Thu gọn</span></summary><p>'+esc(c.text)+'</p></details>':'<p>'+esc(c.text)+'</p>')+'</div></article>';
 }
 async function changeComment(id,action){
  if(feedback.pending.has(id))return;
@@ -1094,13 +1095,17 @@ async function loadComments(){
   catch(e){feedback.error=e.message}finally{feedback.busy=false;sched();}
 }
 Object.assign(act,{
+  commentEdit:el=>{const c=feedback.items.find(c=>c.id===el.dataset.id);if(!c||(!W()&&store.get('commentOwned.'+c.id)!=='yes'))return;openForm({title:'Sửa ý kiến',submit:'Lưu thay đổi',fields:[{name:'name',label:'Tên người đăng',required:true,value:c.name},{name:'text',label:'Ý kiến',type:'textarea',rows:9,required:true,value:c.text,hint:'Tối đa 20.000 ký tự.'}],onSubmit:async v=>{
+    if(v.name.length>80||v.text.length>20000)throw new Error('Tên tối đa 80 ký tự, ý kiến tối đa 20.000 ký tự.');
+    const r=await fetch('/api/comments',{method:'POST',headers:{'Content-Type':'application/json',...(W()?{'X-Edit-Password':G.token}:{})},body:JSON.stringify({action:'edit',id:c.id,name:v.name,text:v.text,ownerKey:commentOwnerKey()})});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không sửa được ý kiến.');auditNotice(r);feedback.items=feedback.items.map(item=>item.id===c.id?data.comment:item);sched();
+  }})},
   commentVote:el=>changeComment(el.dataset.id,'vote'),
   commentDelete:el=>{if(!W())return;confirmBox('Xoá ý kiến?','Ý kiến và các lượt vote sẽ bị xoá.','Xoá',()=>changeComment(el.dataset.id,'delete'));},
   commentsRefresh:()=>loadComments(),
   commentAdd:()=>openForm({title:'Thêm ý kiến',submit:'Gửi ý kiến',intro:'Ý kiến được hiển thị công khai cho cả lớp. Bạn có thể bấm ＋ để gửi thêm ý kiến khác.',fields:[{name:'name',label:'Tên của bạn',required:true,value:store.get('commentName')||'',hint:'Tối đa 80 ký tự.'},{name:'text',label:'Ý kiến',type:'textarea',rows:5,required:true,hint:'Tối đa 20.000 ký tự.'}],onSubmit:async v=>{
     if(v.name.length>80||v.text.length>20000)throw new Error('Tên tối đa 80 ký tự, ý kiến tối đa 20.000 ký tự.');
-    const r=await fetch('/api/comments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:v.name,text:v.text})});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không gửi được ý kiến.');
-    auditNotice(r);store.set('commentName',v.name);feedback.items.push(data.comment);feedback.loaded=true;feedback.error='';
+    const r=await fetch('/api/comments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:v.name,text:v.text,ownerKey:commentOwnerKey()})});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không gửi được ý kiến.');
+    auditNotice(r);store.set('commentOwned.'+data.comment.id,'yes');store.set('commentName',v.name);feedback.items.push(data.comment);feedback.loaded=true;feedback.error='';
   }})
 });
 const news={sources:[],cache:{},saved:[],mode:'new',busy:false,errors:[],message:''};
@@ -1173,7 +1178,7 @@ document.addEventListener('submit',async event=>{
 document.addEventListener('click',async ev=>{
   const el=ev.target.closest('[data-act]');if(!el)return;
   const fn=act[el.dataset.act];if(!fn)return;
-  const readActions=['exportCourseWord','syncNow','rosterRefresh','rosterGroup','reportSubmit','reportsRefresh','reportSelect','commentAdd','commentVote','commentsRefresh','newsAdd','newsRemove','newsRefresh','newsMode','newsSave','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
+  const readActions=['exportCourseWord','syncNow','rosterRefresh','rosterGroup','reportSubmit','reportsRefresh','reportSelect','commentAdd','commentVote','commentEdit','commentsRefresh','newsAdd','newsRemove','newsRefresh','newsMode','newsSave','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
   if(!S.editMode&&!readActions.includes(el.dataset.act)){toast('Vui lòng bật Edit mode.');return}
   try{await fn(el,ev)}catch(e){toast(friendly(e))}
 });
