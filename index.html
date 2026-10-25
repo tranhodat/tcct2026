@@ -215,6 +215,7 @@ main .wrap{padding-block:22px 72px}
 .sect:first-of-type{margin-top:12px}
 .sect-h{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:6px}
 .sect-h h4{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-family:var(--f-body);font-weight:600}
+.lecture-note{margin-bottom:14px}.lecture-note summary{cursor:pointer;overflow-wrap:anywhere;padding:10px;background:var(--bg);border-radius:8px}.lecture-note .acts{margin-top:6px}
 .note{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-left:3px solid var(--hl);padding:10px 14px;border-radius:0 8px 8px 0}
 .muted{color:var(--muted)}
 .acts{display:flex;gap:6px;flex-wrap:wrap}
@@ -779,16 +780,33 @@ function courseDetail(c){
   const lec=c.lectures||[];
   if(!lec.some(l=>l.id===S.lectureId))S.lectureId=lec[0]?lec[0].id:null;
   const cur=lec.find(l=>l.id===S.lectureId);
-  let h='<div class="bar"><div class="grow"><button class="link-btn" data-act="backCourses">‹ Tất cả học phần</button><h2 style="margin-top:4px">'+esc(c.name)+'</h2><p class="sub">'+(c.code?esc(c.code)+' · ':'')+(c.teacher?'Giảng viên: '+esc(c.teacher)+' · ':'')+lec.length+' bài giảng</p></div>'+(W()?'<div class="acts"><button class="btn" data-act="editCourse">Sửa học phần</button><button class="btn primary" data-act="addLecture">+ Thêm bài giảng</button>'+(mine(c)?'<button class="btn danger" data-act="delCourse">Xoá</button>':'')+'</div>':'')+'</div>';
+  let h='<div class="bar"><div class="grow"><button class="link-btn" data-act="backCourses">‹ Tất cả học phần</button><h2 style="margin-top:4px">'+esc(c.name)+'</h2><p class="sub">'+(c.code?esc(c.code)+' · ':'')+(c.teacher?'Giảng viên: '+esc(c.teacher)+' · ':'')+lec.length+' bài giảng</p></div>'+'<div class="acts"><button class="btn" data-act="exportCourseWord">Xuất file Word</button>'+(W()?'<button class="btn" data-act="editCourse">Sửa học phần</button><button class="btn primary" data-act="addLecture">+ Thêm bài giảng</button>'+(mine(c)?'<button class="btn danger" data-act="delCourse">Xoá</button>':'')+'':'')+'</div></div>';
   if(!lec.length)return h+'<div class="empty"><h3>Học phần chưa có bài giảng</h3><p>'+(W()?'Bấm “Thêm bài giảng” để tạo bài giảng đầu tiên.':'Bài giảng sẽ hiển thị tại đây.')+'</p></div>';
   h+='<div class="lec-layout"><nav class="lec-nav" aria-label="Danh sách bài giảng">'+lec.map((l,i)=>'<button class="lec-btn" data-act="selLecture" data-id="'+esc(l.id)+'" aria-current="'+(l.id===S.lectureId)+'"><span class="no">'+(i+1)+'</span><span>'+esc(l.title)+'</span></button>').join('')+'</nav>';
   const imgs=cur.images||[];
   h+='<section class="panel"><div class="bar" style="margin-bottom:0"><div class="grow"><div class="kicker">Bài giảng '+(lec.indexOf(cur)+1)+'</div><h3 style="font-size:21px">'+esc(cur.title)+'</h3></div>'+(W()?'<div class="acts"><button class="btn sm" data-act="renameLecture">Đổi tên</button><button class="btn sm danger" data-act="delLecture">Xoá bài giảng</button></div>':'')+'</div>'
-   +'<div class="sect"><div class="sect-h"><h4>Ghi chú</h4>'+(W()?'<button class="btn sm" data-act="editNote">'+(cur.note?'Sửa ghi chú':'Thêm ghi chú')+'</button>':'')+'</div>'+(cur.note?'<div class="note">'+linkify(cur.note)+'</div>':'<p class="sub">Chưa có ghi chú.</p>')+'</div>'
+   +'<div class="sect"><div class="sect-h"><h4>Ghi chú</h4>'+(W()?'<button class="btn sm" data-act="addNote">Thêm ghi chú</button>':'')+'</div>'+lectureNotesHtml(cur)+'</div>' 
    +'<div class="sect"><div class="sect-h"><h4>Tài liệu</h4>'+sectAdd('materials')+'</div>'+itemList(cur,'materials')+'</div>'
    +'<div class="sect"><div class="sect-h"><h4>Tài liệu tham khảo</h4>'+sectAdd('refs')+'</div>'+itemList(cur,'refs')+'</div>'
   +'<div class="sect"><div class="sect-h"><h4>Hình ảnh</h4>'+(W()?'<button class="btn sm" data-act="addLecImg">Thêm ảnh</button>':'')+'</div>'+(imgs.length?'<div class="mini">'+imgs.map((im,i)=>'<div class="thumb-wrap"><button class="ph" data-act="openLecImg" data-i="'+i+'" aria-label="Xem ảnh '+(i+1)+'"><img src="'+esc(mediaSrc(im.assetId))+'" alt="" loading="lazy"></button>'+(W()?'<button class="btn sm x" data-act="delLecImg" data-i="'+i+'" aria-label="Xoá ảnh '+(i+1)+'">Xoá</button>':'')+'</div>').join('')+'</div>':'<p class="sub">Chưa có hình ảnh.</p>')+'</div></section></div>';
   return h;
+}
+function lectureNotes(l){return Array.isArray(l.notes)?l.notes.slice():(l.note?[l.note]:[])}
+function lectureNotesHtml(l){
+ const notes=lectureNotes(l);
+ return notes.length?notes.map((note,i)=>{const long=note.length>500||note.split('\n').length>6,body='<div class="note">'+linkify(note)+'</div>';
+ return '<div class="lecture-note">'+(long?'<details><summary>'+esc(note.slice(0,100).replace(/\s+/g,' '))+'… <span class="sub">(Xem thêm / Thu gọn)</span></summary>'+body+'</details>':body)+(W()?'<div class="acts"><button class="link-btn" data-act="editNote" data-i="'+i+'">Sửa ghi chú</button><button class="link-btn red" data-act="delNote" data-i="'+i+'">Xoá ghi chú</button></div>':'')+'</div>'}).join(''):'<p class="sub">Chưa có ghi chú.</p>';
+}
+function noteForm(index){
+ const c=curCourse(),l=c&&curLec(c);if(!l||!W())return;
+ const editing=Number.isInteger(index);
+ openForm({title:editing?'Sửa ghi chú':'Thêm ghi chú',submit:'Lưu ghi chú',fields:[{name:'note',label:'Ghi chú',type:'textarea',rows:9,required:true,value:editing?lectureNotes(l)[index]:''}],onSubmit:v=>mutate('courses','courses',c.id,n=>{const target=n.lectures.find(x=>x.id===l.id);target.notes=lectureNotes(target);if(editing)target.notes[index]=v.note;else target.notes.push(v.note);delete target.note})});
+}
+function courseWordHtml(c){
+ const absolute=url=>{try{const u=new URL(url,location.href);return /^(https?:|data:)/i.test(u.protocol)?u.href:'#'}catch{return '#'}};
+ const text=value=>esc(value||'').replace(/\r?\n/g,'<br>');
+ const list=(l,key)=>(l[key]||[]).map(it=>'<p><a href="'+esc(absolute(itemHref(it)))+'">'+esc(it.name)+'</a></p>').join('')||'<p>Chưa có mục nào.</p>';
+ return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>'+esc(c.name)+'</title><style>body{font-family:"Times New Roman";font-size:12pt}h1{font-size:20pt}h2{font-size:16pt}h3{font-size:13pt}img{max-width:600px}section{page-break-before:always}</style></head><body><h1>'+esc(c.name)+'</h1>'+(c.code?'<p>Mã học phần: '+esc(c.code)+'</p>':'')+(c.teacher?'<p>Giảng viên: '+esc(c.teacher)+'</p>':'')+(c.lectures||[]).map((l,i)=>'<section><h2>Bài giảng '+(i+1)+': '+esc(l.title)+'</h2><h3>Ghi chú</h3>'+(lectureNotes(l).map(note=>'<p>'+text(note)+'</p>').join('')||'<p>Chưa có ghi chú.</p>')+'<h3>Tài liệu</h3>'+list(l,'materials')+'<h3>Tài liệu tham khảo</h3>'+list(l,'refs')+'<h3>Hình ảnh</h3>'+((l.images||[]).map((im,j)=>'<p><img width="600" src="'+esc(absolute(mediaSrc(im.assetId)))+'" alt="Hình ảnh '+(j+1)+'"></p>').join('')||'<p>Chưa có hình ảnh.</p>')+'</section>').join('')+'</body></html>';
 }
 function curCourse(){return S.courses.find(x=>x.id===S.courseId)}
 function curLec(c){return(c.lectures||[]).find(l=>l.id===S.lectureId)}
@@ -943,7 +961,10 @@ const act={
   addLecture:()=>{const c=curCourse();if(!c)return;openForm({title:'Thêm bài giảng',submit:'Thêm',fields:[{name:'title',label:'Tên bài giảng',required:true,placeholder:'Bài '+((c.lectures||[]).length+1)+': …'}],onSubmit:async v=>{const id=uid();await mutate('courses','courses',c.id,n=>{n.lectures=n.lectures||[];n.lectures.push({id,title:v.title,note:'',materials:[],refs:[],images:[]})});S.lectureId=id}})},
   renameLecture:()=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;openForm({title:'Đổi tên bài giảng',submit:'Lưu',fields:[{name:'title',label:'Tên bài giảng',required:true,value:l.title}],onSubmit:v=>mutate('courses','courses',c.id,n=>{n.lectures.find(x=>x.id===l.id).title=v.title})})},
   delLecture:()=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;confirmBox('Xoá bài giảng?','“'+l.title+'” cùng tài liệu và ảnh đính kèm sẽ bị xoá.','Xoá',async()=>{const ids=[];(l.materials||[]).concat(l.refs||[]).forEach(i=>{if(i.assetId)ids.push(i.assetId)});(l.images||[]).forEach(i=>ids.push(i.assetId));await mutate('courses','courses',c.id,n=>{n.lectures=n.lectures.filter(x=>x.id!==l.id)});S.lectureId=null;await dropAssets(ids)})},
-  editNote:()=>{const c=curCourse(),l=c&&curLec(c);if(!l)return;openForm({title:'Ghi chú bài giảng',submit:'Lưu ghi chú',fields:[{name:'note',label:'Ghi chú',type:'textarea',rows:9,value:l.note||''}],onSubmit:v=>mutate('courses','courses',c.id,n=>{n.lectures.find(x=>x.id===l.id).note=v.note})})},
+  exportCourseWord:()=>{const c=curCourse();if(!c)return;const blob=new Blob(['\ufeff'+courseWordHtml(c)],{type:'application/msword;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(c.name||'Hoc phan').replace(/[<>:"/\\|?*\x00-\x1f]/g,'_')+'.doc';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)},
+  addNote:()=>noteForm(),
+  editNote:el=>noteForm(Number(el.dataset.i)),
+  delNote:el=>{const c=curCourse(),l=c&&curLec(c);if(!l||!W())return;return mutate('courses','courses',c.id,n=>{const target=n.lectures.find(x=>x.id===l.id);target.notes=lectureNotes(target);target.notes.splice(Number(el.dataset.i),1);delete target.note})},
   addItem:el=>{
     const c=curCourse(),l=c&&curLec(c);if(!l)return;const key=el.dataset.key,label=key==='refs'?'tài liệu tham khảo':'tài liệu';
     const push=item=>mutate('courses','courses',c.id,n=>{const x=n.lectures.find(z=>z.id===l.id);x[key]=x[key]||[];x[key].push(item)});
@@ -1134,7 +1155,7 @@ document.addEventListener('submit',async event=>{
 document.addEventListener('click',async ev=>{
   const el=ev.target.closest('[data-act]');if(!el)return;
   const fn=act[el.dataset.act];if(!fn)return;
-  const readActions=['syncNow','rosterRefresh','rosterGroup','reportSubmit','reportsRefresh','reportSelect','commentAdd','commentsRefresh','newsAdd','newsRemove','newsRefresh','newsMode','newsSave','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
+  const readActions=['exportCourseWord','syncNow','rosterRefresh','rosterGroup','reportSubmit','reportsRefresh','reportSelect','commentAdd','commentsRefresh','newsAdd','newsRemove','newsRefresh','newsMode','newsSave','notifications','editMode','tab','closeModal','calPrev','calNext','calToday','selDay','openFolder','openCourse','backCourses','selLecture','openAlbum','backAlbums','openPhoto','openLecImg','lbClose','lbPrev','lbNext'];
   if(!S.editMode&&!readActions.includes(el.dataset.act)){toast('Vui lòng bật Edit mode.');return}
   try{await fn(el,ev)}catch(e){toast(friendly(e))}
 });
