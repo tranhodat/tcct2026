@@ -6,6 +6,7 @@ vm.createContext(ctx);vm.runInContext(js,ctx);
 (async()=>{
  const t=ctx.test,c={id:'a',name:'Reader',text:'a'.repeat(201),votes:2};t.feedback.items=[c];
  let view=t.feedbackCard(c);assert(view.includes('<details'));assert(view.includes('a'.repeat(200)+'…'));assert(!view.includes('commentDelete'));assert(view.includes('commentVote'));assert(view.includes('vote-count">2'));
+ assert(view.includes('class="comment-text expand-content"'));assert(view.includes('class="expand-preview"'));assert(view.includes('class="comment-expand expand-less">Thu gọn'));
  assert(!t.feedbackCard({...c,text:'a'.repeat(200)}).includes('<details'));
  assert(!view.includes('commentEdit'));data.set('solop.commentOwned.a','yes');assert(t.feedbackCard(c).includes('commentEdit'));assert(t.feedbackCard(c).includes('commentDelete'));data.delete('solop.commentOwned.a');
  t.S.editMode=true;t.G.token='editor';assert(t.feedbackCard(c).includes('commentDelete'));

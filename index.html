@@ -217,6 +217,7 @@ main .wrap{padding-block:22px 72px}
 .sect:first-of-type{margin-top:12px}
 .sect-h{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:6px}
 .sect-h h4{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-family:var(--f-body);font-weight:600}
+.expand-content[open]>summary .expand-preview,.expand-content[open]>summary .expand-more{display:none}.expand-less{display:none}.expand-content[open]>summary .expand-less{display:inline}
 .lecture-note{margin-bottom:14px}.lecture-note summary{cursor:pointer;overflow-wrap:anywhere;padding:10px;background:var(--bg);border-radius:8px}.lecture-note .acts{margin-top:6px}
 .note{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-left:3px solid var(--hl);padding:10px 14px;border-radius:0 8px 8px 0}
 .muted{color:var(--muted)}
@@ -799,7 +800,7 @@ function lectureNotes(l){return Array.isArray(l.notes)?l.notes.slice():(l.note?[
 function lectureNotesHtml(l){
  const notes=lectureNotes(l);
  return notes.length?notes.map((note,i)=>{const long=note.length>500||note.split('\n').length>6,body='<div class="note">'+linkify(note)+'</div>';
- return '<div class="lecture-note">'+(long?'<details><summary>'+esc(note.slice(0,100).replace(/\s+/g,' '))+'… <span class="sub">(Xem thêm / Thu gọn)</span></summary>'+body+'</details>':body)+(W()?'<div class="acts"><button class="link-btn" data-act="editNote" data-i="'+i+'">Sửa ghi chú</button><button class="link-btn red" data-act="delNote" data-i="'+i+'">Xoá ghi chú</button></div>':'')+'</div>'}).join(''):'<p class="sub">Chưa có ghi chú.</p>';
+ return '<div class="lecture-note">'+(long?'<details class="expand-content"><summary><span class="expand-preview">'+esc(note.slice(0,100).replace(/\s+/g,' '))+'… </span><span class="sub expand-more">Xem thêm</span><span class="sub expand-less">Thu gọn</span></summary>'+body+'</details>':body)+(W()?'<div class="acts"><button class="link-btn" data-act="editNote" data-i="'+i+'">Sửa ghi chú</button><button class="link-btn red" data-act="delNote" data-i="'+i+'">Xoá ghi chú</button></div>':'')+'</div>'}).join(''):'<p class="sub">Chưa có ghi chú.</p>';
 }
 function noteForm(index){
  const c=curCourse(),l=c&&curLec(c);if(!l||!W())return;
@@ -811,7 +812,7 @@ function reviewQuestionsHtml(l){
  const questions=reviewQuestions(l);
  return questions.length?questions.map((q,i)=>{
  const answer=q.answer||'',chars=Array.from(answer),body='<div class="note">'+linkify(answer)+'</div>';
- const answerHtml=chars.length>200?'<details><summary><span style="white-space:pre-wrap">'+esc(chars.slice(0,200).join(''))+'…</span> <span class="sub">(Xem thêm / Thu gọn)</span></summary>'+body+'</details>':(answer?body:'');
+ const answerHtml=chars.length>200?'<details class="expand-content"><summary><span class="expand-preview" style="white-space:pre-wrap">'+esc(chars.slice(0,200).join(''))+'…</span> <span class="sub expand-more">Xem thêm</span><span class="sub expand-less">Thu gọn</span></summary>'+body+'</details>':(answer?body:'');
  return '<div class="lecture-note"><div class="note"><strong>'+linkify(q.question||'')+'</strong></div>'+answerHtml+(W()?'<div class="acts"><button class="link-btn" data-act="editReviewQuestion" data-i="'+i+'">Sửa câu hỏi</button><button class="link-btn red" data-act="delReviewQuestion" data-i="'+i+'">Xoá câu hỏi</button></div>':'')+'</div>';
  }).join(''):'<p class="sub">Chưa có câu hỏi ôn tập.</p>';
 }
@@ -1102,7 +1103,7 @@ const feedback={pending:new Set(),items:[],busy:false,error:'',loaded:false};
 function commentOwnerKey(){let key=store.get('commentOwnerKey');if(!key){key=crypto.randomUUID()+crypto.randomUUID();store.set('commentOwnerKey',key)}return key}
 function feedbackCard(c){
  const chars=Array.from(c.text),long=chars.length>200,voted=store.get('commentVote.'+c.id)==='yes',pending=feedback.pending.has(c.id);
- return '<article class="feedback-card comment-card"><button class="comment-vote'+(voted?' voted':'')+'" data-act="commentVote" data-id="'+esc(c.id)+'" aria-pressed="'+voted+'" aria-label="'+(voted?'Bỏ vote':'Vote ý kiến')+'" '+(pending?'disabled':'')+'><span class="vote-star" aria-hidden="true">'+(voted?'★':'☆')+'</span><span class="vote-count">'+(Number(c.votes)||0)+'</span></button><div><div class="feedback-meta"><strong>'+esc(c.name)+'</strong><time>'+esc(stamp(c.createdAt))+'</time>'+(W()||store.get('commentOwned.'+c.id)==='yes'?'<button class="link-btn" data-act="commentEdit" data-id="'+esc(c.id)+'" '+(pending?'disabled':'')+'>Sửa</button>':'')+(W()||store.get('commentOwned.'+c.id)==='yes'?'<button class="link-btn red comment-delete" data-act="commentDelete" data-id="'+esc(c.id)+'" '+(pending?'disabled':'')+'>Xoá</button>':'')+'</div>'+(long?'<details class="comment-text"><summary>'+esc(chars.slice(0,200).join(''))+'… <span class="comment-expand">Xem thêm / Thu gọn</span></summary><p>'+esc(c.text)+'</p></details>':'<p>'+esc(c.text)+'</p>')+'</div></article>';
+ return '<article class="feedback-card comment-card"><button class="comment-vote'+(voted?' voted':'')+'" data-act="commentVote" data-id="'+esc(c.id)+'" aria-pressed="'+voted+'" aria-label="'+(voted?'Bỏ vote':'Vote ý kiến')+'" '+(pending?'disabled':'')+'><span class="vote-star" aria-hidden="true">'+(voted?'★':'☆')+'</span><span class="vote-count">'+(Number(c.votes)||0)+'</span></button><div><div class="feedback-meta"><strong>'+esc(c.name)+'</strong><time>'+esc(stamp(c.createdAt))+'</time>'+(W()||store.get('commentOwned.'+c.id)==='yes'?'<button class="link-btn" data-act="commentEdit" data-id="'+esc(c.id)+'" '+(pending?'disabled':'')+'>Sửa</button>':'')+(W()||store.get('commentOwned.'+c.id)==='yes'?'<button class="link-btn red comment-delete" data-act="commentDelete" data-id="'+esc(c.id)+'" '+(pending?'disabled':'')+'>Xoá</button>':'')+'</div>'+(long?'<details class="comment-text expand-content"><summary><span class="expand-preview">'+esc(chars.slice(0,200).join(''))+'… </span><span class="comment-expand expand-more">Xem thêm</span><span class="comment-expand expand-less">Thu gọn</span></summary><p>'+esc(c.text)+'</p></details>':'<p>'+esc(c.text)+'</p>')+'</div></article>';
 }
 async function changeComment(id,action){
  if(feedback.pending.has(id))return;
