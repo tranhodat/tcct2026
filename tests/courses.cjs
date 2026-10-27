@@ -22,7 +22,7 @@ vm.createContext(ctx);vm.runInContext(js,ctx);
  t.act.addReviewQuestion();await ctx.form.onSubmit({question:'Second question',answer:'Short answer'});
  view=t.courseDetail(t.S.courses[0]);assert(view.includes('<strong>'+question+'</strong>'));
  assert(view.indexOf('<h4>Câu hỏi ôn tập</h4>')<view.indexOf('<h4>Ghi chú</h4>'));
- const summary=view.match(/<summary>([\s\S]*?)<\/summary>/)[1];assert(summary.includes('a'.repeat(200)));assert(!summary.includes('REMAINDER'));assert(view.includes(answer));assert(summary.includes('class="expand-preview"'));assert(summary.includes('class="sub expand-less">Thu gọn'));
+ const summary=view.match(/<summary>([\s\S]*?)<\/summary>/)[1];assert(summary.includes('a'.repeat(200)));assert(!summary.includes('REMAINDER'));assert(view.includes(answer));assert(summary.includes('class="expand-preview rich-content"'));assert(summary.includes('class="sub expand-less">Thu gọn'));
  t.S.editMode=false;view=t.courseDetail(t.S.courses[0]);assert(view.includes(question));assert(!view.includes('data-act="addReviewQuestion"'));t.S.editMode=true;
  t.act.editReviewQuestion({dataset:{i:'1'}});await ctx.form.onSubmit({question:'Edited question',answer:''});
  let exported=t.courseWordHtml(t.S.courses[0]);assert(exported.includes(answer));assert(exported.includes('<strong>'+question+'</strong>'));assert(exported.includes('Edited question'));assert(!exported.includes('Chưa có'));assert(!exported.includes('<h3>Tài liệu tham khảo</h3>'));assert(!exported.includes('<h3>Hình ảnh</h3>'));
