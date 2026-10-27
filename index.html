@@ -220,6 +220,7 @@ main .wrap{padding-block:22px 72px}
 .expand-content[open]>summary .expand-preview,.expand-content[open]>summary .expand-more{display:none}.expand-less{display:none}.expand-content[open]>summary .expand-less{display:inline}
 .lecture-note{margin-bottom:14px}.lecture-note summary{cursor:pointer;overflow-wrap:anywhere;padding:10px;background:var(--bg);border-radius:8px}.lecture-note .acts{margin-top:6px}
 .note{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-left:3px solid var(--hl);padding:10px 14px;border-radius:0 8px 8px 0}
+.review-question{padding:16px;border:1px solid #cfe8d9;border-radius:12px;background:var(--surface)}.review-field+.review-field{margin-top:16px}.review-label{display:inline-flex;align-items:center;gap:7px;margin-bottom:8px;padding:4px 10px;border-radius:6px;background:#eaf7ee;color:#20663d;font-size:13px;font-weight:700;line-height:1.5}.review-label::before{content:'';width:6px;height:6px;border-radius:50%;background:#35975a}.review-question .note{border-left-color:#78bd90}.review-question .expand-more,.review-question .expand-less{color:#20663d;font-weight:600}
 .muted{color:var(--muted)}
 .acts{display:flex;gap:6px;flex-wrap:wrap}
 
@@ -813,7 +814,7 @@ function reviewQuestionsHtml(l){
  return questions.length?questions.map((q,i)=>{
  const answer=q.answer||'',chars=Array.from(answer),body='<div class="note">'+linkify(answer)+'</div>';
  const answerHtml=chars.length>200?'<details class="expand-content"><summary><span class="expand-preview" style="white-space:pre-wrap">'+esc(chars.slice(0,200).join(''))+'…</span> <span class="sub expand-more">Xem thêm</span><span class="sub expand-less">Thu gọn</span></summary>'+body+'</details>':(answer?body:'');
- return '<div class="lecture-note"><div class="note"><strong>'+linkify(q.question||'')+'</strong></div>'+answerHtml+(W()?'<div class="acts"><button class="link-btn" data-act="editReviewQuestion" data-i="'+i+'">Sửa câu hỏi</button><button class="link-btn red" data-act="delReviewQuestion" data-i="'+i+'">Xoá câu hỏi</button></div>':'')+'</div>';
+ return '<div class="lecture-note review-question"><div class="review-field"><div class="review-label">Nội dung câu hỏi</div><div class="note"><strong>'+linkify(q.question||'')+'</strong></div></div>'+(answerHtml?'<div class="review-field"><div class="review-label">Nội dung trả lời</div>'+answerHtml+'</div>':'')+(W()?'<div class="acts"><button class="link-btn" data-act="editReviewQuestion" data-i="'+i+'">Sửa câu hỏi</button><button class="link-btn red" data-act="delReviewQuestion" data-i="'+i+'">Xoá câu hỏi</button></div>':'')+'</div>';
  }).join(''):'<p class="sub">Chưa có câu hỏi ôn tập.</p>';
 }
 function reviewQuestionForm(index){
