@@ -873,17 +873,19 @@ function reviewQuestionForm(index){
 function courseWordHtml(c){
  const absolute=url=>{try{const u=new URL(url,location.href);return /^(https?:|data:)/i.test(u.protocol)?u.href:'#'}catch{return '#'}};
  const text=value=>esc(value||'').replace(/\r?\n/g,'<br>');
+ const wordAnswer=q=>answerMarkup(q).replace(/text-align:(?:left|right|center|justify)/g,'text-align:justify');
  const hasText=value=>typeof value==='string'&&value.trim().length>0;
  const section=(title,body)=>body?'<h3>'+title+'</h3>'+body:'';
  const list=(l,key)=>(l[key]||[]).filter(it=>hasText(it.name)||hasText(it.link)||hasText(it.assetId)).map(it=>'<p><a href="'+esc(absolute(itemHref(it)))+'">'+esc(it.name||'Tài liệu')+'</a></p>').join('');
  const lectures=(c.lectures||[]).map((l,i)=>{
- const questions=reviewQuestions(l).filter(q=>hasText(q.question)||hasText(q.answer)).map(q=>(hasText(q.question)?'<p><strong>'+text(q.question)+'</strong></p>':'')+(hasText(q.answer)?'<div style="white-space:pre-wrap">'+answerMarkup(q)+'</div>':'')).join('');
+ const questions=reviewQuestions(l).filter(q=>hasText(q.question)||hasText(q.answer)).map(q=>(hasText(q.question)?'<p><strong>'+text(q.question)+'</strong></p>':'')+(hasText(q.answer)?'<div style="white-space:pre-wrap">'+wordAnswer(q)+'</div>':'')).join('');
  const notes=lectureNotes(l).filter(hasText).map(note=>'<p>'+text(note)+'</p>').join('');
  const images=(l.images||[]).filter(im=>hasText(im.assetId)).map((im,j)=>'<p><img width="600" src="'+esc(absolute(mediaSrc(im.assetId)))+'" alt="Hình ảnh '+(j+1)+'"></p>').join('');
  const body=section('Câu hỏi ôn tập',questions)+section('Ghi chú',notes)+section('Tài liệu',list(l,'materials'))+section('Tài liệu tham khảo',list(l,'refs'))+section('Hình ảnh',images);
  return body?'<section><h2>Bài giảng '+(i+1)+': '+esc(l.title)+'</h2>'+body+'</section>':'';
  }).join('');
- return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>'+esc(c.name)+'</title><style>body{font-family:"Times New Roman";font-size:12pt}h1{font-size:20pt}h2{font-size:16pt}h3{font-size:13pt}img{max-width:600px}section{page-break-before:always}</style></head><body><h1>'+esc(c.name)+'</h1>'+(hasText(c.code)?'<p>Mã học phần: '+esc(c.code)+'</p>':'')+(hasText(c.teacher)?'<p>Giảng viên: '+esc(c.teacher)+'</p>':'')+lectures+'</body></html>';
+ const styles='@page WordSection1{size:21cm 29.7cm;margin:2cm 2cm 2cm 2.5cm}div.WordSection1{page:WordSection1}body{margin:0;font-family:"Times New Roman";font-size:13pt;text-align:justify;line-height:120%;text-indent:1cm}body *{font-family:"Times New Roman"!important;font-size:13pt;line-height:120%}p{margin:0 0 6pt;text-align:justify;text-indent:1cm}h1,h2{font-size:14pt;font-weight:bold;text-indent:0;margin:12pt 0 6pt}h3{font-size:13pt;font-weight:bold;text-indent:0;margin:10pt 0 6pt}img{max-width:16.5cm;height:auto}section{page-break-before:always}';
+ return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>'+esc(c.name)+'</title><style>'+styles+'</style></head><body><div class="WordSection1"><h1>'+esc(c.name)+'</h1>'+(hasText(c.code)?'<p>Mã học phần: '+esc(c.code)+'</p>':'')+(hasText(c.teacher)?'<p>Giảng viên: '+esc(c.teacher)+'</p>':'')+lectures+'</div></body></html>';
 }
 function curCourse(){return S.courses.find(x=>x.id===S.courseId)}
 function curLec(c){return(c.lectures||[]).find(l=>l.id===S.lectureId)}

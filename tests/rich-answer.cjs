@@ -12,7 +12,8 @@ const checks=()=>{
  const q={question:'Question',answer:'Bold Italic Underline '+'Text '.repeat(65),answerHtml:sanitizeAnswerHtml(raw)};
  const c={name:'Course',lectures:[{id:'l',title:'Lesson',reviewQuestions:[q]}]};
  const view=reviewQuestionsHtml(c.lectures[0]),word=courseWordHtml(c);
- for(const part of ['<b>Bold</b>','<i>Italic</i>','<u>Underline</u>','text-align:center','text-align:justify','color:']){check(view.includes(part),'Display '+part);check(word.includes(part),'Word '+part);}
+ for(const part of ['<b>Bold</b>','<i>Italic</i>','<u>Underline</u>','text-align:justify','color:']){check(view.includes(part),'Display '+part);check(word.includes(part),'Word '+part);}
+ check(view.includes('text-align:center'),'Display retains original alignment');check(!word.includes('text-align:center'),'Word normalizes alignment to justify');
  const preview=answerPreview(q.answerHtml,200),box=document.createElement('div');box.innerHTML=preview;check(Array.from(box.textContent).length===200,'Preview limited to 200 characters');check(preview.includes('<b>Bold</b>'),'Preview keeps formatting');
  const form=document.createElement('form');form.innerHTML=fieldHtml({name:'answer',label:'Nội dung trả lời',type:'richtext',html:q.answerHtml});document.body.append(form);setupRichEditors(form);
  check(form.querySelectorAll('[data-command]').length===7,'Seven formatting buttons');check(form.querySelector('input[type=color]'),'Color picker');

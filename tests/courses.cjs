@@ -15,6 +15,7 @@ vm.createContext(ctx);vm.runInContext(js,ctx);
  t.S.lectureId='l2';assert(t.courseDetail(t.S.courses[0]).includes('<details class="expand-content">'));
  assert(html.includes('.expand-content[open]>summary .expand-preview,.expand-content[open]>summary .expand-more{display:none}'));
  const word=t.courseWordHtml(t.S.courses[0]);for(const text of ['First','Second','Updated','Last note','x'.repeat(600),'https://example.com/doc'])assert(word.includes(text));assert(!word.includes('<details>'));
+ for(const rule of ['size:21cm 29.7cm','margin:2cm 2cm 2cm 2.5cm','font-family:"Times New Roman"','font-size:13pt','text-align:justify','line-height:120%','text-indent:1cm','h1,h2{font-size:14pt;font-weight:bold','class="WordSection1"'])assert(word.includes(rule),rule);
  t.S.lectureId='l';
  t.act.addReviewQuestion();assert.equal(ctx.form.fields[0].label,'Nội dung câu hỏi');assert.equal(ctx.form.fields[1].label,'Nội dung trả lời');
  const question='Question '.repeat(50),answer='a'.repeat(200)+'REMAINDER';
