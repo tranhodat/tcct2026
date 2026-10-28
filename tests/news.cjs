@@ -11,7 +11,7 @@ function app(data=new Map()){
 }
 (async()=>{
  const {ctx,t,data,node,listeners}=app();
- assert.equal(t.TABS.map(x=>x[0]).join(','),'lich,thongbao,tailieu,hocphan,hinhanh,baocao,ykien,danhsach');
+ assert.equal(t.TABS.map(x=>x[0]).join(','),'lich,thongbao,tailieu,hocphan,hinhanh,baocao,ykien,danhsach,aitools');
  // Exercise the tab's actual click handler and rendering, then create and pin an announcement.
  await listeners.click[0]({target:{closest:()=>({dataset:{act:'tab',tab:'thongbao'}})}});
  assert.equal(t.S.tab,'thongbao');assert(node('#view').innerHTML.includes('Chưa có thông báo'));
@@ -30,7 +30,7 @@ function app(data=new Map()){
  t.act.newsRemove({dataset:{i:'0'}});assert.equal(t.news.sources.length,2);await ctx.form.onSubmit();assert.equal(t.news.sources.length,1);assert.equal(t.news.saved.length,1);
  const legacy=app(new Map([['solop-static-v1',JSON.stringify({announcements:[null,{id:'legacy',title:'Legacy announcement',body:'Body',createdAt:1}]})]]));legacy.t.loadState();assert.equal(legacy.t.S.anns.length,1);assert(legacy.t.viewThongBao().includes('Legacy announcement'));
  const restored=app(data);assert.equal(restored.t.news.saved.length,1);assert.equal(restored.t.news.sources.length,1);
- restored.t.act.newsMode({dataset:{mode:'saved'}});restored.t.act.newsSave({dataset:{i:'0'}});assert.equal(restored.t.news.saved.length,0);
+ restored.t.act.newsMode({dataset:{mode:'saved'}});restored.t.act.newsSave({dataset:{i:'0'}});assert.equal(restored.t.news.saved.length,1);await restored.ctx.form.onSubmit();assert.equal(restored.t.news.saved.length,0);
  assert.equal(app().t.news.sources.length,0); // Separate device storage stays independent.
  assert(!JSON.parse(data.get('solop-static-v1')).newsSources);
  assert(html.indexOf('id="notifyBtn"')<html.indexOf('id="roleChip"'));

@@ -11,7 +11,7 @@ vm.createContext(ctx);vm.runInContext(js,ctx);
  t.S.editMode=true;view=t.courseDetail(c);assert(view.indexOf('exportCourseWord')<view.indexOf('data-act="editCourse"'));
  t.act.addNote();await ctx.form.onSubmit({note:'New note'});assert.equal(t.S.courses[0].lectures[0].notes.join('|'),'Legacy note|New note');
  t.act.editNote({dataset:{i:'1'}});await ctx.form.onSubmit({note:'Updated'});assert.equal(t.S.courses[0].lectures[0].notes[1],'Updated');
- await t.act.delNote({dataset:{i:'0'}});assert.equal(t.S.courses[0].lectures[0].notes.join('|'),'Updated');
+ t.act.delNote({dataset:{i:'0'}});assert.equal(t.S.courses[0].lectures[0].notes.length,2);assert(ctx.form.intro.includes('Legacy note'));assert(ctx.form.danger);await ctx.form.onSubmit();assert.equal(t.S.courses[0].lectures[0].notes.join('|'),'Updated');
  t.S.lectureId='l2';assert(t.courseDetail(t.S.courses[0]).includes('<details class="expand-content">'));
  assert(html.includes('.expand-content[open]>summary .expand-preview,.expand-content[open]>summary .expand-more{display:none}'));
  const word=t.courseWordHtml(t.S.courses[0]);for(const text of ['First','Second','Updated','Last note','x'.repeat(600),'https://example.com/doc'])assert(word.includes(text));assert(!word.includes('<details>'));
@@ -33,7 +33,7 @@ vm.createContext(ctx);vm.runInContext(js,ctx);
  for(const bookmark of ['Review_L1_Q1','Review_L1_Q2','Review_L2_Q1']){assert(tocWord.includes('PAGEREF '+bookmark+' \\h'));assert(tocWord.includes('href="#'+bookmark+'"'));assert(tocWord.includes('<p><a name="'+bookmark+'"></a>'));}
  assert.equal((tocWord.match(/PAGEREF /g)||[]).length,3);assert.equal((tocWord.match(/style="page-break-before:always"/g)||[]).length,2);assert(tocWord.includes('Second &lt;question&gt;'));assert(!tocWord.includes('Review_L2_Q2'));assert(!normalized.includes('course-toc'));
  assert(tocWord.includes('mso-footer:CourseFooter'));assert(tocWord.includes('mso-page-numbers:1'));assert(tocWord.includes('mso-footer-margin:1cm'));assert(tocWord.includes('mso-element:footer" id="CourseFooter"'));assert(tocWord.includes('mso-element:field-code"> PAGE </span>'));assert(tocWord.includes('style="text-align:center;text-indent:0;margin:0"'));
- await t.act.delReviewQuestion({dataset:{i:'1'}});assert.equal(t.S.courses[0].lectures[0].reviewQuestions.length,1);
+ t.act.delReviewQuestion({dataset:{i:'1'}});assert.equal(t.S.courses[0].lectures[0].reviewQuestions.length,2);assert(ctx.form.intro.includes('Edited question'));assert(ctx.form.danger);await ctx.form.onSubmit();assert.equal(t.S.courses[0].lectures[0].reviewQuestions.length,1);
  exported=t.courseWordHtml({name:'Empty',lectures:[{title:'Empty lecture',notes:['   '],reviewQuestions:[{question:' ',answer:''}],materials:[],refs:[],images:[]}]});assert(!exported.includes('<h3>'));assert(!exported.includes('Empty lecture'));
  console.log('PASS: course CRUD, review-question CRUD, full bold questions, 200-character answer preview, public view and complete Word export without empty sections.');
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -1106,10 +1106,10 @@ const act={
   exportCourseWord:()=>{const c=curCourse();if(!c)return;const blob=new Blob(['\ufeff'+courseWordHtml(c)],{type:'application/msword;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(c.name||'Hoc phan').replace(/[<>:"/\\|?*\x00-\x1f]/g,'_')+'.doc';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)},
   addReviewQuestion:()=>reviewQuestionForm(),
   editReviewQuestion:el=>reviewQuestionForm(Number(el.dataset.i)),
-  delReviewQuestion:el=>{const c=curCourse(),l=c&&curLec(c);if(!l||!W())return;return mutate('courses','courses',c.id,n=>{const target=n.lectures.find(x=>x.id===l.id);target.reviewQuestions=reviewQuestions(target).slice();target.reviewQuestions.splice(Number(el.dataset.i),1)})},
+  delReviewQuestion:el=>{const c=curCourse(),l=c&&curLec(c);if(!l||!W())return;const i=Number(el.dataset.i),question=reviewQuestions(l)[i];if(!Number.isInteger(i)||!question)return;confirmBox('Xoá câu hỏi ôn tập?','Câu hỏi “'+question.question+'” và nội dung trả lời trong bài giảng “'+l.title+'” sẽ bị xoá.','Xoá',()=>mutate('courses','courses',c.id,n=>{const target=n.lectures.find(x=>x.id===l.id);target.reviewQuestions=reviewQuestions(target).slice();target.reviewQuestions.splice(i,1)}))},
   addNote:()=>noteForm(),
   editNote:el=>noteForm(Number(el.dataset.i)),
-  delNote:el=>{const c=curCourse(),l=c&&curLec(c);if(!l||!W())return;return mutate('courses','courses',c.id,n=>{const target=n.lectures.find(x=>x.id===l.id);target.notes=lectureNotes(target);target.notes.splice(Number(el.dataset.i),1);delete target.note})},
+  delNote:el=>{const c=curCourse(),l=c&&curLec(c);if(!l||!W())return;const i=Number(el.dataset.i),notes=lectureNotes(l);if(!Number.isInteger(i)||i<0||i>=notes.length)return;confirmBox('Xoá ghi chú?','Ghi chú “'+notes[i]+'” trong bài giảng “'+l.title+'” sẽ bị xoá.','Xoá',()=>mutate('courses','courses',c.id,n=>{const target=n.lectures.find(x=>x.id===l.id);target.notes=lectureNotes(target);target.notes.splice(i,1);delete target.note}))},
   addItem:el=>{
     const c=curCourse(),l=c&&curLec(c);if(!l)return;const key=el.dataset.key,label=key==='refs'?'tài liệu tham khảo':'tài liệu';
     const push=item=>mutate('courses','courses',c.id,n=>{const x=n.lectures.find(z=>z.id===l.id);x[key]=x[key]||[];x[key].push(item)});
@@ -1134,7 +1134,7 @@ const act={
   lbClose:()=>{S.lb=null;renderLb()},
   lbPrev:()=>{S.lb.i=(S.lb.i-1+S.lb.ids.length)%S.lb.ids.length;renderLb()},
   lbNext:()=>{S.lb.i=(S.lb.i+1)%S.lb.ids.length;renderLb()},
-  lbDel:()=>{const b=S.lb;if(!b||!b.albumId)return;const id=b.ids[b.i],albumId=b.albumId;confirmBox('Xóa ảnh?','Ảnh đã chọn sẽ bị xóa khỏi album.','Xóa',async()=>{await mutate('albums','albums',albumId,n=>{n.photos=n.photos.filter(p=>p.assetId!==id)});S.lb=null;renderLb();await dropAssets([id]);});},
+  lbDel:()=>{const b=S.lb;if(!b||!b.albumId)return;const id=b.ids[b.i],albumId=b.albumId;const album=S.albums.find(a=>a.id===albumId),photo=album?.photos.find(p=>p.assetId===id);if(!photo)return;confirmBox('Xóa ảnh?','Ảnh “'+(photo.name||'số '+(b.i+1))+'” trong album “'+(album.title||albumId)+'” sẽ bị xóa.','Xóa',async()=>{await mutate('albums','albums',albumId,n=>{n.photos=n.photos.filter(p=>p.assetId!==id)});S.lb=null;renderLb();await dropAssets([id]);});},
   editClass:()=>openForm({title:'Thông tin lớp',submit:'Lưu',fields:[{name:'name',label:'Tên lớp',required:true,value:S.cls.name||'',placeholder:'VD: Lớp K70 Công nghệ thông tin'},{name:'term',label:'Học kỳ',half:true,value:S.cls.term||'',placeholder:'Học kỳ I, 2026–2027'},{name:'school',label:'Trường / Khoa',half:true,value:S.cls.school||''}],onSubmit:v=>saveDoc('settings','class',{name:v.name,term:v.term,school:v.school})}),
   seed:()=>confirmBox('Thêm dữ liệu mẫu?','Thêm vài lịch, thông báo, thư mục và một học phần có nhãn “Ví dụ”. Bạn có thể xoá chúng bất cứ lúc nào trong mục Phân quyền.','Thêm',seed),
   unseed:()=>confirmBox('Xoá dữ liệu mẫu?','Mọi mục có nhãn “Ví dụ” sẽ bị xoá. Nội dung thật của lớp được giữ nguyên.','Xoá',unseed)
@@ -1272,7 +1272,7 @@ Object.assign(act,{
     const r=await fetch('/api/comments',{method:'POST',headers:{'Content-Type':'application/json',...(W()?{'X-Edit-Password':G.token}:{})},body:JSON.stringify({action:'edit',id:c.id,name:v.name,text:v.text,ownerKey:commentOwnerKey()})});const data=await r.json();if(!r.ok)throw new Error(data.message||'Không sửa được ý kiến.');auditNotice(r);feedback.items=feedback.items.map(item=>item.id===c.id?data.comment:item);sched();
   }})},
   commentVote:el=>changeComment(el.dataset.id,'vote'),
-  commentDelete:el=>{if(!W()&&store.get('commentOwned.'+el.dataset.id)!=='yes')return;confirmBox('Xoá ý kiến?','Ý kiến và các lượt vote sẽ bị xoá.','Xoá',()=>changeComment(el.dataset.id,'delete'));},
+  commentDelete:el=>{if(!W()&&store.get('commentOwned.'+el.dataset.id)!=='yes')return;const comment=feedback.items.find(c=>c.id===el.dataset.id);if(!comment)return;confirmBox('Xoá ý kiến?','Ý kiến của “'+comment.name+'”: “'+comment.text+'” và các lượt vote sẽ bị xoá.','Xoá',()=>changeComment(el.dataset.id,'delete'));},
   commentsRefresh:()=>loadComments(),
   commentAdd:()=>openForm({title:'Thêm ý kiến',submit:'Gửi ý kiến',intro:'Ý kiến được hiển thị công khai cho cả lớp. Bạn có thể bấm ＋ để gửi thêm ý kiến khác.',fields:[{name:'name',label:'Tên của bạn',required:true,value:store.get('commentName')||'',hint:'Tối đa 80 ký tự.'},{name:'text',label:'Ý kiến',type:'textarea',rows:5,required:true,hint:'Tối đa 20.000 ký tự.'}],onSubmit:async v=>{
     if(v.name.length>80||v.text.length>20000)throw new Error('Tên tối đa 80 ký tự, ý kiến tối đa 20.000 ký tự.');
@@ -1339,7 +1339,7 @@ Object.assign(act,{
   newsRefresh:()=>refreshNews(true),
   newsMode:el=>{news.mode=el.dataset.mode==='saved'?'saved':'new';render()},
   newsRemove:el=>{const source=news.sources[Number(el.dataset.i)];if(!source)return;confirmBox('Xóa nguồn tin?','Nguồn “'+newsLabel(source)+'” và cache của nguồn này sẽ bị xóa khỏi thiết bị. Tin đã lưu vẫn được giữ.','Xóa',()=>{news.sources=news.sources.filter(n=>n!==source);delete news.cache[source];saveNewsLocal();});},
-  newsSave:el=>{const item=newsItems()[Number(el.dataset.i)];if(!item)return;const i=news.saved.findIndex(n=>n.link===item.link);if(i>=0)news.saved.splice(i,1);else news.saved.unshift({...item});saveNewsLocal();render()}
+  newsSave:el=>{const item=newsItems()[Number(el.dataset.i)];if(!item)return;const i=news.saved.findIndex(n=>n.link===item.link);if(i>=0){confirmBox('Xoá tin đã lưu?','Tin “'+item.title+'” sẽ bị xoá khỏi danh sách đã lưu trên thiết bị.','Xoá',()=>{news.saved=news.saved.filter(n=>n.link!==item.link);saveNewsLocal();render()});return;}news.saved.unshift({...item});saveNewsLocal();render()}
 });
 document.addEventListener('submit',async event=>{
   if(event.target.id!=='newsSourceForm')return;event.preventDefault();
