@@ -904,16 +904,27 @@ function courseWordHtml(c){
  const wordAnswer=q=>q.answerHtml?wordParagraphs(answerMarkup(q)):text(q.answer);
  const hasText=value=>typeof value==='string'&&value.trim().length>0;
  const section=(title,body)=>body?'<h3>'+title+'</h3>'+body:'';
+ const tocEntries=[];
+ const pageField=bookmark=>'<!--[if supportFields]><span style="mso-element:field-begin"></span><span style="mso-element:field-code"> PAGEREF '+bookmark+' \\h </span><span style="mso-element:field-separator"></span><![endif]-->—<!--[if supportFields]><span style="mso-element:field-end"></span><![endif]-->';
  const list=(l,key)=>(l[key]||[]).filter(it=>hasText(it.name)||hasText(it.link)||hasText(it.assetId)).map(it=>'<p><a href="'+esc(absolute(itemHref(it)))+'">'+esc(it.name||'Tài liệu')+'</a></p>').join('');
  const lectures=(c.lectures||[]).map((l,i)=>{
- const questions=reviewQuestions(l).filter(q=>hasText(q.question)||hasText(q.answer)).map(q=>(hasText(q.question)?text(q.question,true):'')+(hasText(q.answer)?wordAnswer(q):'')).join('');
+ const questions=reviewQuestions(l).filter(q=>hasText(q.question)||hasText(q.answer)).map((q,j)=>{
+  const bookmark='Review_L'+(i+1)+'_Q'+(j+1);
+  if(hasText(q.question))tocEntries.push({bookmark,question:q.question.replace(/\s+/g,' ').trim(),lecture:i,title:l.title});
+  return (hasText(q.question)?text(q.question,true).replace('<p>','<p><a name="'+bookmark+'"></a>'):'')+(hasText(q.answer)?wordAnswer(q):'');
+ }).join('');
  const notes=lectureNotes(l).filter(hasText).map(note=>text(note)).join('');
  const images=(l.images||[]).filter(im=>hasText(im.assetId)).map((im,j)=>'<p><img width="600" src="'+esc(absolute(mediaSrc(im.assetId)))+'" alt="Hình ảnh '+(j+1)+'"></p>').join('');
  const body=section('Câu hỏi ôn tập',questions)+section('Ghi chú',notes)+section('Tài liệu',list(l,'materials'))+section('Tài liệu tham khảo',list(l,'refs'))+section('Hình ảnh',images);
- return body?'<section><h2>Bài giảng '+(i+1)+': '+esc(l.title)+'</h2>'+body+'</section>':'';
+ return body?'<section><h2 class="lecture-title" style="page-break-before:always">Bài giảng '+(i+1)+': '+esc(l.title)+'</h2>'+body+'</section>':'';
  }).join('');
- const styles='@page WordSection1{size:21cm 29.7cm;margin:2cm 2cm 2cm 2.5cm}div.WordSection1{page:WordSection1}body{margin:0;font-family:"Times New Roman";font-size:13pt;text-align:justify;line-height:120%;text-indent:1cm}body *{font-family:"Times New Roman"!important;font-size:13pt;line-height:120%}p{margin:0 0 6pt;mso-margin-top-alt:0pt;mso-margin-bottom-alt:6pt;text-align:justify;text-align-last:left;text-justify:inter-word;text-indent:1cm;white-space:normal}h1,h2{font-size:14pt;font-weight:bold;text-align:left;text-indent:0;margin:0 0 6pt;mso-margin-top-alt:0pt;mso-margin-bottom-alt:6pt}h3{font-size:13pt;font-weight:bold;text-align:left;text-indent:0;margin:0 0 6pt;mso-margin-top-alt:0pt;mso-margin-bottom-alt:6pt}img{max-width:16.5cm;height:auto}section{page-break-before:always}';
- return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>'+esc(c.name)+'</title><style>'+styles+'</style></head><body><div class="WordSection1"><h1>'+esc(c.name)+'</h1>'+(hasText(c.code)?'<p>Mã học phần: '+esc(c.code)+'</p>':'')+(hasText(c.teacher)?'<p>Giảng viên: '+esc(c.teacher)+'</p>':'')+lectures+'</div></body></html>';
+ let previousLecture=null;
+ const toc=tocEntries.length?'<div class="course-toc"><h2>MỤC LỤC CÂU HỎI ÔN TẬP</h2><table class="toc-table"><thead><tr><th>Nội dung câu hỏi</th><th>Trang</th></tr></thead><tbody>'+tocEntries.map(entry=>{
+  const group=previousLecture!==entry.lecture?'<tr><td colspan="2"><strong>Bài giảng '+(entry.lecture+1)+': '+esc(entry.title)+'</strong></td></tr>':'';previousLecture=entry.lecture;
+  return group+'<tr><td><a href="#'+entry.bookmark+'">'+esc(entry.question)+'</a></td><td class="toc-page">'+pageField(entry.bookmark)+'</td></tr>';
+ }).join('')+'</tbody></table></div>':'';
+ const styles='@page WordSection1{size:21cm 29.7cm;margin:2cm 2cm 2cm 2.5cm}div.WordSection1{page:WordSection1}body{margin:0;font-family:"Times New Roman";font-size:13pt;text-align:justify;line-height:120%;text-indent:1cm}body *{font-family:"Times New Roman"!important;font-size:13pt;line-height:120%}p{margin:0 0 6pt;mso-margin-top-alt:0pt;mso-margin-bottom-alt:6pt;text-align:justify;text-align-last:left;text-justify:inter-word;text-indent:1cm;white-space:normal}h1,h2{font-size:14pt;font-weight:bold;text-align:left;text-indent:0;margin:0 0 6pt;mso-margin-top-alt:0pt;mso-margin-bottom-alt:6pt}h3{font-size:13pt;font-weight:bold;text-align:left;text-indent:0;margin:0 0 6pt;mso-margin-top-alt:0pt;mso-margin-bottom-alt:6pt}img{max-width:16.5cm;height:auto}h2.lecture-title{page-break-before:always}.toc-table{width:100%;border-collapse:collapse;table-layout:fixed}.toc-table th,.toc-table td{padding:4pt 0;text-align:left;text-indent:0;vertical-align:top}.toc-table th:last-child,.toc-table td.toc-page{width:1.5cm;text-align:right}.toc-table a{color:#000;text-decoration:none}';
+ return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>'+esc(c.name)+'</title><style>'+styles+'</style></head><body><div class="WordSection1"><h1>'+esc(c.name)+'</h1>'+(hasText(c.code)?'<p>Mã học phần: '+esc(c.code)+'</p>':'')+(hasText(c.teacher)?'<p>Giảng viên: '+esc(c.teacher)+'</p>':'')+toc+lectures+'</div></body></html>';
 }
 function curCourse(){return S.courses.find(x=>x.id===S.courseId)}
 function curLec(c){return(c.lectures||[]).find(l=>l.id===S.lectureId)}
