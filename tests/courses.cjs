@@ -32,6 +32,7 @@ vm.createContext(ctx);vm.runInContext(js,ctx);
  assert(tocWord.indexOf('MỤC LỤC CÂU HỎI ÔN TẬP')<tocWord.indexOf('class="lecture-title"'));
  for(const bookmark of ['Review_L1_Q1','Review_L1_Q2','Review_L2_Q1']){assert(tocWord.includes('PAGEREF '+bookmark+' \\h'));assert(tocWord.includes('href="#'+bookmark+'"'));assert(tocWord.includes('<p><a name="'+bookmark+'"></a>'));}
  assert.equal((tocWord.match(/PAGEREF /g)||[]).length,3);assert.equal((tocWord.match(/style="page-break-before:always"/g)||[]).length,2);assert(tocWord.includes('Second &lt;question&gt;'));assert(!tocWord.includes('Review_L2_Q2'));assert(!normalized.includes('course-toc'));
+ assert(tocWord.includes('mso-footer:CourseFooter'));assert(tocWord.includes('mso-page-numbers:1'));assert(tocWord.includes('mso-footer-margin:1cm'));assert(tocWord.includes('mso-element:footer" id="CourseFooter"'));assert(tocWord.includes('mso-element:field-code"> PAGE </span>'));assert(tocWord.includes('style="text-align:center;text-indent:0;margin:0"'));
  await t.act.delReviewQuestion({dataset:{i:'1'}});assert.equal(t.S.courses[0].lectures[0].reviewQuestions.length,1);
  exported=t.courseWordHtml({name:'Empty',lectures:[{title:'Empty lecture',notes:['   '],reviewQuestions:[{question:' ',answer:''}],materials:[],refs:[],images:[]}]});assert(!exported.includes('<h3>'));assert(!exported.includes('Empty lecture'));
  console.log('PASS: course CRUD, review-question CRUD, full bold questions, 200-character answer preview, public view and complete Word export without empty sections.');

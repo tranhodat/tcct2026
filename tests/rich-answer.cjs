@@ -13,7 +13,7 @@ const checks=()=>{
  const c={name:'Course',lectures:[{id:'l',title:'Lesson',reviewQuestions:[q]}]};
  const view=reviewQuestionsHtml(c.lectures[0]),word=courseWordHtml(c);
  for(const part of ['<b>Bold</b>','<i>Italic</i>','<u>Underline</u>','text-align:justify','color:']){check(view.includes(part),'Display '+part);check(word.includes(part),'Word '+part);}
- check(view.includes('text-align:center'),'Display retains original alignment');check(!word.includes('text-align:center'),'Word normalizes alignment to justify');
+ check(view.includes('text-align:center'),'Display retains original alignment');check(!word.split('<!--[if gte mso 9]>')[0].includes('text-align:center'),'Word body normalizes alignment to justify');
  const broken='<div style="color:blue;text-align:justify"><b>ĐẶT&nbsp;&nbsp; VẤN\t ĐỀ<br>Kết quả<br>Hạn chế</b><div>Giải pháp\nKẾT LUẬN</div></div>';
  const normalized=wordParagraphs(sanitizeAnswerHtml(broken));
  const parsed=document.createElement('div');parsed.innerHTML=normalized;
