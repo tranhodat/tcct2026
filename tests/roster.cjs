@@ -12,7 +12,7 @@ js=js.replace('init();','globalThis.test={roster,loadRoster,rosterMembers,roster
 const ctx={console,TextEncoder,URL,window:{},document:{addEventListener(){}},localStorage:{getItem:()=>null,setItem(){}},requestAnimationFrame:()=>1,cancelAnimationFrame(){},setTimeout,clearTimeout,fetch:async()=>({ok:true,json:async()=>data})};
 vm.createContext(ctx);vm.runInContext(js,ctx);
 (async()=>{
- const t=ctx.test;await t.loadRoster();assert.equal(t.TABS.at(-1)[1],'Danh sách lớp');
+ const t=ctx.test;await t.loadRoster();assert.equal(t.TABS.find(tab=>tab[0]==='danhsach')[1],'Danh sách lớp');
  assert.equal(t.rosterMembers().length,29);
  t.roster.query='tran ho dat';assert.equal(t.rosterMembers().length,1);assert.equal(t.rosterMembers()[0].number,5);
  t.roster.query='';t.roster.group='TỔ 2';assert.equal(t.rosterMembers().length,14);assert.equal(t.rosterMembers()[0].number,16);

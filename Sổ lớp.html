@@ -1,5 +1,6 @@
 <!doctype html><html lang="vi"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.report-table-wrap{overflow-x:auto;margin-top:14px}.report-table{width:100%;border-collapse:collapse;min-width:520px;text-align:left}.report-table th{background:var(--bg);font-weight:600}.report-table th,.report-table td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}.report-table th:first-child{width:120px}.report-table td:first-child{font-weight:600;color:var(--accent)}.report-table td:nth-child(2){min-width:180px}.report-table ul{margin:0;padding-left:18px}.report-table li{overflow-wrap:anywhere;margin-bottom:6px}.report-table .sub{font-size:12px}
 .report-submissions>summary{font-size:18px;font-weight:700}.report-submissions summary,.report-table summary{cursor:pointer;padding:10px 0}.report-table li .btn{margin-left:8px}
+
 </style></head><body>
 <title>K02A02 Notebook</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -63,6 +64,15 @@ button,input,select,textarea{font:inherit;color:inherit}
 .role{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;background:var(--surface);border:1px solid var(--line)}
 .role i{width:9px;height:9px;border-radius:50%;background:var(--muted)}
 .role.admin i{background:var(--red)}.role.officer i{background:var(--accent)}.role.member i{background:var(--teal)}
+
+
+.tab[data-tab="aitools"]{--tab-tint:#9c71ed}
+.ai-tools-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.ai-tools-head h2{margin:0 0 6px}.ai-tools-head p{margin:0;color:var(--muted)}
+.ai-tools-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
+.ai-tool{--tool-color:#8845ff;display:flex;flex-direction:column;min-width:0;padding:28px;border:1px solid var(--line);border-top:3px solid var(--tool-color);border-radius:22px;background:var(--surface);box-shadow:0 8px 28px #172e6810}
+.ai-tool:nth-child(8n+2){--tool-color:#2962ff}.ai-tool:nth-child(8n+3){--tool-color:#009bbb}.ai-tool:nth-child(8n+4){--tool-color:#009b70}.ai-tool:nth-child(8n+5){--tool-color:#ff1452}.ai-tool:nth-child(8n+6){--tool-color:#ff5900}.ai-tool:nth-child(8n+7){--tool-color:#a02cff}.ai-tool:nth-child(8n+8){--tool-color:#36445b}
+.ai-tool-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}.ai-tool-icon{width:66px;height:66px;border:1px solid var(--line);border-radius:18px;display:grid;place-items:center;font-size:38px;color:var(--tool-color);flex-shrink:0}.ai-tool-category{padding:8px 11px;border-radius:24px;background:color-mix(in srgb,var(--tool-color) 10%,var(--surface));color:var(--tool-color);font-size:11px;font-weight:600;text-align:center}.ai-tool h3{font-size:21px;margin:0 0 12px;overflow-wrap:anywhere}.ai-tool p{color:var(--muted);line-height:1.7;margin:0 0 24px;min-height:54px;white-space:pre-wrap;overflow-wrap:anywhere}.ai-tool-link{display:flex;justify-content:space-between;gap:12px;margin-top:auto;padding-top:22px;border-top:1px solid var(--line);color:var(--tool-color);font-weight:600;text-decoration:none;overflow-wrap:anywhere}.ai-tool-link:hover{text-decoration:underline}.ai-tool-link:focus-visible{outline:2px solid var(--tool-color);outline-offset:5px}.ai-tool-actions{display:flex;gap:8px;margin-top:16px}
+@media(max-width:1100px){.ai-tools-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.ai-tools-grid{grid-template-columns:1fr}.ai-tool{padding:24px}.ai-tools-head{align-items:flex-start;flex-direction:column}}
 
 /* tabs */
 .tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
@@ -378,6 +388,7 @@ td.c,th.c{text-align:center}
 .rss-item:hover{border-color:var(--accent)}.rss-item time{display:block;font-size:12px;color:var(--muted);margin-top:8px}
 .update-notice{padding:12px 16px;border-radius:12px;background:#eaf7f1;color:#23523e;margin-bottom:16px;border:1px solid #c8e5d7}
 @media(max-width:600px){.course-grid,.rss-list{grid-template-columns:minmax(0,1fr)}.course-card{min-height:220px}}
+
 </style>
 
 <header class="hero">
@@ -454,17 +465,28 @@ function lectureUploadContext(c,l,section){return {kind:'course',courseName:c.co
 function albumUploadContext(a){return {kind:'album',albumName:a.title,albumId:a.id,date:a.date};}
 
 const TYPES={hoc:'Buổi học',hd:'Hoạt động',han:'Hạn nộp · Thi'};
-const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh'],['baocao','Nộp báo cáo'],['ykien','Ý kiến'],['danhsach','Danh s\u00e1ch l\u1edbp']];
+const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh'],['baocao','Nộp báo cáo'],['ykien','Ý kiến'],['danhsach','Danh s\u00e1ch l\u1edbp'],['aitools','AI-Tools']];
 const ROLE={admin:['Quản trị','admin'],officer:['Cán bộ lớp','officer'],member:['Thành viên','member'],unknown:['Quyền chưa xác định','member'],guest:['Khách','member']};
 const OK_TYPES=['image/png','image/jpeg','image/gif','image/webp','image/svg+xml','video/mp4','video/webm','application/pdf','text/csv','text/markdown','application/json','text/plain'];
 const EXT={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',mp4:'video/mp4',webm:'video/webm',csv:'text/csv',md:'text/markdown',json:'application/json',txt:'text/plain'};
 const ACCEPT_ALL='.pdf,.png,.jpg,.jpeg,.gif,.webp,.svg,.mp4,.webm,.csv,.md,.json,.txt';
 const ACCEPT_IMG='.png,.jpg,.jpeg,.gif,.webp';
 
+const DEFAULT_AI_TOOLS=[
+ ['aizening','Aizening','https://aizening.com','Tạo ảnh, video và nội dung với AI.','AI sáng tạo','✦'],
+ ['designer','Microsoft Designer','https://designer.microsoft.com','Sáng tạo hình ảnh và thiết kế với AI.','Thiết kế','✦'],
+ ['delphi','Delphi Tools','https://delphi.tools','Bộ công cụ trực tuyến cho công việc.','Tiện ích số','✦'],
+ ['seostudio','SEOStudio','https://seostudio.tools','Tiện ích SEO, văn bản và website.','SEO & nội dung','✦'],
+ ['myinstants','Myinstants','https://myinstants.com','Kho âm thanh và hiệu ứng ngắn.','Âm thanh','✦'],
+ ['convertio','Convertio','https://convertio.co','Đổi định dạng tài liệu, ảnh, âm thanh và video.','Chuyển đổi tệp','✦'],
+ ['dictation','Dictation','https://dictation.io','Chuyển lời nói thành văn bản.','Giọng nói','✦'],
+ ['unsplash','Unsplash','https://unsplash.com','Tìm ảnh cho bài giảng và thiết kế.','Kho hình ảnh','✦']
+].map(([id,name,link,description,category,icon],style)=>({id,name,link,description,category,icon,style}));
+
 const now=new Date();
 const S={db:null,user:null,assets:null,me:{id:null},role:'member',ro:false,ready:false,noDb:false,editMode:false,
   tab:TABS.some(([id])=>id===store.get('tab'))?store.get('tab'):'lich',loaded:{},err:null,names:{},asked:{},
-  events:[],anns:[],folders:[],docs:[],courses:[],albums:[],cls:{},
+  events:[],anns:[],folders:[],docs:[],courses:[],albums:[],aiTools:clone(DEFAULT_AI_TOOLS),cls:{},
   cal:{y:now.getFullYear(),m:now.getMonth(),sel:iso(now)},
   folder:'all',courseId:null,lectureId:null,albumId:null,lb:null,
   annSeen:+(store.get('annSeen')||0),newCut:+(store.get('annSeen')||0)};
@@ -495,7 +517,7 @@ const queues={};
 const stateKey={announcements:'anns'};
 const stateList=col=>S[stateKey[col]||col];
 const syncState={revision:null,busy:false,error:'',ready:false};
-function sharedSnapshot(){return {events:S.events,anns:S.anns,folders:S.folders,docs:S.docs,courses:S.courses,albums:S.albums,cls:S.cls};}
+function sharedSnapshot(){return {events:S.events,anns:S.anns,folders:S.folders,docs:S.docs,courses:S.courses,albums:S.albums,aiTools:S.aiTools,cls:S.cls};}
 function persistState(){
  const payload=clone(sharedSnapshot()),pendingId=uid();
  try{localStorage.setItem(STORAGE_KEY,JSON.stringify({...payload,updatedAt:Date.now()}));localStorage.setItem('solop.pendingState',JSON.stringify({id:pendingId,state:payload}));}catch(e){throw new Error('Không lưu được bản dự phòng trên máy.');}
@@ -535,6 +557,7 @@ function loadState(){
     S.docs=Array.isArray(state.docs)?state.docs:[];
     S.courses=Array.isArray(state.courses)?state.courses:[];
     S.albums=Array.isArray(state.albums)?state.albums:[];
+    S.aiTools=Array.isArray(state.aiTools)?state.aiTools:clone(DEFAULT_AI_TOOLS);
     S.cls=state.cls|| (state.settings&&state.settings.class) || {};
     if(state.settings&&state.settings.class) S.cls=state.settings.class;
     if(state.folder) S.folder=state.folder;
@@ -976,7 +999,7 @@ function render(){
   let body='';
   body+=devicePanel();if(syncState.error)body+='<p class="notice warn" role="alert">'+esc(syncState.error)+'</p>';
   if(S.err)body+='<div class="notice warn">'+esc(S.err)+'</div>';
-  const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh,tinmoi:viewTinMoi,ykien:viewYKien,baocao:viewBaoCao,nhatky:viewNhatKy,danhsach:viewDanhSach}[S.tab];
+  const v={lich:viewLich,thongbao:viewThongBao,tailieu:viewTaiLieu,hocphan:viewHocPhan,hinhanh:viewHinhAnh,tinmoi:viewTinMoi,ykien:viewYKien,baocao:viewBaoCao,nhatky:viewNhatKy,danhsach:viewDanhSach,aitools:viewAiTools}[S.tab];
   $('#view').innerHTML=body+(S.ready?v():'<p class="sub">Đang tải dữ liệu lớp…</p>');
   if(S.lb)renderLb();
 }
@@ -1157,6 +1180,34 @@ Object.assign(act,{
  }});},
  systemLog:()=>{S.tab='nhatky';render();return loadJournal()},logRefresh:()=>loadJournal(),logDate:()=>openForm({title:'Ngày xem nhật ký',fields:[{name:'date',label:'Ngày',type:'date',required:true,value:journal.date}],onSubmit:async v=>{journal.date=v.date;await loadJournal();}})
 });
+
+/* ---------- AI tools ---------- */
+function viewAiTools(){
+ return '<div class="ai-tools-head"><div><h2>AI-Tools</h2><p>Khám phá các công cụ hỗ trợ học tập, sáng tạo và công việc.</p></div>'+(W()?'<button class="btn primary" data-act="addAiTool">+ Thêm mới</button>':'')+'</div><div class="ai-tools-grid">'+S.aiTools.map(t=>{
+ const link=safeNewsLink(t.link);const host=link==='#'?'Liên kết không hợp lệ':new URL(link).hostname;
+ return '<article class="ai-tool"><div class="ai-tool-top"><span class="ai-tool-icon" aria-hidden="true">'+esc(t.icon||'✦')+'</span><span class="ai-tool-category">'+esc(t.category||'Công cụ AI')+'</span></div><h3>'+esc(t.name)+'</h3><p>'+esc(t.description||'')+'</p>'+(link==='#'?'<span class="sub">'+host+'</span>':'<a class="ai-tool-link" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer" aria-label="Mở '+esc(t.name)+' (tab mới)"><span>'+esc(host)+'</span><span aria-hidden="true">↗</span></a>')+(W()?'<div class="ai-tool-actions"><button class="btn sm" data-act="editAiTool" data-id="'+esc(t.id)+'">Sửa</button><button class="btn sm danger" data-act="deleteAiTool" data-id="'+esc(t.id)+'">Xoá</button></div>':'')+'</article>';
+ }).join('')+'</div>'+(S.aiTools.length?'':'<p class="sub">Chưa có công cụ nào.</p>');
+}
+function aiToolForm(tool){
+ if(!W())return;
+ openForm({title:tool?'Sửa công cụ':'Thêm công cụ AI',submit:tool?'Lưu thay đổi':'Thêm công cụ',fields:[
+  {name:'name',label:'Tên công cụ',required:true,value:tool?.name||''},
+  {name:'link',label:'Đường dẫn',type:'url',required:true,placeholder:'https://example.com',value:tool?.link||''},
+  {name:'description',label:'Mô tả',type:'textarea',required:true,value:tool?.description||''},
+  {name:'category',label:'Nhóm công cụ',placeholder:'VD: AI sáng tạo, Thiết kế',value:tool?.category||''}
+ ],onSubmit:async v=>{
+  if(!W())throw Error('Vui lòng bật Edit mode.');
+  const link=safeNewsLink(v.link);if(link==='#')throw Error('Đường dẫn phải là liên kết http:// hoặc https:// hợp lệ.');
+  const data={name:v.name,link,description:v.description,category:v.category||'Công cụ AI'};
+  if(tool)await saveDoc('aiTools',tool.id,data);else await addDoc('aiTools',data);
+ }});
+}
+Object.assign(act,{
+ addAiTool:()=>aiToolForm(null),
+ editAiTool:el=>{const tool=S.aiTools.find(t=>t.id===el.dataset.id);if(tool)aiToolForm(tool)},
+ deleteAiTool:el=>{if(!W())return;const tool=S.aiTools.find(t=>t.id===el.dataset.id);if(tool)confirmBox('Xoá công cụ?',tool.name,'Xoá',()=>delDoc('aiTools',tool.id))}
+});
+
 const roster={data:null,loading:false,error:'',query:'',group:''};
 function rosterSearchText(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[đĐ]/g,'d').toLowerCase();}
 function rosterMembers(){const words=rosterSearchText(roster.query).trim().split(/\s+/).filter(Boolean);return (roster.data?.members||[]).filter(m=>(!roster.group||m.group===roster.group)&&words.every(word=>rosterSearchText([m.number,m.name,m.birthDate,m.workplace,m.phone,m.note,m.group].join(' ')).includes(word))).slice().sort((a,b)=>a.number-b.number);}
