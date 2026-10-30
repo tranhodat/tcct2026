@@ -1,1 +1,1 @@
-{"framework":null,"outputDirectory":"."}
+{"framework":null,"outputDirectory":".","functions":{"api/upload.js":{"maxDuration":300}}}

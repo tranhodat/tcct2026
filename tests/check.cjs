@@ -26,7 +26,7 @@ await t.saveDoc('settings','class',{name:'K02A02'});assert.equal(t.S.cls.name,'K
 t.S.docs=[];t.loadState();assert.equal(t.S.docs[0].name,'Updated');
 await t.delDoc('docs',doc);assert.equal(t.S.docs.length,0);
 await t.unseed();assert.equal(t.S.events.length,0);assert.equal(t.S.anns.length,0);assert.equal(t.S.courses.length,0);assert.equal(t.S.folders.length,1);
-await assert.rejects(t.upload({size:4*1024*1024},false),/Tệp quá lớn/);
+await assert.rejects(t.upload({size:50*1024*1024+1},false),/Tệp quá lớn/);
 // Upload protocol: no real network or large allocation is needed.
 await assert.rejects(t.upload({name:'file.pdf',type:'application/pdf',size:1},false),/Edit mode/);
 Object.assign(t.G,{repo:'owner/notebook',branch:'main',token:'session-secret'});
@@ -41,12 +41,28 @@ assert.equal(JSON.parse(requests[0].body).branch,'main');
 assert.equal(JSON.parse(requests[0].body).content,'SGVsbG8=');
 assert.equal(requests[0].headers['X-Edit-Password'],'session-secret');
 assert(!JSON.stringify([...data]).includes('session-secret'));
+for(const [name,type] of [['document.docx','application/vnd.openxmlformats-officedocument.wordprocessingml.document'],['table.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],['slides.pptx','application/vnd.openxmlformats-officedocument.presentationml.presentation'],['archive.zip','application/zip'],['unknown.custom',''],['README','']]){
+ const file=await t.upload({name,type,size:10},false);
+ assert.equal(file.contentType,type||'application/octet-stream');
+ assert.equal(JSON.parse(requests.at(-1).body).content,'SGVsbG8=');
+}
+await assert.rejects(t.upload({name:'archive.zip',type:'application/zip',size:10},true),/không phải là ảnh/);
 assert.match(t.uploadPath('Ảnh.png',{kind:'album',albumName:'Dã ngoại',albumId:'ab1',date:'2026-10-15'}),/^uploads\/album\/2026-10-15-da-ngoai--ab1\/anh--/);
 assert.match(t.uploadPath('Slide.pdf',{kind:'course',courseName:'Cơ sở dữ liệu',courseId:'c1',lectureName:'Bài 1',lectureId:'l1',section:'tai-lieu'}),/^uploads\/hoc-phan\/co-so-du-lieu--c1\/bai-1--l1\/tai-lieu\//);
 assert(t.uploadPath('Hình.png',{},true).endsWith('.jpg'));
 assert.notEqual(t.uploadPath('a.pdf'),t.uploadPath('a.pdf'));
 const count=requests.length;
-await assert.rejects(t.upload({size:3*1024*1024+1},false),/Tệp quá lớn/);assert.equal(requests.length,count);
+await assert.rejects(t.upload({size:50*1024*1024+1},false),/Tệp quá lớn/);assert.equal(requests.length,count);
+// Large files use bounded chunks; the final request contains receipts only.
+const chunks=[];ctx.fetch=async(url,opts)=>{
+ const body=JSON.parse(opts.body);chunks.push({url,body});
+ return {ok:true,status:200,json:async()=>body.action==='chunk'?{sha:'a'.repeat(40),size:2*1024*1024,expires:1,signature:'b'.repeat(64)}:{content:{path:body.path}}};
+};
+const slices=[];
+await t.upload({name:'large.zip',type:'application/zip',size:50*1024*1024,slice:(start,end)=>{slices.push([start,end]);return {size:end-start}}},false);
+assert.equal(slices.length,25);assert.equal(chunks.length,26);
+assert(chunks.every(c=>c.url==='/api/upload'));
+assert.equal(chunks.at(-1).body.parts.length,25);assert.equal(chunks.at(-1).body.content,undefined);
 ctx.fetch=async()=>({ok:false,status:403,json:async()=>({message:'Forbidden'})});
 await assert.rejects(t.upload({name:'a.pdf',type:'application/pdf',size:1},false),/GitHub \(403\)/);
 // Shared state writes preserve the last confirmed server revision.

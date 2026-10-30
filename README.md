@@ -15,7 +15,9 @@ Redeploy after changing environment variables. The browser calls /api/github; on
 
 Enable Edit mode before uploading or changing data. The password is kept in tab memory and sent over HTTPS to authorize API requests. Clear it by disabling Edit mode. Local static servers and GitHub Pages cannot run this API; use Vercel or vercel dev.
 
-Maximum file size is now 3 MiB because Vercel Functions limit request payloads to 4.5 MB and base64 adds overhead. Large-file uploads require a separate storage or multipart architecture.
+Documents and course attachments accept all file formats up to 50 MiB per file. Files up to 3 MiB use the existing upload endpoint. Larger files use /api/upload in 2 MiB chunks, stored as Git blobs with signed receipts valid for 24 hours. Finalization verifies receipts and the total size, assembles the file server-side, and writes one complete file to the existing repository. Tokens remain server-only; no additional environment variables are required. Interrupted uploads never create document records; retry the upload from the form. Unreferenced chunk blobs are left for GitHub garbage collection. Report submissions retain their separate 3 MiB limit.
+
+Deploy api/upload.js, both HTML entrypoints, and vercel.json together; the new endpoint allows up to 300 seconds for finalization. Validation: node tests/upload.cjs (mock GitHub, including 50 MiB assembly), node tests/check.cjs, node tests/api.cjs, node tests/delete-upload.cjs. Production network uploads still require verification after deployment.
 
 If push protection blocks an old commit, remove its token from every affected unpushed commit; changing the current file alone does not clear history. Revoke any token exposed publicly or shared in chat.
 
