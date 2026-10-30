@@ -467,9 +467,8 @@ function albumUploadContext(a){return {kind:'album',albumName:a.title,albumId:a.
 const TYPES={hoc:'Buổi học',hd:'Hoạt động',han:'Hạn nộp · Thi'};
 const TABS=[['lich','Lịch học'],['thongbao','Thông báo'],['tailieu','Tài liệu'],['hocphan','Học phần'],['hinhanh','Hình ảnh'],['baocao','Nộp báo cáo'],['ykien','Ý kiến'],['danhsach','Danh s\u00e1ch l\u1edbp'],['aitools','AI-Tools']];
 const ROLE={admin:['Quản trị','admin'],officer:['Cán bộ lớp','officer'],member:['Thành viên','member'],unknown:['Quyền chưa xác định','member'],guest:['Khách','member']};
-const OK_TYPES=['image/png','image/jpeg','image/gif','image/webp','image/svg+xml','video/mp4','video/webm','application/pdf','text/csv','text/markdown','application/json','text/plain'];
 const EXT={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',mp4:'video/mp4',webm:'video/webm',csv:'text/csv',md:'text/markdown',json:'application/json',txt:'text/plain'};
-const ACCEPT_ALL='.pdf,.png,.jpg,.jpeg,.gif,.webp,.svg,.mp4,.webm,.csv,.md,.json,.txt';
+const ACCEPT_ALL='';
 const ACCEPT_IMG='.png,.jpg,.jpeg,.gif,.webp';
 
 const DEFAULT_AI_TOOLS=[
@@ -584,11 +583,9 @@ async function dropAssets(ids){
   if(!ids||!ids.length)return;
 }
 function guessType(f){
-  if(OK_TYPES.indexOf(f.type)>=0)return f.type;
+  if(f.type)return f.type;
   const ext=(f.name.split('.').pop()||'').toLowerCase();
-  if(EXT[ext])return EXT[ext];
-  const err=new Error('Không thể tải lên tệp “'+f.name+'”. Chỉ nhận PDF, ảnh, video MP4/WebM, CSV, TXT, Markdown, JSON. Với Word, PowerPoint, Excel hãy xuất sang PDF hoặc dùng “Thêm liên kết”.');
-  throw err;
+  return EXT[ext]||'application/octet-stream';
 }
 async function shrink(f){
   if(!/^image\/(jpeg|png|webp)$/.test(f.type))return f;
@@ -781,10 +778,10 @@ function viewTaiLieu(){
   const folderName=id=>{const x=fl.find(z=>z.id===id);return x?x.name:'Chưa phân loại'};
   const fbtn=(id,name,c)=>'<button class="folder" data-act="openFolder" data-id="'+esc(id)+'" aria-current="'+(cur===id)+'"><span>'+esc(name)+'</span><span class="c">'+c+'</span></button>';
   const curF=fl.find(x=>x.id===cur);
-  let h='<div class="bar"><div class="grow"><h2>Tài liệu</h2><p class="sub">Tệp PDF, ảnh, video và liên kết của lớp, sắp xếp theo thư mục.</p></div>'+(W()?'<div class="acts"><button class="btn" data-act="addFolder">+ Thư mục</button><button class="btn" data-act="linkDoc">+ Liên kết</button><button class="btn primary" data-act="upDoc">Tải tệp lên</button></div>':'')+'</div>';
+  let h='<div class="bar"><div class="grow"><h2>Tài liệu</h2><p class="sub">Tệp mọi định dạng và liên kết của lớp, sắp xếp theo thư mục.</p></div>'+(W()?'<div class="acts"><button class="btn" data-act="addFolder">+ Thư mục</button><button class="btn" data-act="linkDoc">+ Liên kết</button><button class="btn primary" data-act="upDoc">Tải tệp lên</button></div>':'')+'</div>';
   if(!S.loaded.docs)return h+'<p class="sub">Đang tải…</p>';
   h+='<div class="split"><div><div class="folders">'+fbtn('all','Tất cả tài liệu',S.docs.length)+fl.map(x=>fbtn(x.id,x.name,count(x.id))).join('')+(count('')?fbtn('','Chưa phân loại',count('')):'')+'</div>'+(curF&&A()?'<div style="margin-top:10px"><button class="link-btn red" data-act="delFolder" data-id="'+esc(curF.id)+'">Xoá thư mục này</button></div>':'')+'</div>';
-  if(!docs.length)h+='<div class="empty"><h3>Thư mục trống</h3><p>'+(W()?'Tải tệp lên hoặc dán liên kết Google Drive, OneDrive cho tài liệu Word, PowerPoint, Excel.':'Chưa có tài liệu nào trong mục này.')+'</p></div>';
+  if(!docs.length)h+='<div class="empty"><h3>Thư mục trống</h3><p>'+(W()?'Tải tệp bất kỳ lên hoặc thêm liên kết Google Drive, OneDrive.':'Chưa có tài liệu nào trong mục này.')+'</p></div>';
   else h+='<div class="files">'+docs.map(d=>{
     const who=ownerName(d);
     return '<div class="file"><div class="ext '+kindLabel(d)+'">'+kindLabel(d)+'</div><div style="min-width:0"><a class="nm" href="'+esc(itemHref(d))+'"'+(d.kind==='file'?' download="'+esc(d.name)+'"':'')+' target="_blank" rel="noopener noreferrer">'+esc(d.name)+'</a><div class="mt">'+(cur==='all'?'<span class="tag plain">'+esc(folderName(d.folder||''))+'</span>':'')+(d.size?'<span>'+fmtSize(d.size)+'</span>':'')+'<span>'+esc(stamp(d.createdAt))+'</span>'+(who?'<span>'+esc(who)+'</span>':'')+'</div>'+(d.description?'<p class="sub">'+esc(d.description)+'</p>':'')+'</div><div>'+(W()&&mine(d)?'<button class="link-btn" data-act="editDoc" data-id="'+esc(d.id)+'">Sửa</button><button class="link-btn red" data-act="delDoc" data-id="'+esc(d.id)+'">Xoá</button>':'')+'</div></div>';
@@ -1078,7 +1075,7 @@ const act={
   openFolder:el=>{S.folder=el.dataset.id;render()},
   addFolder:()=>openForm({title:'Thư mục mới',submit:'Tạo thư mục',fields:[{name:'name',label:'Tên thư mục',required:true,placeholder:'VD: Đề cương, Slide, Bài tập'}],onSubmit:async v=>{const id=await addDoc('folders',{name:v.name});S.folder=id}}),
   delFolder:el=>{const f=S.folders.find(x=>x.id===el.dataset.id);if(!f)return;confirmBox('Xoá thư mục?','Thư mục “'+f.name+'” sẽ bị xoá. Tài liệu bên trong chuyển sang “Chưa phân loại”.','Xoá',async()=>{for(const d of S.docs.filter(x=>x.folder===f.id))await mutate('docs','docs',d.id,n=>{n.folder=''});await delDoc('folders',f.id);S.folder='all'})},
-  upDoc:()=>openForm({title:'Tải tệp lên',submit:'Tải lên',intro:'Nhận PDF, ảnh, video MP4/WebM, CSV, TXT, Markdown, JSON (tối đa 3 MB mỗi tệp). Với Word, PowerPoint, Excel hãy xuất PDF hoặc dùng “Thêm liên kết”.',fields:[
+  upDoc:()=>openForm({title:'Tải tệp lên',submit:'Tải lên',intro:'Chấp nhận mọi loại tệp, bao gồm Word, Excel, PowerPoint, PDF, ảnh, video và ZIP (tối đa 3 MB mỗi tệp).',fields:[
     {name:'name',label:'Tên tài liệu',placeholder:'Nhập tên hiển thị cho tài liệu',hint:'Bỏ trống để dùng tên tệp. Nếu chọn nhiều tệp, tên này sẽ được ghép với từng tên tệp.'},
     {name:'folder',label:'Thư mục',type:'select',options:folderOptions(),value:(S.folder!=='all'?S.folder:'')},
     {name:'files',label:'Chọn tệp',type:'file',multiple:true,accept:ACCEPT_ALL,required:true}],
