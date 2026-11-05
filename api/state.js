@@ -1,4 +1,4 @@
-const {editor,read,request,audit}=require('../lib/github-store');
+const {MAX_JSON_BYTES,editor,read,request,audit}=require('../lib/github-store');
 const path='data/solop-static.json';
 module.exports=async(req,res)=>{
  res.setHeader('Cache-Control','no-store, max-age=0');
@@ -15,7 +15,7 @@ module.exports=async(req,res)=>{
   const shared=Object.fromEntries(['events','anns','folders','docs','courses','albums','cls'].map(k=>[k,state[k]??{}]));
   if(Array.isArray(state.aiTools))shared.aiTools=state.aiTools;else if(Array.isArray(current.data?.aiTools))shared.aiTools=current.data.aiTools;
   shared.updatedAt=Date.now();shared.settings={class:shared.cls};
-  const bytes=Buffer.from(JSON.stringify(shared));if(bytes.length>700*1024)return res.status(413).json({message:'Dữ liệu lớp vượt giới hạn. Hãy dùng liên kết thay cho tệp nhúng base64.'});
+  const bytes=Buffer.from(JSON.stringify(shared));if(bytes.length>MAX_JSON_BYTES)return res.status(413).json({message:'Dữ liệu lớp vượt giới hạn 3 MB. Hãy dùng liên kết (tệp lưu trên GitHub) thay cho tệp nhúng base64.'});
   const result=await request(path,'PUT',{message:'Update notebook data',content:bytes.toString('base64'),...(current.sha?{sha:current.sha}:{})});
   const logged=await audit('class.data.update',{actor:'editor',path,commit:result.commit?.sha||null});res.setHeader('X-Audit-Status',logged?'saved':'failed');
   return res.status(200).json({state:shared,revision:result.content?.sha});
